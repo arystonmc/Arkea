@@ -11,38 +11,31 @@ public class ArkIconButton extends ArkWidget {
 
     private final Icon icon;
     private final Component label;
+    private final IconButtonStyle style;
     private final Runnable action;
-    private final int fill;
-    private final int border;
-    private final int iconColor;
-    private final float iconSize;
 
     public ArkIconButton(UiHost host, Icon icon, Component label, IconButtonStyle style, Runnable action) {
         super(host);
         this.icon = icon;
         this.label = label;
+        this.style = style;
         this.action = action;
-        this.fill = style.fill();
-        this.border = style.border();
-        this.iconColor = style.iconColor();
-        this.iconSize = style.iconSize();
     }
 
     @Override
     protected void renderWidget(UiGraphics graphics) {
         Box box = this.bounds();
         float hover = this.hoverProgress();
-        float brightness = 1.0F + HOVER_BRIGHTNESS * hover;
         graphics.push();
-        graphics.translate(0.0F, this.pressProgress());
         if (!this.isActive()) {
             graphics.fade(DISABLED_OPACITY);
         }
-        graphics.fill(box, ArkColors.brighten(this.fill, brightness));
-        graphics.border(box, 1.0F, ArkColors.brighten(this.border, brightness));
-        float iconX = box.centerX() - this.iconSize * 0.5F;
-        float iconY = box.centerY() - this.iconSize * 0.5F;
-        graphics.icon(this.icon, iconX, iconY, this.iconSize, this.iconSize, ArkColors.brighten(this.iconColor, brightness));
+        graphics.fill(box, ArkColors.lerp(hover, this.style.fill(), this.style.hoverFill()));
+        graphics.border(box, 1.0F, ArkColors.brighten(this.style.border(), 1.0F + HOVER_BRIGHTNESS * hover));
+        float iconX = box.centerX() - this.style.iconWidth() * 0.5F;
+        float iconY = box.centerY() - this.style.iconHeight() * 0.5F;
+        int iconColor = ArkColors.lerp(hover, this.style.iconColor(), this.style.hoverIconColor());
+        graphics.icon(this.icon, iconX, iconY, this.style.iconWidth(), this.style.iconHeight(), iconColor);
         graphics.pop();
     }
 

@@ -83,7 +83,8 @@ public final class Icons {
     public static final Icon POWER = Icon.stroke("M8 1.5v6M4.5 3.5a5.5 5.5 0 1 0 7 0");
     public static final Icon SERVER = Icon.stroke("M2 2.5h12v5H2zM2 8.5h12v5H2zM4.5 5h.01M4.5 11h.01");
     public static final Icon CONNECT = Icon.stroke("M2 8h8M7 5l3 3-3 3M11 2.5h3v11h-3");
-    public static final Icon CLOSE = Icon.stroke("M1.5 1.5l9 9M10.5 1.5l-9 9");
+    public static final Icon CLOSE = Icon.stroke("M1.5 1.5l13 13M14.5 1.5l-13 13");
+    public static final Icon EXTERNAL = Icon.stroke("M6 3h7v7M13 3L4 12");
     public static final Icon SEARCH = Icon.stroke("M1.5 1.5h6v6h-6zM8 8l2.5 2.5");
     public static final Icon PLAY = Icon.fill("M4 2l10 6-10 6z");
     public static final Icon CHEVRON_RIGHT = Icon.pixels("M0 0h1v1H0zM1 1h1v1H1zM2 2h1v1H2zM1 3h1v1H1zM0 4h1v1H0z", 3.0F, 5.0F);

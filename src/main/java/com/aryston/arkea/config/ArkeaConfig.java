@@ -9,6 +9,10 @@ public final class ArkeaConfig {
         .translation("arkea.configuration.titleScreen")
         .define("titleScreen", true);
 
+    public static final ModConfigSpec.BooleanValue OPTIONS_SCREEN = BUILDER
+        .translation("arkea.configuration.optionsScreen")
+        .define("optionsScreen", true);
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     private ArkeaConfig() {

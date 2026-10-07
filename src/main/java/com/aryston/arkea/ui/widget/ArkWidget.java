@@ -59,10 +59,17 @@ public abstract class ArkWidget implements GuiEventListener, NarratableEntry {
         if (this.hovered) {
             graphics.cursor(this.active ? CursorTypes.POINTING_HAND : CursorTypes.NOT_ALLOWED);
         }
+        graphics.push();
+        graphics.translate(this.contentShiftX(), this.pressProgress());
         this.renderWidget(graphics);
         if (this.showsFocusRing()) {
             this.renderFocusRing(graphics);
         }
+        graphics.pop();
+    }
+
+    protected float contentShiftX() {
+        return 0.0F;
     }
 
     protected abstract void renderWidget(UiGraphics graphics);
@@ -105,7 +112,12 @@ public abstract class ArkWidget implements GuiEventListener, NarratableEntry {
     }
 
     protected boolean containsPoint(float x, float y) {
-        return this.hitBox().contains(x, y);
+        Box box = this.hitBox();
+        return new Box(box.x(), box.y(), box.width() + this.contentReachX(), box.height()).contains(x, y);
+    }
+
+    protected float contentReachX() {
+        return 0.0F;
     }
 
     @Override

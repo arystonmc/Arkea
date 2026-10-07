@@ -12,6 +12,7 @@ public class ArkButton extends ArkWidget {
     public static final float HEIGHT = 32.0F;
     private static final float PADDING_X = 14.0F;
     private static final float ICON_SIZE = 14.0F;
+    private static final float PIXEL_ICON_HEIGHT = 8.0F;
     private static final float ICON_GAP = 8.0F;
     private static final float GLOW_BLUR = 16.0F;
     private static final float GLOW_OFFSET = 4.0F;
@@ -21,7 +22,8 @@ public class ArkButton extends ArkWidget {
     private final Component label;
     private final ButtonVariant variant;
     private final Runnable action;
-    private @Nullable Icon icon;
+    private @Nullable Icon leadingIcon;
+    private @Nullable Icon trailingIcon;
 
     public ArkButton(UiHost host, Component label, ButtonVariant variant, Runnable action) {
         super(host);
@@ -31,16 +33,17 @@ public class ArkButton extends ArkWidget {
     }
 
     public ArkButton icon(Icon newIcon) {
-        this.icon = newIcon;
+        this.leadingIcon = newIcon;
+        return this;
+    }
+
+    public ArkButton trailingIcon(Icon newIcon) {
+        this.trailingIcon = newIcon;
         return this;
     }
 
     public float preferredWidth() {
-        float content = this.host.metrics().width(this.label.getString(), LABEL);
-        if (this.icon != null) {
-            content += ICON_SIZE + ICON_GAP;
-        }
-        return content + PADDING_X * 2.0F;
+        return this.contentWidth(this.host.metrics().width(this.label.getString(), LABEL)) + PADDING_X * 2.0F;
     }
 
     @Override
@@ -48,7 +51,6 @@ public class ArkButton extends ArkWidget {
         Box box = this.bounds();
         float hover = this.hoverProgress();
         graphics.push();
-        graphics.translate(0.0F, this.pressProgress());
         if (!this.isActive()) {
             graphics.fade(DISABLED_OPACITY);
         }
@@ -64,13 +66,40 @@ public class ArkButton extends ArkWidget {
     private void renderContent(UiGraphics graphics, Box box, int color) {
         String text = this.label.getString();
         float textWidth = graphics.metrics().width(text, LABEL);
-        float contentWidth = this.icon != null ? textWidth + ICON_SIZE + ICON_GAP : textWidth;
-        float x = box.centerX() - contentWidth * 0.5F;
-        if (this.icon != null) {
-            graphics.icon(this.icon, x, box.centerY() - ICON_SIZE * 0.5F, ICON_SIZE, ICON_SIZE, color);
-            x += ICON_SIZE + ICON_GAP;
+        float x = box.centerX() - this.contentWidth(textWidth) * 0.5F;
+        if (this.leadingIcon != null) {
+            x = this.drawIcon(graphics, this.leadingIcon, x, box, color) + ICON_GAP;
         }
         graphics.text(text, x, box.centerY() - graphics.metrics().capHeight(LABEL) * 0.5F, LABEL, color);
+        if (this.trailingIcon != null) {
+            this.drawIcon(graphics, this.trailingIcon, x + textWidth + ICON_GAP, box, color);
+        }
+    }
+
+    private float drawIcon(UiGraphics graphics, Icon icon, float x, Box box, int color) {
+        float height = iconHeight(icon);
+        float width = iconWidth(icon);
+        graphics.icon(icon, x, box.centerY() - height * 0.5F, width, height, color);
+        return x + width;
+    }
+
+    private float contentWidth(float textWidth) {
+        float width = textWidth;
+        if (this.leadingIcon != null) {
+            width += iconWidth(this.leadingIcon) + ICON_GAP;
+        }
+        if (this.trailingIcon != null) {
+            width += iconWidth(this.trailingIcon) + ICON_GAP;
+        }
+        return width;
+    }
+
+    private static float iconHeight(Icon icon) {
+        return icon.viewWidth() == icon.viewHeight() ? ICON_SIZE : PIXEL_ICON_HEIGHT;
+    }
+
+    private static float iconWidth(Icon icon) {
+        return iconHeight(icon) * icon.viewWidth() / icon.viewHeight();
     }
 
     @Override

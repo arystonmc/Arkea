@@ -28,3 +28,14 @@ A calm, modern main menu that keeps everything the vanilla menu can do.
 - Works with mouse, keyboard (Tab, arrows, Enter, Escape) and the narrator
 - Turn it off in Mods, Arkea, Config to get the vanilla main menu back
 - Since: 0.1
+
+### Options Window
+All settings in one calm window instead of a wall of buttons.
+
+- A sidebar groups every settings page into Game, Player and Content; Helion settings appear there when Helion is installed
+- Field of View has a smooth slider right on the overview; drag it, click it or use the arrow keys (Shift for bigger steps)
+- Every settings page has its own tile with a short description, and Telemetry and Credits stay one click away
+- The window glides in over the blurred menu background or your world and glides out when you leave
+- Works with mouse, keyboard and the narrator; changes save automatically
+- Turn it off in Mods, Arkea, Config to get the vanilla options menu back
+- Since: 0.1

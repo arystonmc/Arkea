@@ -47,6 +47,10 @@ public abstract class ArkScreen extends Screen implements UiHost {
 
     protected abstract int exitDuration();
 
+    protected boolean blursBackground() {
+        return false;
+    }
+
     @Override
     public void added() {
         super.added();
@@ -177,13 +181,17 @@ public abstract class ArkScreen extends Screen implements UiHost {
             return;
         }
         graphics.nextStratum();
-        if (this.dialog.isOpen() && this.minecraft.options.getMenuBackgroundBlurriness() >= BLUR_THRESHOLD) {
+        if (this.dialog.isOpen() && !this.blursBackground() && this.menuBlurEnabled()) {
             graphics.blurBeforeThisStratum();
         }
         graphics.pose().pushMatrix();
         graphics.pose().scale(this.scale.poseScale());
         this.dialog.render(ui, mouseX, mouseY);
         graphics.pose().popMatrix();
+    }
+
+    protected boolean menuBlurEnabled() {
+        return this.minecraft.options.getMenuBackgroundBlurriness() >= BLUR_THRESHOLD;
     }
 
     private @Nullable ArkWidget hoveredWidget() {

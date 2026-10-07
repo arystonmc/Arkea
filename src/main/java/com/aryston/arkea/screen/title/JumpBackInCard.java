@@ -79,7 +79,6 @@ final class JumpBackInCard extends ArkWidget {
         float brightness = 1.0F + HOVER_BRIGHTNESS * hover;
         Box box = this.bounds();
         graphics.push();
-        graphics.translate(0.0F, this.pressProgress());
         graphics.shadow(box, SHADOW_BLUR, SHADOW_OFFSET, SHADOW);
         graphics.fill(box, ArkColors.brighten(FILL, brightness));
         Box image = new Box(box.x() + 1.0F, box.y() + 1.0F, box.width() - 2.0F, IMAGE_HEIGHT);

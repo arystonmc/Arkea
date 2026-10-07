@@ -22,7 +22,7 @@ import com.aryston.arkea.ui.widget.ArkTextLink;
 import com.aryston.arkea.ui.widget.ArkWidget;
 import com.aryston.arkea.ui.widget.ButtonVariant;
 import com.aryston.arkea.ui.widget.IconButtonStyle;
-import com.aryston.arkea.ui.widget.MenuButtonContent;
+import com.aryston.arkea.ui.widget.ItemContent;
 import com.aryston.arkea.ui.widget.MenuButtonStyle;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.realmsclient.RealmsMainScreen;
@@ -92,7 +92,7 @@ public final class ArkTitleScreen extends ArkScreen {
     private static final TextStyle EDITION = TextStyle.of(12.0F).spacing(10.0F);
     private static final TextStyle CARD_LABEL = TextStyle.of(10.0F).spacing(1.0F).shadow(LABEL_SHADOW, 1.0F);
     private static final TextStyle FOOTER = TextStyle.of(10.0F);
-    private static final IconButtonStyle UTILITY_STYLE = new IconButtonStyle(
+    private static final IconButtonStyle UTILITY_STYLE = IconButtonStyle.brightening(
         ArkColors.rgba(16, 16, 18, 0.60F), ArkColors.BORDER_DEFAULT, ArkColors.TEXT_SOFT, 16.0F);
 
     private final List<ArkWidget> menuButtons = new ArrayList<>();
@@ -179,24 +179,24 @@ public final class ArkTitleScreen extends ArkScreen {
     private void buildMenu() {
         Component blocked = MultiplayerAccess.blockedReason(this.minecraft);
         float y = this.column.y() + HEADER_HEIGHT + HEADER_GAP;
-        y = this.addMenuButton(new MenuButtonContent(Icons.USER, Component.translatable("menu.singleplayer"),
+        y = this.addMenuButton(new ItemContent(Icons.USER, Component.translatable("menu.singleplayer"),
             Component.translatable("arkea.title.singleplayer.description")), MenuButtonStyle.primary(), PRIMARY_HEIGHT,
             () -> this.navigate(() -> new SelectWorldScreen(this)), null, y);
-        y = this.addMenuButton(new MenuButtonContent(Icons.GLOBE, Component.translatable("menu.multiplayer"),
+        y = this.addMenuButton(new ItemContent(Icons.GLOBE, Component.translatable("menu.multiplayer"),
             Component.translatable("arkea.title.multiplayer.description")), MenuButtonStyle.secondary(), BUTTON_HEIGHT,
             this::openMultiplayer, blocked, y);
-        y = this.addMenuButton(new MenuButtonContent(Icons.CLOUD, Component.translatable("menu.online"),
+        y = this.addMenuButton(new ItemContent(Icons.CLOUD, Component.translatable("menu.online"),
             Component.translatable("arkea.title.realms.description")), MenuButtonStyle.secondary(), BUTTON_HEIGHT,
             () -> this.navigate(() -> new RealmsMainScreen(this)), blocked, y);
-        y = this.addMenuButton(new MenuButtonContent(Icons.PACK, Component.translatable("fml.menu.mods"),
+        y = this.addMenuButton(new ItemContent(Icons.PACK, Component.translatable("fml.menu.mods"),
             Component.translatable("arkea.title.mods.description", ModList.get().size())), MenuButtonStyle.secondary(), BUTTON_HEIGHT,
             () -> this.navigate(() -> ModListScreen.create(this)), null, y);
-        this.addMenuButton(new MenuButtonContent(Icons.SLIDERS, Component.translatable("options.title"),
+        this.addMenuButton(new ItemContent(Icons.SLIDERS, Component.translatable("options.title"),
             Component.translatable("arkea.title.options.description")), MenuButtonStyle.secondary(), BUTTON_HEIGHT,
             () -> this.navigate(() -> new OptionsScreen(this, this.minecraft.options)), null, y);
     }
 
-    private float addMenuButton(MenuButtonContent content, MenuButtonStyle style, float height, Runnable action,
+    private float addMenuButton(ItemContent content, MenuButtonStyle style, float height, Runnable action,
                                 @Nullable Component disabledReason, float y) {
         ArkMenuButton button = this.add(new ArkMenuButton(this, content, style, action));
         button.setBounds(new Box(this.column.x(), y, COLUMN_WIDTH, height));
@@ -211,7 +211,7 @@ public final class ArkTitleScreen extends ArkScreen {
     private void buildUtilityRow() {
         float y = this.column.bottom() - UTILITY_SIZE;
         float quitWidth = COLUMN_WIDTH - (UTILITY_SIZE + BUTTON_GAP) * 3.0F;
-        ArkMenuButton quit = this.add(new ArkMenuButton(this, new MenuButtonContent(Icons.POWER, Component.translatable("menu.quit"), null),
+        ArkMenuButton quit = this.add(new ArkMenuButton(this, new ItemContent(Icons.POWER, Component.translatable("menu.quit"), null),
             MenuButtonStyle.dangerInline(), this::askQuit));
         quit.setBounds(new Box(this.column.x(), y, quitWidth, UTILITY_SIZE));
         this.utilityButtons.add(quit);

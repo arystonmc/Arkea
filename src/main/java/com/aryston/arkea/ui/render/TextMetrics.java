@@ -8,9 +8,12 @@ import net.minecraft.network.chat.Style;
 
 public record TextMetrics(Font font, UiScale scale) {
     private static final String ELLIPSIS = "...";
+    private static final float SNAP_TOLERANCE = 0.15F;
 
     public float fontScale(TextStyle style) {
-        float pixels = Math.max(1.0F, Math.round(style.size() / TextStyle.GLYPH_HEIGHT * this.scale.scale()));
+        float exact = style.size() / TextStyle.GLYPH_HEIGHT * this.scale.scale();
+        float nearest = Math.max(1.0F, Math.round(exact));
+        float pixels = Math.abs(exact - nearest) <= SNAP_TOLERANCE ? nearest : Math.max(1.0F, exact);
         return pixels / this.scale.scale();
     }
 

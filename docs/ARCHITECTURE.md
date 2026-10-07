@@ -22,7 +22,7 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 - Screens are laid out in design pixels of the 1366 x 768 reference. `UiScale` picks a scale in quarter steps so the whole design fits the window, and the canvas grows beyond 1366 x 768 on wider or taller windows. Layouts anchor to the canvas edges like the CSS of the design.
 - `ArkScreen` scales the pose by `scale / guiScale`, so one unit is one design pixel. Mouse positions arrive in GUI units and are divided by the same factor.
 - Rectangles are snapped to whole physical pixels while the pose has no rotation. Line thickness never drops below one physical pixel.
-- Text uses the vanilla font. Its scale is rounded so every font pixel covers a whole number of physical pixels, which keeps glyphs crisp; small design sizes therefore share a size on low resolutions.
+- Text uses the vanilla font at the design size. When a font pixel comes within 0.15 of a whole number of physical pixels the scale snaps to it, so most text stays crisp; other sizes keep their exact design size so labels fit and the hierarchy of the design survives on every resolution.
 
 ## Frame Flow
 
@@ -30,7 +30,7 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 2. `ArkScreen` starts a pending navigation when the exit animation has ended, otherwise builds a `UiGraphics` for the frame, pushes the design scale and calls `renderUi` of the screen with the mouse in canvas coordinates (outside the canvas while a dialog is open or the screen is leaving).
 3. Widgets render themselves, store where their bounds landed on the canvas (`UiGraphics.canvasBox`) and update hover from that box, so hover and clicks follow enter animations.
 4. The tooltip of the hovered widget renders on top.
-5. An open dialog renders on the next stratum. The menu background blur is requested for that stratum while the dialog is shown.
+5. An open dialog renders on the next stratum. The menu background blur is requested for that stratum while the dialog is shown. Window screens blur their background instead (`blursBackground`), and the dialog then uses that blur.
 
 ## Rendering
 
@@ -40,6 +40,13 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 - Soft shadows and glows are nine slices of one generated soft edge texture (Gaussian profile, CSS blur radius = two sigma). The vignette is a generated radial texture stretched over the canvas. Both are linear filtered.
 - Icons are the SVG paths of the design, parsed once into polylines and drawn as 1.5 pixel quads with square caps or as filled convex polygons, so they stay sharp at every scale without textures.
 - Alpha is a stack in `UiGraphics`: every color is multiplied by it. This is how fades work, because 26.x has no global shader color.
+
+## Window Screens
+
+- `ArkWindowScreen` draws the shell of every settings screen: 1238 x 704 window centered on the canvas, sidebar with brand and grouped navigation, header with back, breadcrumb, title and close, content area, footer with a note and buttons.
+- Its background is the vanilla panorama on the title screen or the world in game, blurred once, with a dim layer that fades with the window.
+- The window enters with opacity, a 16 pixel rise and a 0.98 scale (450 ms) and exits in reverse (220 ms); content rows stagger in with `renderRow`.
+- A subclass builds its content in `buildContent` inside the content box and draws it in `renderContent`; options pages open vanilla screens until their Arkea versions exist.
 
 ## Motion
 
@@ -59,6 +66,7 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 
 - Only one blur per frame exists in 26.3 (`blurBeforeThisStratum` throws on a second call). Screens never request blur themselves; `ArkScreen` does it for the dialog.
 - Every widget is drawn exactly once per frame through `ArkWidget.render`, otherwise its hit box is stale.
+- A widget moves its own content only through `contentShiftX` and the press offset of `ArkWidget`, never with its own pose translation, so the focus ring and hit box move with it.
 - Widgets live in a screen's `buildUi`, which runs on every init; state that must survive a resize (the splash text) is kept in the screen.
 - The design system never draws Mojang textures except vanilla's own panorama.
 
@@ -73,6 +81,7 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 | `LevelStorageSource.findLevelCandidates`, `loadLevelSummaries`, `FaviconTexture.forWorld`, `WorldOpenFlows.openWorld` | Jump back in card |
 | `Minecraft.allowsMultiplayer`, `isNameBanned`, `multiplayerBan` | Disabled multiplayer and Realms buttons |
 | `ModList.get().size()`, `ModListScreen.create` | Mods button |
+| `OptionsScreen.getLastScreen`, `Options.fov`, `Options.save`, the vanilla options sub-screens, `IConfigScreenFactory` | Options screen |
 
 ## Porting Checklist for a New Minecraft Version
 

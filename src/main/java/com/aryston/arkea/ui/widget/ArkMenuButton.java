@@ -38,7 +38,7 @@ public class ArkMenuButton extends ArkWidget {
     private final MenuButtonStyle style;
     private final Runnable action;
 
-    public ArkMenuButton(UiHost host, MenuButtonContent content, MenuButtonStyle style, Runnable action) {
+    public ArkMenuButton(UiHost host, ItemContent content, MenuButtonStyle style, Runnable action) {
         super(host, Motion.MENU_HOVER, Easing.STANDARD);
         this.icon = content.icon();
         this.label = content.label();
@@ -53,7 +53,6 @@ public class ArkMenuButton extends ArkWidget {
         float brightness = 1.0F + HOVER_BRIGHTNESS * hover;
         Box box = this.bounds();
         graphics.push();
-        graphics.translate(HOVER_SLIDE * hover, this.pressProgress());
         if (!this.isActive()) {
             graphics.fade(DISABLED_OPACITY);
         }
@@ -102,6 +101,16 @@ public class ArkMenuButton extends ArkWidget {
         float textX = iconX + INLINE_ICON + INLINE_GAP;
         String text = metrics.ellipsize(this.label.getString(), labelStyle, box.right() - INLINE_PADDING - textX);
         graphics.text(text, textX, box.centerY() - metrics.capHeight(labelStyle) * 0.5F, labelStyle, color);
+    }
+
+    @Override
+    protected float contentShiftX() {
+        return HOVER_SLIDE * this.hoverProgress();
+    }
+
+    @Override
+    protected float contentReachX() {
+        return HOVER_SLIDE;
     }
 
     @Override

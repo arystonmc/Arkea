@@ -18,6 +18,9 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 | Buttons | `ArkButton`, `ButtonVariant`, `ArkIconButton`, `IconButtonStyle`, `ArkMenuButton`, `MenuButtonStyle`, `ArkTextLink` |
 | Popups and tooltips | `ArkDialog`, `ArkTooltip` |
 | Base of every Arkea screen (scaling, dialogs, exit animation) | `ArkScreen` |
+| Settings window: sidebar, header, footer, window and row animations | `ArkWindowScreen`, `NavGroup`, `SidebarBrand` |
+| Sliders, sidebar items, tiles, setting rows | `ArkSlider`, `ArkNavItem`, `ArkTile`, `SettingRow` |
+| Options screen and the pages it links to | `ArkOptionsScreen`, `OptionsPage` |
 | Title screen layout and actions | `ArkTitleScreen` |
 | Jump back in card, splash text | `JumpBackInCard`, `SplashText`, `RecentWorld`, `LastPlayed` |
 | Texts | `src/main/resources/assets/arkea/lang/` |
@@ -51,14 +54,15 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Role: Client config spec (`arkea-client.toml`).
 - Members:
   - `TITLE_SCREEN`: replaces the vanilla title screen when on.
+  - `OPTIONS_SCREEN`: replaces the vanilla options screen when on.
   - `SPEC`: the built spec.
 
 ### `com.aryston.arkea.integration`
 
 #### ClientEvents
 - Path: `src/main/java/com/aryston/arkea/integration/ClientEvents.java`
-- Role: Swaps a newly opened vanilla `TitleScreen` for `ArkTitleScreen` in `ScreenEvent.Opening`, unless the config turns it off or the game runs in demo mode.
-- Depends on: `ArkeaConfig`, `ArkTitleScreen`.
+- Role: Swaps a newly opened vanilla `TitleScreen` for `ArkTitleScreen` (not in demo mode) and `OptionsScreen` for `ArkOptionsScreen` with the same previous screen in `ScreenEvent.Opening`, each unless the config turns it off.
+- Depends on: `ArkeaConfig`, `ArkTitleScreen`, `ArkOptionsScreen`.
 
 ### `com.aryston.arkea.ui.theme`
 
@@ -146,7 +150,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### TextMetrics
 - Path: `src/main/java/com/aryston/arkea/ui/render/TextMetrics.java`
-- Role: Measures text in design pixels: font scale (whole physical pixels per font pixel so the vanilla font stays crisp), cap height, width with letter spacing, ellipsis, word wrap.
+- Role: Measures text in design pixels: font scale (the design size, snapped to whole physical pixels per font pixel when it is within 0.15 of one so the vanilla font stays crisp), cap height, width with letter spacing, ellipsis, word wrap.
 
 #### TextStyle
 - Path: `src/main/java/com/aryston/arkea/ui/render/TextStyle.java`
@@ -185,11 +189,11 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### ArkWidget
 - Path: `src/main/java/com/aryston/arkea/ui/widget/ArkWidget.java`
-- Role: Base of every interactive element. Implements vanilla `GuiEventListener` and `NarratableEntry`, so Tab and arrow navigation and narration work like vanilla. Tracks hover and press transitions, takes its hit box from where it was drawn (animations included), clicks on release over the widget, activates on Enter or Space when focused, draws the accent focus ring for keyboard focus, sets the pointer cursor, plays the click sound and carries an optional tooltip.
+- Role: Base of every interactive element. Implements vanilla `GuiEventListener` and `NarratableEntry`, so Tab and arrow navigation and narration work like vanilla. Tracks hover and press transitions, takes its hit box from where it was drawn (animations included), clicks on release over the widget, activates on Enter or Space when focused, draws the accent focus ring for keyboard focus, sets the pointer cursor, plays the click sound and carries an optional tooltip. Applies the press offset and the horizontal content shift of a subclass (`contentShiftX`) around both the content and the focus ring, and widens the hit box by `contentReachX` so a sliding widget stays hoverable.
 
 #### ArkButton
 - Path: `src/main/java/com/aryston/arkea/ui/widget/ArkButton.java`
-- Role: Standard 32 high button with label and optional leading icon, primary glow, hover brightness and press offset.
+- Role: Standard 32 high button with label, optional leading and trailing icons (pixel icons keep their aspect), primary glow and hover brightness.
 
 #### ButtonVariant
 - Path: `src/main/java/com/aryston/arkea/ui/widget/ButtonVariant.java`
@@ -197,11 +201,11 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### ArkIconButton
 - Path: `src/main/java/com/aryston/arkea/ui/widget/ArkIconButton.java`
-- Role: Square icon only button.
+- Role: Icon only button with hover fill and icon color blends; icons may be non-square (pixel chevrons).
 
 #### IconButtonStyle
 - Path: `src/main/java/com/aryston/arkea/ui/widget/IconButtonStyle.java`
-- Role: Fill, border, icon color and icon size of an icon button.
+- Role: Fill and hover fill, border, icon colors and icon size of an icon button: `BACK` and `CLOSE` of the window header, `brightening` for buttons that brighten on hover.
 
 #### ArkMenuButton
 - Path: `src/main/java/com/aryston/arkea/ui/widget/ArkMenuButton.java`
@@ -211,9 +215,9 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Path: `src/main/java/com/aryston/arkea/ui/widget/MenuButtonStyle.java`
 - Role: Colors, sizes and layout of menu buttons: `primary`, `secondary`, `dangerInline`.
 
-#### MenuButtonContent
-- Path: `src/main/java/com/aryston/arkea/ui/widget/MenuButtonContent.java`
-- Role: Icon, label and optional description of a menu button.
+#### ItemContent
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ItemContent.java`
+- Role: Icon, label and optional description of a menu button, tile or setting row.
 
 #### MenuButtonLayout
 - Path: `src/main/java/com/aryston/arkea/ui/widget/MenuButtonLayout.java`
@@ -222,6 +226,35 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### ArkTextLink
 - Path: `src/main/java/com/aryston/arkea/ui/widget/ArkTextLink.java`
 - Role: Clickable text that turns white and underlines on hover.
+
+#### ArkSlider
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkSlider.java`
+- Role: Integer slider: track, accent fill with glow, handle and value label. Click or drag sets the value with step snapping, arrow keys move one step and Shift ten, the fill eases on changes that do not come from dragging. Narrates like a vanilla slider.
+- Depends on: `SliderRange`, `SliderBinding`.
+
+#### SliderRange
+- Path: `src/main/java/com/aryston/arkea/ui/widget/SliderRange.java`
+- Role: Minimum, maximum and step of a slider with fraction and snapping math.
+
+#### SliderBinding
+- Path: `src/main/java/com/aryston/arkea/ui/widget/SliderBinding.java`
+- Role: Getter, setter and value label that connect a slider to an option.
+
+#### ArkNavItem
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkNavItem.java`
+- Role: Sidebar entry: icon and label, accent fill with marker and glow when selected, hover fill, external link arrow.
+
+#### NavEntry
+- Path: `src/main/java/com/aryston/arkea/ui/widget/NavEntry.java`
+- Role: Id, icon, label and external flag of a sidebar entry.
+
+#### ArkTile
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkTile.java`
+- Role: 72 high link tile with accent icon box, name, description and chevron.
+
+#### SettingRow
+- Path: `src/main/java/com/aryston/arkea/ui/widget/SettingRow.java`
+- Role: Frame of a setting: icon box, name, description and hover; not focusable. `controlSlot` places the control widget on its right.
 
 ### `com.aryston.arkea.ui.overlay`
 
@@ -244,6 +277,20 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Path: `src/main/java/com/aryston/arkea/ui/screen/ArkScreen.java`
 - Role: Base of every Arkea screen. Computes `UiScale` on every init, scales the pose to design pixels, converts the mouse, renders the tooltip, runs one dialog on its own stratum with the menu blur, routes input and focus to the dialog while it is open, closes it with Escape, plays the exit animation before `navigate` or `leave` switches screens, and narrates dialogs.
 - Depends on: `UiScale`, `UiGraphics`, `ArkWidget`, `ArkDialog`, `ArkTooltip`.
+- Notes: a subclass that blurs its background reports it with `blursBackground`, so the dialog does not request the single blur of the frame again.
+
+#### ArkWindowScreen
+- Path: `src/main/java/com/aryston/arkea/ui/screen/ArkWindowScreen.java`
+- Role: Base of settings windows: the 1238 x 704 window centered on the canvas with sidebar (brand, grouped navigation), header (back, breadcrumb, title, close), content area and footer (note, buttons). Draws the dim layer over the blurred panorama or world, plays the window enter and exit, the title slide and staggered rows (`renderRow`). Back and Escape return to the previous screen, close returns to the game or the title screen.
+- Depends on: `ArkScreen`, `ArkNavItem`, `ArkIconButton`, `ArkButton`, `NavGroup`, `SidebarBrand`.
+
+#### NavGroup
+- Path: `src/main/java/com/aryston/arkea/ui/screen/NavGroup.java`
+- Role: Label and entries of a sidebar group.
+
+#### SidebarBrand
+- Path: `src/main/java/com/aryston/arkea/ui/screen/SidebarBrand.java`
+- Role: Icon, title and subtitle at the top of the sidebar.
 
 ### `com.aryston.arkea.screen.title`
 
@@ -272,6 +319,18 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Path: `src/main/java/com/aryston/arkea/screen/title/MultiplayerAccess.java`
 - Role: The reason multiplayer and Realms are disabled (name ban, account ban, disabled), like the vanilla title screen.
 
+### `com.aryston.arkea.screen.options`
+
+#### ArkOptionsScreen
+- Path: `src/main/java/com/aryston/arkea/screen/options/ArkOptionsScreen.java`
+- Role: The options overview of `MC-Menu.dc.html`: quick settings (field of view slider, online settings), a tile for every options page, more (telemetry, credits) and the "changes save automatically" footer. Saves the options when it closes like vanilla.
+- Depends on: `ArkWindowScreen`, `OptionsPage`, `SettingRow`, `ArkSlider`, `ArkTile`.
+- Notes: Minecraft 26.3 moved difficulty out of the options screen, so the quick settings show the online settings instead of the difficulty of the design.
+
+#### OptionsPage
+- Path: `src/main/java/com/aryston/arkea/screen/options/OptionsPage.java`
+- Role: Every options page with its sidebar group, icon, title (vanilla text without the trailing dots), label, description and the vanilla screen it opens. Helion appears only when it registers a config screen.
+
 ### `com.aryston.arkea.mixin`
 
 #### SplashRendererAccessor
@@ -293,6 +352,7 @@ Plain JUnit 5 tests without a running game, run by `./gradlew build` and the CI.
 | `src/test/java/com/aryston/arkea/ui/layout/UiScaleTest.java` | One to one at 1366 x 768, quarter steps, the design fits every common window, coordinate round trip, one physical pixel minimum for lines. |
 | `src/test/java/com/aryston/arkea/ui/render/SvgPathParserTest.java` | Absolute and relative lines, closing, implicit commands, compact numbers, arcs on their radius, cubic end points, every catalogue icon parses, invalid data is rejected. |
 | `src/test/java/com/aryston/arkea/ui/render/SoftEdgeProfileTest.java` | Shadow edge coverage and the vignette fade. |
+| `src/test/java/com/aryston/arkea/ui/widget/SliderRangeTest.java` | Slider fraction, step snapping, clamping and an empty range. |
 | `src/test/java/com/aryston/arkea/screen/title/LastPlayedTest.java` | Today, yesterday across midnight, and the localized date for older worlds. |
 
 ## Source Files
@@ -306,7 +366,7 @@ Plain JUnit 5 tests without a running game, run by `./gradlew build` and the CI.
 
 | Folder | Contents |
 |---|---|
-| `src/main/resources/assets/arkea/lang/` | `en_us.json` and `tr_tr.json`: config and title screen texts. Menu labels reuse vanilla keys so every game language shows them. |
+| `src/main/resources/assets/arkea/lang/` | `en_us.json` and `tr_tr.json`: config, title screen, window and options texts. Menu labels reuse vanilla keys so every game language shows them. |
 | `src/main/resources/assets/arkea/textures/gui/` | `arkea_logo.png`: 32 x 32 logo of the "UI by Arkea" footer. |
 
 ## Build Files

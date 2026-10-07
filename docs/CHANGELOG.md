@@ -9,3 +9,4 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 ### Added
 - Initial mod setup for Minecraft 26.3 on NeoForge
 - Add an animated title screen with a jump back in card for the last played world
+- Add an animated options window with a sidebar, quick settings and a tile for every page
