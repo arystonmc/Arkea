@@ -1,12 +1,12 @@
 package com.aryston.arkea.ui.theme;
 
-public final class Theme {
-    private static final Accent ACCENT = Accent.GREEN;
+import com.aryston.arkea.config.ArkeaConfig;
 
+public final class Theme {
     private Theme() {
     }
 
     public static Accent accent() {
-        return ACCENT;
+        return ArkeaConfig.SPEC.isLoaded() ? ArkeaConfig.ACCENT.get() : Accent.GREEN;
     }
 }

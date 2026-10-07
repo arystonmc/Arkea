@@ -22,6 +22,13 @@ repositories {
 }
 
 dependencies {
+    jarJar(implementation("org.jcodec:jcodec")) {
+        version {
+            strictly "[${jcodec_version},0.3)"
+            prefer jcodec_version
+        }
+    }
+
     testImplementation platform("org.junit:junit-bom:${junit_version}")
     testImplementation "org.junit.jupiter:junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"

@@ -1,5 +1,6 @@
 package com.aryston.arkea.screen.options;
 
+import com.aryston.arkea.screen.options.arkea.ArkArkeaScreen;
 import com.aryston.arkea.screen.options.keys.ArkKeyBindsScreen;
 import com.aryston.arkea.screen.options.packs.ArkPacksScreen;
 import com.aryston.arkea.ui.render.Icon;
@@ -26,6 +27,7 @@ public enum OptionsPage {
     LANGUAGE(Group.PLAYER, Icons.GLOBE, "options.language", (parent, minecraft) -> new ArkLanguageScreen(parent)),
     ACCESSIBILITY(Group.PLAYER, Icons.ACCESS, "options.accessibility", (parent, minecraft) -> new ArkAccessibilityScreen(parent)),
     RESOURCE_PACKS(Group.CONTENT, Icons.PACK, "options.resourcepack", (parent, minecraft) -> new ArkPacksScreen(parent)),
+    ARKEA(Group.CONTENT, Icons.ARKEA, "arkea.options.arkea", (parent, minecraft) -> new ArkArkeaScreen(parent)),
     HELION(Group.CONTENT, Icons.SPARKLE, "arkea.options.helion", OptionsPage::helionScreen);
 
     private static final String HELION_ID = "helion";
@@ -66,7 +68,7 @@ public enum OptionsPage {
 
     public boolean isWindow() {
         return switch (this) {
-            case OVERVIEW, VIDEO, CONTROLS, KEY_BINDS, SOUND, SKIN, CHAT, LANGUAGE, ACCESSIBILITY, RESOURCE_PACKS -> true;
+            case OVERVIEW, VIDEO, CONTROLS, KEY_BINDS, SOUND, SKIN, CHAT, LANGUAGE, ACCESSIBILITY, RESOURCE_PACKS, ARKEA -> true;
             case HELION -> false;
         };
     }

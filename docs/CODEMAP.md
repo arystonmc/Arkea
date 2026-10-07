@@ -31,6 +31,9 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 | Key bindings with modifiers lost on start (NeoForge bug) | `KeyModifierRepair`, `OptionsMixin` |
 | Which control a vanilla option gets, value labels, descriptions | `OptionControls`, `OptionText` |
 | Title screen layout and actions | `ArkTitleScreen` |
+| Custom menu backgrounds: library, import, playback | `BackgroundLibrary`, `BackgroundImporter`, `BackgroundPlayer`, `MenuBackground`, `PanoramaMixin` |
+| Arkea settings page (background gallery, accent, screen toggles) | `ArkArkeaScreen`, `BackgroundTile`, `ImportTile`, `JobTile`, `ArkSwatch` |
+| Native file picker | `FileDialogs` |
 | Jump back in card, splash text | `JumpBackInCard`, `SplashText`, `RecentWorld`, `LastPlayed` |
 | Texts | `src/main/resources/assets/arkea/lang/` |
 | Mod name, version, loader versions, license, authors | `gradle.properties` |
@@ -64,6 +67,10 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Members:
   - `TITLE_SCREEN`: replaces the vanilla title screen when on.
   - `OPTIONS_SCREEN`: replaces the vanilla options screen when on.
+  - `ACCENT`: accent theme of every Arkea screen.
+  - `BACKGROUND`: folder name of the selected menu background, or `vanilla` for the panorama.
+  - `BACKGROUND_PAN`: slow pan over still image backgrounds.
+  - `set`: sets a value and saves the file at once (the Arkea settings page changes values live).
   - `SPEC`: the built spec.
 
 ### `com.aryston.arkea.integration`
@@ -71,12 +78,65 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### ClientEvents
 - Path: `src/main/java/com/aryston/arkea/integration/ClientEvents.java`
 - Role: Swaps a newly opened vanilla `TitleScreen` for `ArkTitleScreen` (not in demo mode), `OptionsScreen` for `ArkOptionsScreen` and the video, sound, chat, accessibility, skin, controls, mouse, key binds, language and font screens for the Arkea pages, keeping the previous screen, in `ScreenEvent.Opening`, each unless the config turns it off. Only the exact vanilla classes are replaced, so subclasses from other mods stay.
-- Depends on: `ArkeaConfig`, `ArkTitleScreen`, `ArkOptionsScreen`, the options pages, `OptionsSubScreenAccessor`.
+- Also ticks `MenuBackground` every client tick so a background nobody draws frees its texture and decoder thread.
+- Depends on: `ArkeaConfig`, `ArkTitleScreen`, `ArkOptionsScreen`, the options pages, `OptionsSubScreenAccessor`, `MenuBackground`.
 
 #### KeyModifierRepair
 - Path: `src/main/java/com/aryston/arkea/integration/KeyModifierRepair.java`
 - Role: NeoForge 26.3.0.51-beta unbinds every key binding saved with a modifier (`key.keyboard.j:CONTROL`) while loading the options. Right after the options load it reads those lines again and restores bindings that NeoForge left unbound; once NeoForge is fixed the bindings are already set and it does nothing.
 - Depends on: `OptionsMixin`.
+
+#### FileDialogs
+- Path: `src/main/java/com/aryston/arkea/integration/FileDialogs.java`
+- Role: Opens the native "open file" dialog of the system through SDL (`SDL_ShowOpenFileDialog`) with a file type filter, and hands the chosen paths back on the render thread. Reports a failure when the system has no file picker.
+
+### `com.aryston.arkea.background`
+
+#### BackgroundLibrary
+- Path: `src/main/java/com/aryston/arkea/background/BackgroundLibrary.java`
+- Role: The menu backgrounds in `<game folder>/arkea/backgrounds`: scans the entry folders, imports files on one background worker thread (into a temporary folder, then an atomic move), auto imports loose media files dropped into the folder (the originals move to `imported/`, or `failed/`), selects the new entry after an import, deletes entries and counts changes in `version` so the settings page rebuilds.
+- Depends on: `BackgroundImporter`, `BackgroundEntry`, `ImportJob`, `ArkeaConfig`, `MenuBackground`.
+
+#### BackgroundEntry
+- Path: `src/main/java/com/aryston/arkea/background/BackgroundEntry.java`
+- Role: One imported background: name, kind (video or image), size, frame rate, frame count, bytes and date, stored as `background.json` next to `thumbnail.jpg` and either `image.jpg` or `frames/00000.jpg`...
+
+#### BackgroundImporter
+- Path: `src/main/java/com/aryston/arkea/background/BackgroundImporter.java`
+- Role: Converts MP4, M4V, MOV, GIF, PNG, JPG and BMP into a background folder. Videos and animations become a JPEG frame sequence at their own frame rate (at most 30 fps, 1280 x 720 and 60 seconds); stills and single frame files become one image of at most 1920 x 1080. Writes a 384 x 216 thumbnail and the manifest, reports progress and stops when cancelled.
+- Notes: Playing JPEG frames needs no video decoder at runtime; JPEG decoding through STB is about ten times faster than decoding H.264 in Java, so playback stays cheap.
+
+#### MediaFrames
+- Path: `src/main/java/com/aryston/arkea/background/MediaFrames.java`
+- Role: A source of decoded frames with their time, for the importer.
+
+#### VideoFrames
+- Path: `src/main/java/com/aryston/arkea/background/VideoFrames.java`
+- Role: Decodes MP4 and MOV (H.264) with JCodec, converts to RGB and returns frames in presentation order (a small reorder buffer, because frames come out of the decoder in decode order when the video has B frames).
+
+#### GifFrames
+- Path: `src/main/java/com/aryston/arkea/background/GifFrames.java`
+- Role: Reads animated GIFs with ImageIO and composes every frame on the logical screen with its offset, delay and disposal method.
+
+#### ImportJob
+- Path: `src/main/java/com/aryston/arkea/background/ImportJob.java`
+- Role: State and progress of one running import, shown as a tile; can be cancelled.
+
+#### JpegImages
+- Path: `src/main/java/com/aryston/arkea/background/JpegImages.java`
+- Role: Decodes a JPEG file into a `NativeImage` with STB (`NativeImage.read` only accepts PNG).
+
+#### BackgroundPlayer
+- Path: `src/main/java/com/aryston/arkea/background/BackgroundPlayer.java`
+- Role: The texture of the selected background. An image is loaded once; a video decodes the next frames on a daemon thread into a queue of three and uploads one frame when it is due, looping at the end.
+
+#### MenuBackground
+- Path: `src/main/java/com/aryston/arkea/background/MenuBackground.java`
+- Role: Draws the selected background instead of the vanilla panorama, cover fitted and linear filtered, with a slow pan and zoom over still images when enabled. Frees the player three seconds after the last draw and remembers a background that failed to load so it falls back to the panorama.
+
+#### BackgroundThumbnails
+- Path: `src/main/java/com/aryston/arkea/background/BackgroundThumbnails.java`
+- Role: Thumbnail textures of the gallery, freed when the settings page closes.
 
 ### `com.aryston.arkea.ui.theme`
 
@@ -91,7 +151,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### Theme
 - Path: `src/main/java/com/aryston/arkea/ui/theme/Theme.java`
-- Role: The accent in use. Green until a theme option exists.
+- Role: The accent in use, read from `ArkeaConfig.ACCENT` (green before the config loads).
 
 ### `com.aryston.arkea.ui.anim`
 
@@ -307,6 +367,10 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Path: `src/main/java/com/aryston/arkea/ui/widget/ArkBanner.java`
 - Role: Clickable accent banner with a preview image, logo, title, subtitle and an action button with an external arrow (the "Helion is installed" banner of the video page).
 
+#### ArkSwatch
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkSwatch.java`
+- Role: Row of color swatches with a white outline and a check on the chosen one; left and right arrows change the choice.
+
 #### ArkNavItem
 - Path: `src/main/java/com/aryston/arkea/ui/widget/ArkNavItem.java`
 - Role: Sidebar entry: icon and label, accent fill with marker and glow when selected, hover fill, external link arrow.
@@ -436,7 +500,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### OptionsPage
 - Path: `src/main/java/com/aryston/arkea/screen/options/OptionsPage.java`
-- Role: Every options page with its sidebar group, icon, title (vanilla text without the trailing dots), label, description and the Arkea window page it opens. Helion appears only when it registers a config screen and opens its own screen.
+- Role: Every options page with its sidebar group, icon, title (vanilla text without the trailing dots), label, description and the Arkea window page it opens. Helion appears only when it registers a config screen and opens its own screen. Arkea has its own page in the Content group.
 
 #### OptionsNavigation
 - Path: `src/main/java/com/aryston/arkea/screen/options/OptionsNavigation.java`
@@ -511,6 +575,33 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Path: `src/main/java/com/aryston/arkea/screen/options/packs/PackFolderWatcher.java`
 - Role: Watches the resource pack folder so new or removed packs appear without reopening the page.
 
+### `com.aryston.arkea.screen.options.arkea`
+
+#### ArkArkeaScreen
+- Path: `src/main/java/com/aryston/arkea/screen/options/arkea/ArkArkeaScreen.java`
+- Role: The Arkea settings page: Import (native file picker) and Open Folder buttons, a three column gallery of the panorama, every imported background (delete with confirmation), running imports and an import tile, then slow pan, accent color and the title and options screen switches. Files dropped on the window are imported. Rebuilds when the library changes.
+- Depends on: `OptionsPageScreen`, `BackgroundLibrary`, `FileDialogs`, `ArkeaConfig`.
+
+#### MediaTile
+- Path: `src/main/java/com/aryston/arkea/screen/options/arkea/MediaTile.java`
+- Role: Base gallery tile: 16:9 thumbnail, name and second line, selected glow and border. Clicks on its corner button do not reach the tile.
+
+#### BackgroundTile
+- Path: `src/main/java/com/aryston/arkea/screen/options/arkea/BackgroundTile.java`
+- Role: Tile of the panorama or an imported background with its thumbnail, a play badge for videos, a check when selected and the length, frame rate and size; selects it on click.
+
+#### ImportTile
+- Path: `src/main/java/com/aryston/arkea/screen/options/arkea/ImportTile.java`
+- Role: Dashed tile that opens the file picker.
+
+#### JobTile
+- Path: `src/main/java/com/aryston/arkea/screen/options/arkea/JobTile.java`
+- Role: Tile of a running import with its percentage and progress bar, or the error when it failed.
+
+#### TileRow
+- Path: `src/main/java/com/aryston/arkea/screen/options/arkea/TileRow.java`
+- Role: Grid row holding a tile and its optional corner button (delete, cancel, dismiss).
+
 ### `com.aryston.arkea.screen.options.control`
 
 #### OptionControls
@@ -552,6 +643,10 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Path: `src/main/java/com/aryston/arkea/mixin/OptionsMixin.java`
 - Role: Runs `KeyModifierRepair` at the end of `Options.load`.
 
+#### PanoramaMixin
+- Path: `src/main/java/com/aryston/arkea/mixin/PanoramaMixin.java`
+- Role: Draws the selected custom background instead of the vanilla panorama wherever the game draws it (title screen, menus over it), and lets the panorama draw when the panorama is selected.
+
 #### OptionsSubScreenAccessor
 - Path: `src/main/java/com/aryston/arkea/mixin/OptionsSubScreenAccessor.java`
 - Role: Reads the previous screen of a vanilla options sub screen when `ClientEvents` replaces it.
@@ -574,6 +669,7 @@ Plain JUnit 5 tests without a running game, run by `./gradlew build` and the CI.
 | `src/test/java/com/aryston/arkea/ui/widget/TextFieldStateTest.java` | Typing at the caret with a length limit, deleting characters and words, select all, word jumps. |
 | `src/test/java/com/aryston/arkea/ui/widget/SliderRangeTest.java` | Slider fraction, step snapping, clamping and an empty range. |
 | `src/test/java/com/aryston/arkea/screen/options/control/OptionTextTest.java` | Vanilla "Caption: value" labels reduce to the value, percent labels use the Arkea key, unknown labels stay. |
+| `src/test/java/com/aryston/arkea/background/BackgroundImporterTest.java` | File type detection, frame rate rounding and the 30 fps cap, scaling without upscaling, image, GIF and video conversion (frame order with B frames from `src/test/resources/background/ramp.mp4`), single frame GIFs, cancelling, manifest round trip and broken manifests. |
 | `src/test/java/com/aryston/arkea/screen/title/LastPlayedTest.java` | Today, yesterday across midnight, and the localized date for older worlds. |
 
 ## Source Files
@@ -594,6 +690,6 @@ Plain JUnit 5 tests without a running game, run by `./gradlew build` and the CI.
 
 | File | Purpose |
 |---|---|
-| `build.gradle` | ModDevGradle setup, JUnit 5 for `src/test/java` with the Minecraft classpath of `main`, `client` run forced to Vulkan, metadata expansion, logo packing. |
+| `build.gradle` | ModDevGradle setup, JCodec embedded with Jar-in-Jar for video import, JUnit 5 for `src/test/java` with the Minecraft classpath of `main`, `client` run forced to Vulkan, metadata expansion, logo packing. |
 | `gradle.properties` | Single place for versions and mod metadata. |
 | `settings.gradle` | Plugin repositories, Java toolchain resolver, project name. |

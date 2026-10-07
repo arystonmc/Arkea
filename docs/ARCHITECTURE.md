@@ -13,6 +13,7 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 | Widgets and overlays | `ui.widget`, `ui.overlay` | Render, motion, vanilla input and narration interfaces |
 | Screen base | `ui.screen` | Everything above, vanilla `Screen` |
 | Screens | `screen.*` | The design system and vanilla data and screens |
+| Menu backgrounds | `background` | Files, JCodec, STB, textures; no widgets |
 | Wiring | `integration`, `config`, `mixin` | NeoForge events and config |
 
 `ui` never imports from `screen`. A new screen only needs `ArkScreen`, widgets and `UiGraphics`.
@@ -52,6 +53,15 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 - Long pages only draw the rows inside the visible area. Pages with a search field (key binds, language, packs) rebuild their content on every change and keep the focus on the widget with the same key.
 - Popups (dropdown menus) render after the content and take input first; a click outside closes them.
 
+## Menu Backgrounds
+
+- The player picks a background on the Arkea settings page. `PanoramaMixin` cancels `Panorama.extractRenderState` and `MenuBackground` draws the selected background instead, so it shows wherever vanilla would show the panorama: the title screen, the options window over it and other menus.
+- Imports run once, on a worker thread: `BackgroundImporter` turns a video, GIF or picture into a folder with JPEG frames (or one JPEG), a thumbnail and `background.json`. Nothing is converted while the menu is open, and the original file is never needed again.
+- Why JPEG frames: decoding H.264 in Java (JCodec) runs at about 30 to 50 frames per second for 720p, too close to the frame budget of the menu, and JCodec cannot re-encode fast enough. STB decodes a 720p JPEG in about 3.5 ms, the frames load lazily from disk and a GIF would only lose colors (256 per frame) and be larger. A 12 second 720p video takes about 6 MB.
+- Playback: `BackgroundPlayer` decodes upcoming frames on a daemon thread into a queue of three `NativeImage`s; the render thread copies one into a `DynamicTexture` when it is due. A background not drawn for three seconds is released.
+- The texture is drawn with a linear, clamp to edge sampler from `RenderSystem.getSamplerCache()` through `GuiGraphicsExtractor.blit`, cover fitted to the window.
+- JCodec is embedded with Jar-in-Jar; only the importer touches it.
+
 ## Motion
 
 - Time comes from `Util.getMillis()`, never ticks.
@@ -82,7 +92,9 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 |---|---|
 | `ScreenEvent.Opening` | Replace `TitleScreen` with `ArkTitleScreen` |
 | `GuiGraphicsExtractor.submitGuiElementRenderState`, `peekScissorStack`, `pose`, `text`, `nextStratum`, `blurBeforeThisStratum`, `requestCursor` | All drawing |
-| `Panorama.extractRenderState` | Title background |
+| `Panorama.extractRenderState` + `PanoramaMixin` | Title background, replaced by a custom background when one is selected |
+| `DynamicTexture`, `NativeImage`, STB `stbi_load_from_memory`, `RenderSystem.getSamplerCache`, `GuiGraphicsExtractor.blit(GpuTextureView, GpuSampler, ...)`, `ClientTickEvent.Post` | Custom background playback and release |
+| SDL `SDL_ShowOpenFileDialog`, `Window.handle`, `Screen.onFilesDrop`, `Blaze3D.openPath` | Importing backgrounds, opening the backgrounds folder |
 | `SplashManager.getSplash` + `SplashRendererAccessor` | Splash text |
 | `LevelStorageSource.findLevelCandidates`, `loadLevelSummaries`, `FaviconTexture.forWorld`, `WorldOpenFlows.openWorld` | Jump back in card |
 | `Minecraft.allowsMultiplayer`, `isNameBanned`, `multiplayerBan` | Disabled multiplayer and Realms buttons |
@@ -101,10 +113,11 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 
 1. Check `GuiGraphicsExtractor`, `GuiElementRenderState`, `GuiRenderState` (layering and blur), `RenderPipelines.GUI` and `GUI_TEXTURED` (vertex format, culling) and `Screen.extractRenderStateWithTooltipAndSubtitles`.
 2. Check the input records (`MouseButtonEvent`, `KeyEvent`, `InputWithModifiers`) and `ContainerEventHandler` mouse release forwarding.
-3. Check whether NeoForge still drops modifier key bindings on load (the "Invalid keyMapping" warning); remove `KeyModifierRepair` and `OptionsMixin` once it does not. Check the fields of `SplashRenderer`, `OptionInstance`, `Tooltip` and `OptionsSubScreen` for the accessors, the option lists of the vanilla options sub-screens (new options must be added to the pages) and the side effects of `VideoSettingsScreen`.
+3. Check that `Panorama.extractRenderState` still exists with that name (otherwise `PanoramaMixin` fails to apply and the custom background never shows) and that the `blit` overload with a texture view and a sampler is still there. Check whether NeoForge still drops modifier key bindings on load (the "Invalid keyMapping" warning); remove `KeyModifierRepair` and `OptionsMixin` once it does not. Check the fields of `SplashRenderer`, `OptionInstance`, `Tooltip` and `OptionsSubScreen` for the accessors, the option lists of the vanilla options sub-screens (new options must be added to the pages) and the side effects of `VideoSettingsScreen`.
 4. Run the client, open the title screen, hover, Tab through it, open and close the quit dialog, and compare with `screenshots/` of the design handoff.
 
 ## Testing Tools
 
-- Unit tests cover motion, scaling, the path parser, shadow profiles, dates and language files.
+- Unit tests cover motion, scaling, the path parser, shadow profiles, dates, language files and background import (image, GIF and video conversion).
+- A file dropped into `run/arkea/backgrounds` is imported the next time the Arkea page opens, which tests imports without a file picker (the SDL picker needs a desktop portal on Linux, so it reports "unavailable" headless).
 - In a cloud session the client runs headless: `Xvfb :99`, Mesa `mesa-vulkan-drivers` (llvmpipe Vulkan), `DISPLAY=:99 ./gradlew runClient`. `xdotool` moves the mouse, clicks and types, `import -window root` takes screenshots, so hover, focus, dialogs and screen switches can be checked frame by frame.

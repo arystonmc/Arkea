@@ -6,6 +6,7 @@
     "OptionInstanceAccessor",
     "OptionsMixin",
     "OptionsSubScreenAccessor",
+    "PanoramaMixin",
     "SplashRendererAccessor",
     "TooltipAccessor"
   ],

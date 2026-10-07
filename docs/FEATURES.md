@@ -26,7 +26,7 @@ A calm, modern main menu that keeps everything the vanilla menu can do.
 - The splash text pulses next to the title; click it for a new one
 - Quit asks once before closing the game, and Language, Accessibility and Friends sit one click away
 - Works with mouse, keyboard (Tab, arrows, Enter, Escape) and the narrator
-- Turn it off in Mods, Arkea, Config to get the vanilla main menu back
+- Turn it off on the Arkea page of the options (or in Mods, Arkea, Config) to get the vanilla main menu back
 - Since: 0.1
 
 ### Options Window
@@ -46,5 +46,22 @@ All settings in one calm window instead of a wall of buttons.
 - When Helion is installed, the video page points to its shader settings
 - The window glides in over the blurred menu background or your world and glides out when you leave
 - Works with mouse, keyboard and the narrator; changes save automatically
-- Turn it off in Mods, Arkea, Config to get the vanilla options menu back
+- Turn it off on the Arkea page of the options (or in Mods, Arkea, Config) to get the vanilla options menu back
+- Since: 0.1
+
+### Custom Menu Backgrounds
+Replace the rotating panorama with your own video, GIF or picture.
+
+- Import MP4, MOV, GIF, PNG or JPG from the Arkea page of the options, drop a file on the game window, or put it in the backgrounds folder
+- Every background plays on the title screen and in every menu that normally shows the panorama
+- Videos are converted once into a light frame sequence (up to 60 seconds, 720p, 30 fps), so playback barely costs any performance; pictures can drift slowly so the menu never looks frozen
+- A gallery shows every background with a preview, its length and size; pick one with a click, delete it, or go back to the vanilla panorama any time
+- Since: 0.1
+
+### Arkea Settings
+Arkea has its own page in the options window, no need to go through the mod list.
+
+- Menu background gallery and import
+- Accent color for every Arkea screen: green, emerald, gold or stone
+- Switches for the Arkea title screen and options window
 - Since: 0.1

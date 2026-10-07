@@ -1,5 +1,6 @@
 package com.aryston.arkea.integration;
 
+import com.aryston.arkea.background.MenuBackground;
 import com.aryston.arkea.config.ArkeaConfig;
 import com.aryston.arkea.mixin.OptionsSubScreenAccessor;
 import com.aryston.arkea.screen.options.ArkAccessibilityScreen;
@@ -27,6 +28,7 @@ import net.minecraft.client.gui.screens.options.SoundOptionsScreen;
 import net.minecraft.client.gui.screens.options.VideoSettingsScreen;
 import net.minecraft.client.gui.screens.options.controls.ControlsScreen;
 import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import org.jspecify.annotations.Nullable;
@@ -37,6 +39,11 @@ public final class ClientEvents {
 
     public static void register() {
         NeoForge.EVENT_BUS.addListener(ClientEvents::onScreenOpening);
+        NeoForge.EVENT_BUS.addListener(ClientEvents::onClientTick);
+    }
+
+    private static void onClientTick(ClientTickEvent.Post event) {
+        MenuBackground.tick();
     }
 
     private static void onScreenOpening(ScreenEvent.Opening event) {

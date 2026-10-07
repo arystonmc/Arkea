@@ -44,6 +44,7 @@ public abstract class OptionsPageScreen extends ArkWindowScreen {
     private final OptionsPage page;
     private final List<Runnable> resets = new ArrayList<>();
     private SettingsPanel panel = new SettingsPanel();
+    private float contentWidth;
     private @Nullable ArkBanner banner;
 
     protected OptionsPageScreen(OptionsPage page, Screen lastScreen) {
@@ -108,6 +109,7 @@ public abstract class OptionsPageScreen extends ArkWindowScreen {
     protected float buildContent(Box area) {
         this.panel = new SettingsPanel();
         this.resets.clear();
+        this.contentWidth = area.width();
         float y = area.y();
         this.banner = this.banner();
         if (this.banner != null) {
@@ -126,6 +128,14 @@ public abstract class OptionsPageScreen extends ArkWindowScreen {
             this.renderRow(graphics, index++, () -> shown.render(graphics, mouseX, mouseY));
         }
         this.panel.render(graphics, mouseX, mouseY, (row, draw) -> this.renderRow(graphics, row, draw), index);
+    }
+
+    protected float contentWidth() {
+        return this.contentWidth;
+    }
+
+    protected void addReset(Runnable reset) {
+        this.resets.add(reset);
     }
 
     protected ArkWidget option(SettingsSection section, OptionInstance<?> option, Icon icon) {

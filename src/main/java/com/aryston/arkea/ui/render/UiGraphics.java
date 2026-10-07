@@ -4,7 +4,9 @@ import com.aryston.arkea.ui.layout.Box;
 import com.aryston.arkea.ui.layout.UiScale;
 import com.aryston.arkea.ui.theme.ArkColors;
 import com.mojang.blaze3d.platform.cursor.CursorType;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import net.minecraft.client.Minecraft;
@@ -167,6 +169,12 @@ public final class UiGraphics {
         AbstractTexture source = Minecraft.getInstance().getTextureManager().getTexture(texture);
         this.addTexturedQuad(box.x(), box.y(), box.right(), box.bottom(), u0, v0, u1, v1, this.applyAlpha(color));
         this.flush(RenderPipelines.GUI_TEXTURED, TextureSetup.singleTexture(source.getTextureView(), source.getSampler()), true);
+    }
+
+    public void image(AbstractTexture texture, Box box, float u0, float v0, float u1, float v1, int color) {
+        this.addTexturedQuad(box.x(), box.y(), box.right(), box.bottom(), u0, v0, u1, v1, this.applyAlpha(color));
+        TextureSetup setup = TextureSetup.singleTexture(texture.getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
+        this.flush(RenderPipelines.GUI_TEXTURED, setup, true);
     }
 
     public void icon(Icon icon, float x, float y, float width, float height, int color) {

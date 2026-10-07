@@ -92,6 +92,9 @@ public final class Icons {
     public static final Icon CHEVRON_DOWN = Icon.pixels("M0 0h5v1H0zM1 1h3v1H1zM2 2h1v1H2z", 5.0F, 3.0F);
     public static final Icon UNDO = Icon.stroke("M2.5 6h7a4 4 0 0 1 0 8H5M5 3L2 6l3 3");
     public static final Icon WARNING = Icon.stroke("M8 1.5l6.5 12.5h-13zM8 6v4M8 12h.01");
+    public static final Icon ARKEA = Icon.stroke("M2.5 13.5L8 2.5l5.5 11M5 9.5h6");
+    public static final Icon TRASH = Icon.stroke("M2.5 4.5h11M6 4.5v-2h4v2M4 4.5l.8 9h6.4l.8-9");
+    public static final Icon FOLDER = Icon.stroke("M1.5 3.5h4.5l1.5 1.5h7v8h-13z");
     public static final Icon DROP = Icon.stroke("M8 2v8M4.5 6.5L8 10l3.5-3.5M2 13.5h12");
     public static final Icon RESET = Icon.stroke("M3.5 8a4.5 4.5 0 1 0 1.3-3.2M3.5 2v3h3");
     public static final Icon CHECK = Icon.pixels("M6 0h1v1H6zM5 1h1v1H5zM0 2h1v1H0zM4 2h1v1H4zM1 3h1v1H1zM3 3h1v1H3zM2 4h1v1H2z", 7.0F, 5.0F);
