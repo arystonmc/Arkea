@@ -10,12 +10,13 @@ import com.aryston.arkea.ui.render.TextStyle;
 import com.aryston.arkea.ui.render.UiGraphics;
 import com.aryston.arkea.ui.theme.ArkColors;
 import com.aryston.arkea.ui.theme.Theme;
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
-public final class SettingRow {
+public final class SettingRow implements PanelRow {
     public static final float HEIGHT = 52.0F;
     public static final float PADDING_RIGHT = 12.0F;
     private static final float PADDING_LEFT = 14.0F;
@@ -25,6 +26,7 @@ public final class SettingRow {
     private static final float LINE_GAP = 6.0F;
     private static final float CONTROL_SPACE = 160.0F;
     private static final int ICON_TIME = 200;
+    private static final float DISABLED_OPACITY = 0.4F;
     private static final int ICON_FILL = ArkColors.rgba(255, 255, 255, 0.04F);
     private static final int ICON_BORDER = ArkColors.rgba(255, 255, 255, 0.07F);
     private static final TextStyle NAME = TextStyle.of(13.0F);
@@ -40,6 +42,9 @@ public final class SettingRow {
     private Box bounds = Box.EMPTY;
     private float controlSpace = CONTROL_SPACE;
     private boolean hovered;
+    private @Nullable ArkWidget control;
+    private float controlWidth;
+    private float controlHeight;
 
     public SettingRow(ItemContent content) {
         this.icon = content.icon();
@@ -59,18 +64,52 @@ public final class SettingRow {
         return this;
     }
 
+    public SettingRow control(ArkWidget widget, float width, float height) {
+        this.control = widget;
+        this.controlWidth = width;
+        this.controlHeight = height;
+        return this;
+    }
+
+    @Override
     public @Nullable Component tooltip() {
         return this.tooltip.get();
+    }
+
+    @Override
+    public float height() {
+        return HEIGHT;
+    }
+
+    @Override
+    public void place(Box newBounds) {
+        this.bounds = newBounds;
+        if (this.control != null) {
+            this.control.setBounds(this.controlSlot(this.controlWidth, this.controlHeight));
+        }
+    }
+
+    @Override
+    public void hide() {
+        PanelRow.super.hide();
+        this.hovered = false;
+    }
+
+    @Override
+    public List<ArkWidget> widgets() {
+        return this.control == null ? List.of() : List.of(this.control);
     }
 
     public Component name() {
         return this.name;
     }
 
+    @Override
     public boolean isHovered() {
         return this.hovered;
     }
 
+    @Override
     public Box bounds() {
         return this.bounds;
     }
@@ -85,11 +124,19 @@ public final class SettingRow {
         return new Box(x, this.bounds.centerY() - controlHeight * 0.5F, controlWidth, controlHeight);
     }
 
+    @Override
     public void render(UiGraphics graphics, float mouseX, float mouseY) {
-        this.render(graphics, mouseX, mouseY, 1.0F);
+        float opacity = this.control == null || this.control.isActive() ? 1.0F : DISABLED_OPACITY;
+        this.render(graphics, mouseX, mouseY, opacity);
+        if (this.control != null) {
+            graphics.push();
+            graphics.fade(opacity);
+            this.control.render(graphics, mouseX, mouseY);
+            graphics.pop();
+        }
     }
 
-    public void render(UiGraphics graphics, float mouseX, float mouseY, float contentOpacity) {
+    private void render(UiGraphics graphics, float mouseX, float mouseY, float contentOpacity) {
         Box box = this.bounds;
         long now = graphics.now();
         this.hovered = graphics.visible(graphics.canvasBox(box)).contains(mouseX, mouseY);

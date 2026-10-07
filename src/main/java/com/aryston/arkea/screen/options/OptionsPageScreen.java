@@ -129,7 +129,14 @@ public abstract class OptionsPageScreen extends ArkWindowScreen {
     }
 
     protected ArkWidget option(SettingsSection section, OptionInstance<?> option, Icon icon) {
-        OptionControl control = OptionControls.create(this, option);
+        return this.option(section, option, icon, OptionControls.create(this, option));
+    }
+
+    protected ArkWidget dropdown(SettingsSection section, OptionInstance<?> option, Icon icon) {
+        return this.option(section, option, icon, OptionControls.dropdown(this, option));
+    }
+
+    protected ArkWidget option(SettingsSection section, OptionInstance<?> option, Icon icon, OptionControl control) {
         SettingRow row = new SettingRow(new ItemContent(icon, OptionText.name(option.caption), OptionText.description(option.caption)))
             .litWhen(control.lit())
             .tooltip(() -> OptionText.tooltip(option));
@@ -177,9 +184,17 @@ public abstract class OptionsPageScreen extends ArkWindowScreen {
 
     @Override
     protected List<ArkButton> footerButtons() {
-        return List.of(
-            new ArkButton(this, Component.translatable("arkea.options.reset"), ButtonVariant.SECONDARY, this::confirmReset),
-            new ArkButton(this, CommonComponents.GUI_DONE, ButtonVariant.PRIMARY, this::onClose));
+        ArkButton reset = new ArkButton(this, this.resetLabel(), ButtonVariant.SECONDARY, this::confirmReset);
+        reset.setActive(this.canReset());
+        return List.of(reset, new ArkButton(this, CommonComponents.GUI_DONE, ButtonVariant.PRIMARY, this::onClose));
+    }
+
+    protected Component resetLabel() {
+        return Component.translatable("arkea.options.reset");
+    }
+
+    protected boolean canReset() {
+        return true;
     }
 
     private void confirmReset() {
@@ -187,7 +202,7 @@ public abstract class OptionsPageScreen extends ArkWindowScreen {
             Component.translatable("arkea.options.reset.message"), Icons.RESET, ArkColors.WARNING);
         ArkDialog dialog = new ArkDialog(this, content, RESET_DIALOG_WIDTH, this::closeDialog);
         dialog.button(new ArkButton(this, CommonComponents.GUI_CANCEL, ButtonVariant.SUBTLE, this::closeDialog));
-        dialog.button(new ArkButton(this, Component.translatable("arkea.options.reset"), ButtonVariant.DANGER, () -> {
+        dialog.button(new ArkButton(this, this.resetLabel(), ButtonVariant.DANGER, () -> {
             this.resetDefaults();
             this.closeDialog();
         }));

@@ -5,16 +5,20 @@ import com.aryston.arkea.mixin.OptionsSubScreenAccessor;
 import com.aryston.arkea.screen.options.ArkAccessibilityScreen;
 import com.aryston.arkea.screen.options.ArkChatScreen;
 import com.aryston.arkea.screen.options.ArkControlsScreen;
+import com.aryston.arkea.screen.options.ArkLanguageScreen;
 import com.aryston.arkea.screen.options.ArkOptionsScreen;
 import com.aryston.arkea.screen.options.ArkSkinScreen;
 import com.aryston.arkea.screen.options.ArkSoundScreen;
 import com.aryston.arkea.screen.options.ArkVideoScreen;
+import com.aryston.arkea.screen.options.keys.ArkKeyBindsScreen;
 import com.aryston.arkea.screen.title.ArkTitleScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.options.AccessibilityOptionsScreen;
 import net.minecraft.client.gui.screens.options.ChatOptionsScreen;
+import net.minecraft.client.gui.screens.options.FontOptionsScreen;
+import net.minecraft.client.gui.screens.options.LanguageSelectScreen;
 import net.minecraft.client.gui.screens.options.MouseSettingsScreen;
 import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
@@ -22,6 +26,7 @@ import net.minecraft.client.gui.screens.options.SkinCustomizationScreen;
 import net.minecraft.client.gui.screens.options.SoundOptionsScreen;
 import net.minecraft.client.gui.screens.options.VideoSettingsScreen;
 import net.minecraft.client.gui.screens.options.controls.ControlsScreen;
+import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import org.jspecify.annotations.Nullable;
@@ -66,6 +71,12 @@ public final class ClientEvents {
         }
         if (type == ControlsScreen.class || type == MouseSettingsScreen.class) {
             return new ArkControlsScreen(lastScreen);
+        }
+        if (type == KeyBindsScreen.class) {
+            return new ArkKeyBindsScreen(lastScreen);
+        }
+        if (type == LanguageSelectScreen.class || type == FontOptionsScreen.class) {
+            return new ArkLanguageScreen(lastScreen);
         }
         return null;
     }

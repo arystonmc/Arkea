@@ -3,6 +3,7 @@ package com.aryston.arkea.ui.screen;
 import com.aryston.arkea.ui.layout.UiScale;
 import com.aryston.arkea.ui.overlay.ArkDialog;
 import com.aryston.arkea.ui.overlay.ArkTooltip;
+import com.aryston.arkea.ui.overlay.Popup;
 import com.aryston.arkea.ui.overlay.TooltipHint;
 import com.aryston.arkea.ui.render.TextMetrics;
 import com.aryston.arkea.ui.render.UiGraphics;
@@ -36,6 +37,7 @@ public abstract class ArkScreen extends Screen implements UiHost {
     private @Nullable Runnable destination;
     private boolean navigating;
     private @Nullable ArkDialog dialog;
+    private @Nullable Popup popup;
 
     protected ArkScreen(Component title) {
         super(title);
@@ -70,6 +72,34 @@ public abstract class ArkScreen extends Screen implements UiHost {
         if (this.dialog != null) {
             this.dialog.layout(this.scale);
         }
+    }
+
+    protected void rebuild() {
+        String focusKey = this.getFocused() instanceof ArkWidget widget ? widget.key() : null;
+        this.clearFocus();
+        this.clearWidgets();
+        this.init();
+        if (focusKey == null) {
+            return;
+        }
+        for (ArkWidget widget : this.arkWidgets) {
+            if (focusKey.equals(widget.key())) {
+                this.setFocused(widget);
+                return;
+            }
+        }
+    }
+
+    @Override
+    public void openPopup(Popup newPopup) {
+        if (this.popup != null && this.popup.isOpen()) {
+            this.popup.close(this.now());
+        }
+        this.popup = newPopup;
+    }
+
+    private @Nullable Popup openPopup() {
+        return this.popup != null && this.popup.isOpen() ? this.popup : null;
     }
 
     protected <T extends ArkWidget> T add(T widget) {
@@ -161,11 +191,20 @@ public abstract class ArkScreen extends Screen implements UiHost {
         float designX = this.scale.toDesign(mouseX);
         float designY = this.scale.toDesign(mouseY);
         boolean contentInteractive = this.dialog == null && !this.isLeaving();
-        float contentX = contentInteractive ? designX : OUTSIDE;
+        Popup shownPopup = this.openPopup();
+        boolean overPopup = shownPopup != null && shownPopup.contains(designX, designY);
+        float contentX = contentInteractive && !overPopup ? designX : OUTSIDE;
         graphics.pose().pushMatrix();
         graphics.pose().scale(this.scale.poseScale());
         this.renderUi(ui, contentX, designY);
-        this.tooltip.track(contentInteractive ? this.hoveredHint() : null, now, designX, designY);
+        if (this.popup != null) {
+            if (this.popup.isGone(now)) {
+                this.popup = null;
+            } else {
+                this.popup.render(ui, designX, designY);
+            }
+        }
+        this.tooltip.track(contentInteractive && shownPopup == null ? this.hoveredHint() : null, now, designX, designY);
         this.tooltip.render(ui);
         graphics.pose().popMatrix();
         this.renderDialog(graphics, ui, designX, designY);
@@ -205,12 +244,23 @@ public abstract class ArkScreen extends Screen implements UiHost {
     }
 
     protected boolean isInteractive() {
-        return this.dialog == null && !this.isLeaving();
+        return this.dialog == null && !this.isLeaving() && this.openPopup() == null;
     }
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         if (this.isLeaving()) {
+            return true;
+        }
+        Popup shownPopup = this.openPopup();
+        if (shownPopup != null) {
+            float x = this.scale.toDesign(event.x());
+            float y = this.scale.toDesign(event.y());
+            if (shownPopup.contains(x, y)) {
+                shownPopup.mouseClicked(x, y);
+            } else {
+                shownPopup.close(this.now());
+            }
             return true;
         }
         if (this.dialog == null) {
@@ -232,6 +282,13 @@ public abstract class ArkScreen extends Screen implements UiHost {
         if (this.isLeaving()) {
             return true;
         }
+        Popup shownPopup = this.openPopup();
+        if (shownPopup != null) {
+            if (!shownPopup.keyPressed(event) && (event.isEscape() || event.isCycleFocus())) {
+                shownPopup.close(this.now());
+            }
+            return true;
+        }
         if (this.dialog != null && event.isEscape()) {
             if (this.dialog.isOpen()) {
                 this.dialog.cancel();
@@ -239,6 +296,18 @@ public abstract class ArkScreen extends Screen implements UiHost {
             return true;
         }
         return super.keyPressed(event);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        Popup shownPopup = this.openPopup();
+        if (shownPopup != null) {
+            if (shownPopup.contains(this.scale.toDesign(mouseX), this.scale.toDesign(mouseY))) {
+                shownPopup.mouseScrolled(scrollY);
+            }
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
     @Override

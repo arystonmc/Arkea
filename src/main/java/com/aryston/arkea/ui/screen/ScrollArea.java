@@ -59,6 +59,10 @@ public final class ScrollArea {
         this.offset.setTarget(this.target, now);
     }
 
+    public void finish() {
+        this.offset.snap(this.target);
+    }
+
     public void reveal(Box content, float margin, long now) {
         if (content.y() - margin < this.viewport.y() + this.target) {
             this.scrollTo(content.y() - margin - this.viewport.y(), now);

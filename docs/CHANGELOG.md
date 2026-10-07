@@ -12,3 +12,9 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 - Add an animated options window with a sidebar, quick settings and a tile for every page
 - Add video, sound, chat, accessibility, skin and controls pages with switches, sliders and cycle selectors
 - Add Reset to Defaults with a confirmation on every options page
+- Add key binds, language and resource packs pages with search
+- Add key bind filters, find by key and false conflict filtering for debug and spectator keys
+- Add dropdown menus for the fullscreen resolution and the sound device
+
+### Fixed
+- Keep key bindings with Ctrl, Shift or Alt after a restart

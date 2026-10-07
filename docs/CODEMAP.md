@@ -23,7 +23,12 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 | Sidebar items, tiles, setting rows | `ArkNavItem`, `ArkTile`, `SettingRow` |
 | Two column settings layout, scrolling content | `SettingsPanel`, `SettingsSection`, `ScrollArea` |
 | Options screen and the pages it links to | `ArkOptionsScreen`, `OptionsPage` |
-| Options pages (video, sound, chat, accessibility, skin, controls) | `OptionsPageScreen`, `ArkVideoScreen`, `ArkSoundScreen`, `ArkChatScreen`, `ArkAccessibilityScreen`, `ArkSkinScreen`, `ArkControlsScreen` |
+| Options pages (video, sound, chat, accessibility, skin, controls, language) | `OptionsPageScreen`, `ArkVideoScreen`, `ArkSoundScreen`, `ArkChatScreen`, `ArkAccessibilityScreen`, `ArkSkinScreen`, `ArkControlsScreen`, `ArkLanguageScreen` |
+| Key binds page: search, filters, find by key, binding, conflicts | `ArkKeyBindsScreen`, `KeyBindRow`, `KeyConflicts`, `ArkKeycap` |
+| Resource packs page | `ArkPacksScreen`, `PackRow`, `PackIcons`, `PackFolderWatcher` |
+| Search fields, dropdowns, segmented filters, choice tiles | `ArkTextField`, `TextFieldState`, `SearchText`, `ArkDropdown`, `DropdownMenu`, `ArkSegmented`, `ArkChoiceTile` |
+| Rows of the settings grid | `PanelRow`, `SettingRow`, `WidgetRow`, `ToolbarRow`, `NoticeRow` |
+| Key bindings with modifiers lost on start (NeoForge bug) | `KeyModifierRepair`, `OptionsMixin` |
 | Which control a vanilla option gets, value labels, descriptions | `OptionControls`, `OptionText` |
 | Title screen layout and actions | `ArkTitleScreen` |
 | Jump back in card, splash text | `JumpBackInCard`, `SplashText`, `RecentWorld`, `LastPlayed` |
@@ -65,8 +70,13 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### ClientEvents
 - Path: `src/main/java/com/aryston/arkea/integration/ClientEvents.java`
-- Role: Swaps a newly opened vanilla `TitleScreen` for `ArkTitleScreen` (not in demo mode), `OptionsScreen` for `ArkOptionsScreen` and the video, sound, chat, accessibility, skin, controls and mouse screens for the Arkea pages, keeping the previous screen, in `ScreenEvent.Opening`, each unless the config turns it off. Only the exact vanilla classes are replaced, so subclasses from other mods stay.
+- Role: Swaps a newly opened vanilla `TitleScreen` for `ArkTitleScreen` (not in demo mode), `OptionsScreen` for `ArkOptionsScreen` and the video, sound, chat, accessibility, skin, controls, mouse, key binds, language and font screens for the Arkea pages, keeping the previous screen, in `ScreenEvent.Opening`, each unless the config turns it off. Only the exact vanilla classes are replaced, so subclasses from other mods stay.
 - Depends on: `ArkeaConfig`, `ArkTitleScreen`, `ArkOptionsScreen`, the options pages, `OptionsSubScreenAccessor`.
+
+#### KeyModifierRepair
+- Path: `src/main/java/com/aryston/arkea/integration/KeyModifierRepair.java`
+- Role: NeoForge 26.3.0.51-beta unbinds every key binding saved with a modifier (`key.keyboard.j:CONTROL`) while loading the options. Right after the options load it reads those lines again and restores bindings that NeoForge left unbound; once NeoForge is fixed the bindings are already set and it does nothing.
+- Depends on: `OptionsMixin`.
 
 ### `com.aryston.arkea.ui.theme`
 
@@ -121,7 +131,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### Box
 - Path: `src/main/java/com/aryston/arkea/ui/layout/Box.java`
-- Role: Rectangle in design pixels with edges, center, hit test, offset, inset and intersection.
+- Role: Rectangle in design pixels with edges, center, hit test, emptiness, offset, inset and intersection.
 
 ### `com.aryston.arkea.ui.render`
 
@@ -184,6 +194,12 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### Polyline
 - Path: `src/main/java/com/aryston/arkea/ui/render/Polyline.java`
 - Role: Point list with a closed flag.
+
+### `com.aryston.arkea.ui.text`
+
+#### SearchText
+- Path: `src/main/java/com/aryston/arkea/ui/text/SearchText.java`
+- Role: Normalizes text for search (lower case, accents and marks removed, ı, ß and similar letters mapped) and matches a query against several fields.
 
 ### `com.aryston.arkea.ui.widget`
 
@@ -261,6 +277,32 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Path: `src/main/java/com/aryston/arkea/ui/widget/CycleModel.java`
 - Role: Value count, current index, selection and labels of a cycle selector.
 
+#### ArkDropdown
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkDropdown.java`
+- Role: 160 x 30 dropdown: value and chevron, accent border while open; opens a `DropdownMenu` on the screen's popup layer.
+- Depends on: `CycleModel`, `DropdownMenu`.
+
+#### ArkTextField
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkTextField.java`
+- Role: 30 high text field with search icon, placeholder, blinking caret, select all, clear button, clipboard, word jumps; Escape clears it. Tells the game that text input starts and where the caret is, which 26.3 needs before it delivers typed characters and places the IME window.
+- Depends on: `TextFieldState`.
+
+#### TextFieldState
+- Path: `src/main/java/com/aryston/arkea/ui/widget/TextFieldState.java`
+- Role: Text, caret and select-all of a text field, kept by the screen so typing survives a rebuild.
+
+#### ArkSegmented
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkSegmented.java`
+- Role: Segmented control of the design (selected segment in the accent with glow); click, left and right keys choose a segment.
+
+#### ArkKeycap
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkKeycap.java`
+- Role: 140 x 30 key binding button: the bound key, a pulsing "Press a key..." state while listening, red conflict and faint unbound states; narrates like the vanilla key binding buttons.
+
+#### ArkChoiceTile
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkChoiceTile.java`
+- Role: 48 high selectable tile with name, second line and a check when selected; optional double click action.
+
 #### ArkBanner
 - Path: `src/main/java/com/aryston/arkea/ui/widget/ArkBanner.java`
 - Role: Clickable accent banner with a preview image, logo, title, subtitle and an action button with an external arrow (the "Helion is installed" banner of the video page).
@@ -277,9 +319,25 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Path: `src/main/java/com/aryston/arkea/ui/widget/ArkTile.java`
 - Role: 72 high link tile with accent icon box, name, description and chevron.
 
+#### PanelRow
+- Path: `src/main/java/com/aryston/arkea/ui/widget/PanelRow.java`
+- Role: A row of the settings grid: height, placement, its widgets, drawing, hover tooltip and hiding when scrolled out of view.
+
+#### WidgetRow
+- Path: `src/main/java/com/aryston/arkea/ui/widget/WidgetRow.java`
+- Role: A grid row that is one widget filling the cell (language tiles).
+
+#### ToolbarRow
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ToolbarRow.java`
+- Role: A frameless row of widgets aligned left or right (key bind filters and find button).
+
+#### NoticeRow
+- Path: `src/main/java/com/aryston/arkea/ui/widget/NoticeRow.java`
+- Role: Tinted notice with a tone icon, text and an optional action button (key conflicts, empty search results).
+
 #### SettingRow
 - Path: `src/main/java/com/aryston/arkea/ui/widget/SettingRow.java`
-- Role: Frame of a setting: icon box, name, description and hover; not focusable. `controlSlot` places the control widget on its right and keeps the text clear of it, `litWhen` turns the icon from gray to the accent while the setting is on, `tooltip` supplies the hover text of the whole row, and the content fades when the control is disabled.
+- Role: Frame of a setting: icon box, name, description and hover; not focusable. `controlSlot` places the control widget on its right and keeps the text clear of it, `litWhen` turns the icon from gray to the accent while the setting is on, `tooltip` supplies the hover text of the whole row, and the content fades when the control is disabled. As a `PanelRow` it places and draws the control given to `control`.
 
 ### `com.aryston.arkea.ui.overlay`
 
@@ -296,6 +354,14 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Path: `src/main/java/com/aryston/arkea/ui/overlay/ArkTooltip.java`
 - Role: Tooltip of the hovered widget or row after the design delay, wrapped to 280 pixels, kept on screen, with fade in and out.
 
+#### Popup
+- Path: `src/main/java/com/aryston/arkea/ui/overlay/Popup.java`
+- Role: Something drawn above the screen content that takes clicks, wheel and keys first while open (dropdown menus).
+
+#### DropdownMenu
+- Path: `src/main/java/com/aryston/arkea/ui/overlay/DropdownMenu.java`
+- Role: Menu of a dropdown: opens below the control (above when there is no room) with a 180 ms grow, rows of 28 with hover, check on the selected value, up to eight rows with wheel scrolling, arrow keys, Enter and Escape.
+
 #### TooltipHint
 - Path: `src/main/java/com/aryston/arkea/ui/overlay/TooltipHint.java`
 - Role: Owner and text of a tooltip; a new owner restarts the delay.
@@ -306,11 +372,11 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Path: `src/main/java/com/aryston/arkea/ui/screen/ArkScreen.java`
 - Role: Base of every Arkea screen. Computes `UiScale` on every init, scales the pose to design pixels, converts the mouse, renders the tooltip, runs one dialog on its own stratum with the menu blur, routes input and focus to the dialog while it is open, closes it with Escape, plays the exit animation before `navigate` or `leave` switches screens, and narrates dialogs.
 - Depends on: `UiScale`, `UiGraphics`, `ArkWidget`, `ArkDialog`, `ArkTooltip`.
-- Notes: a subclass that blurs its background reports it with `blursBackground`, so the dialog does not request the single blur of the frame again. `hoveredHint` decides which tooltip shows; the frame that switches screens still draws this screen, so no empty frame appears between two screens.
+- Notes: a subclass that blurs its background reports it with `blursBackground`, so the dialog does not request the single blur of the frame again. `openPopup` shows a popup above the content; `rebuild` lays the screen out again and gives focus back to the widget with the same `key`. `hoveredHint` decides which tooltip shows; the frame that switches screens still draws this screen, so no empty frame appears between two screens.
 
 #### ArkWindowScreen
 - Path: `src/main/java/com/aryston/arkea/ui/screen/ArkWindowScreen.java`
-- Role: Base of settings windows: the 1238 x 704 window centered on the canvas with sidebar (brand, grouped navigation), header (back, breadcrumb, title, close), content area and footer (note, buttons). Draws the dim layer over the blurred panorama or world, plays the window enter and exit, the title slide and staggered rows (`renderRow`). Back and Escape return to the previous screen, close returns to the game or the title screen. The content is clipped to the area between header and footer and scrolls with the wheel or the scrollbar; keyboard focus scrolls the focused row into view (`revealBox`). `switchTo` moves to another window screen by fading only the content (160 ms) while the window stays.
+- Role: Base of settings windows: the 1238 x 704 window centered on the canvas with sidebar (brand, grouped navigation), header (back, breadcrumb, title, close), content area and footer (note, buttons). Draws the dim layer over the blurred panorama or world, plays the window enter and exit, the title slide and staggered rows (`renderRow`). Back and Escape return to the previous screen, close returns to the game or the title screen. The content is clipped to the area between header and footer and scrolls with the wheel or the scrollbar; keyboard focus scrolls the focused row into view (`revealBox`). `switchTo` moves to another window screen by fading only the content (160 ms) while the window stays. A screen with `searchHint` gets a search field in the header (`/` focuses it) whose text survives rebuilds; `afterLayout` and `scrollToReveal` let a page scroll to a row once it is laid out.
 - Depends on: `ArkScreen`, `ScrollArea`, `ArkNavItem`, `ArkIconButton`, `ArkButton`, `NavGroup`, `SidebarBrand`.
 
 #### ScrollArea
@@ -319,11 +385,11 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### SettingsPanel
 - Path: `src/main/java/com/aryston/arkea/ui/screen/SettingsPanel.java`
-- Role: The settings grid of the design: half sections side by side, full sections across with two rows per line, section labels, staggered rows, disabled rows at 40 %, row tooltips and the row of a control for scrolling.
+- Role: The settings grid of the design: half sections side by side, full sections across with two (or any number of) rows per line, section labels with optional right hints, rows of any `PanelRow` type, staggered rows, row tooltips, the row of a control for scrolling. Rows outside the visible area are skipped, so long lists stay fast.
 
 #### SettingsSection
 - Path: `src/main/java/com/aryston/arkea/ui/screen/SettingsSection.java`
-- Role: Title, width and rows (setting row, control, control size) of one section.
+- Role: Optional title and hint, width, columns and rows of one section.
 
 #### NavGroup
 - Path: `src/main/java/com/aryston/arkea/ui/screen/NavGroup.java`
@@ -370,7 +436,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### OptionsPage
 - Path: `src/main/java/com/aryston/arkea/screen/options/OptionsPage.java`
-- Role: Every options page with its sidebar group, icon, title (vanilla text without the trailing dots), label, description and the screen it opens: an Arkea window page or, for key binds, language and resource packs, the vanilla screen. Helion appears only when it registers a config screen.
+- Role: Every options page with its sidebar group, icon, title (vanilla text without the trailing dots), label, description and the Arkea window page it opens. Helion appears only when it registers a config screen and opens its own screen.
 
 #### OptionsNavigation
 - Path: `src/main/java/com/aryston/arkea/screen/options/OptionsNavigation.java`
@@ -397,6 +463,10 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Path: `src/main/java/com/aryston/arkea/screen/options/ArkAccessibilityScreen.java`
 - Role: Narration and text, motion and effects, links to the controls page and the accessibility guide. Disables high contrast without its pack and minecart rotation without the feature flag, like vanilla.
 
+#### ArkLanguageScreen
+- Path: `src/main/java/com/aryston/arkea/screen/options/ArkLanguageScreen.java`
+- Role: Every game language as three columns of tiles with search (accents ignored, so "turk" finds Türkçe), scrolled to the current language, and the font options. The chosen language applies when the page is left, like vanilla; a double click applies it right away.
+
 #### ArkSkinScreen
 - Path: `src/main/java/com/aryston/arkea/screen/options/ArkSkinScreen.java`
 - Role: A switch per player model part and the main hand.
@@ -404,6 +474,42 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### ArkControlsScreen
 - Path: `src/main/java/com/aryston/arkea/screen/options/ArkControlsScreen.java`
 - Role: Mouse and movement options of the vanilla controls and mouse screens in one page, plus the key binds link.
+
+### `com.aryston.arkea.screen.options.keys`
+
+#### ArkKeyBindsScreen
+- Path: `src/main/java/com/aryston/arkea/screen/options/keys/ArkKeyBindsScreen.java`
+- Role: Key binds page: search by action, key or category, filters (all, changed, conflicts, unbound) with counts, "Find by key" (press a key or mouse button to list what uses it), a conflict notice with a shortcut to the conflicts, categories as sections. A keycap listens for the next key, combination with Ctrl, Shift or Alt (NeoForge modifiers) or mouse button; Escape cancels, Backspace or Delete unbinds. Reset per key (tooltip shows the default) and Reset Keys with confirmation.
+
+#### KeyBindRow
+- Path: `src/main/java/com/aryston/arkea/screen/options/keys/KeyBindRow.java`
+- Role: 44 high row with action name, conflict badge, keycap and reset button.
+
+#### KeyConflicts
+- Path: `src/main/java/com/aryston/arkea/screen/options/keys/KeyConflicts.java`
+- Role: Which bindings clash, using the NeoForge rules (`same`, modifier conflicts), except debug keys (F3 combinations) only against other debug keys and only when one was changed, and spectator keys only against spectator keys, so the vanilla defaults show no false conflicts.
+
+### `com.aryston.arkea.screen.options.packs`
+
+#### ArkPacksScreen
+- Path: `src/main/java/com/aryston/arkea/screen/options/packs/ArkPacksScreen.java`
+- Role: Resource packs page on the vanilla `PackSelectionModel`: available and selected columns, add, move and remove buttons, incompatible packs confirmed in a dialog, search, drag and drop of pack files (checked for forbidden links like vanilla), folder watching, Open Pack Folder. Applies the packs when the page is left, only if the selection changed.
+
+#### PackRow
+- Path: `src/main/java/com/aryston/arkea/screen/options/packs/PackRow.java`
+- Role: 64 high pack row with icon, name, INCOMPATIBLE or REQUIRED tag, first description line, actions and the full description as tooltip.
+
+#### DropHintRow
+- Path: `src/main/java/com/aryston/arkea/screen/options/packs/DropHintRow.java`
+- Role: Dashed "Drop .zip packs here" hint under the available packs.
+
+#### PackIcons
+- Path: `src/main/java/com/aryston/arkea/screen/options/packs/PackIcons.java`
+- Role: Loads and caches `pack.png` of each pack as a texture, like vanilla.
+
+#### PackFolderWatcher
+- Path: `src/main/java/com/aryston/arkea/screen/options/packs/PackFolderWatcher.java`
+- Role: Watches the resource pack folder so new or removed packs appear without reopening the page.
 
 ### `com.aryston.arkea.screen.options.control`
 
@@ -442,6 +548,10 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Path: `src/main/java/com/aryston/arkea/mixin/TooltipAccessor.java`
 - Role: Reads the message of a vanilla `Tooltip`, which only exposes wrapped lines.
 
+#### OptionsMixin
+- Path: `src/main/java/com/aryston/arkea/mixin/OptionsMixin.java`
+- Role: Runs `KeyModifierRepair` at the end of `Options.load`.
+
 #### OptionsSubScreenAccessor
 - Path: `src/main/java/com/aryston/arkea/mixin/OptionsSubScreenAccessor.java`
 - Role: Reads the previous screen of a vanilla options sub screen when `ClientEvents` replaces it.
@@ -460,6 +570,8 @@ Plain JUnit 5 tests without a running game, run by `./gradlew build` and the CI.
 | `src/test/java/com/aryston/arkea/ui/layout/UiScaleTest.java` | One to one at 1366 x 768, quarter steps, the design fits every common window, coordinate round trip, one physical pixel minimum for lines. |
 | `src/test/java/com/aryston/arkea/ui/render/SvgPathParserTest.java` | Absolute and relative lines, closing, implicit commands, compact numbers, arcs on their radius, cubic end points, every catalogue icon parses, invalid data is rejected. |
 | `src/test/java/com/aryston/arkea/ui/render/SoftEdgeProfileTest.java` | Shadow edge coverage and the vignette fade. |
+| `src/test/java/com/aryston/arkea/ui/text/SearchTextTest.java` | Case and accent insensitive matching, Turkish and German letters. |
+| `src/test/java/com/aryston/arkea/ui/widget/TextFieldStateTest.java` | Typing at the caret with a length limit, deleting characters and words, select all, word jumps. |
 | `src/test/java/com/aryston/arkea/ui/widget/SliderRangeTest.java` | Slider fraction, step snapping, clamping and an empty range. |
 | `src/test/java/com/aryston/arkea/screen/options/control/OptionTextTest.java` | Vanilla "Caption: value" labels reduce to the value, percent labels use the Arkea key, unknown labels stay. |
 | `src/test/java/com/aryston/arkea/screen/title/LastPlayedTest.java` | Today, yesterday across midnight, and the localized date for older worlds. |

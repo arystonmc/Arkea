@@ -2,14 +2,11 @@ package com.aryston.arkea.screen.options;
 
 import com.aryston.arkea.screen.options.control.OptionControl;
 import com.aryston.arkea.screen.options.control.OptionControls;
-import com.aryston.arkea.screen.options.control.OptionText;
 import com.aryston.arkea.ui.render.Icons;
 import com.aryston.arkea.ui.screen.SettingsPanel;
 import com.aryston.arkea.ui.screen.SettingsSection;
 import com.aryston.arkea.ui.widget.ArkBanner;
 import com.aryston.arkea.ui.widget.ArkWidget;
-import com.aryston.arkea.ui.widget.ItemContent;
-import com.aryston.arkea.ui.widget.SettingRow;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.platform.MacosUtil;
 import com.mojang.blaze3d.platform.Monitor;
@@ -131,11 +128,9 @@ public final class ArkVideoScreen extends OptionsPageScreen {
                 }
             });
         List<Integer> modes = IntStream.rangeClosed(CURRENT_MODE, last).boxed().toList();
-        OptionControl control = OptionControls.cycle(this, mode, () -> modes, mode::set, () -> mode.set(CURRENT_MODE));
-        SettingRow row = new SettingRow(new ItemContent(Icons.MONITOR, mode.caption, OptionText.description(mode.caption)))
-            .tooltip(() -> OptionText.tooltip(mode));
-        section.add(row, this.add(control.widget()), MODE_WIDTH, control.height());
-        control.widget().setActive(monitor != null);
+        OptionControl control = OptionControls.dropdown(this, mode, () -> modes, mode::set, () -> mode.set(CURRENT_MODE));
+        this.option(section, mode, Icons.MONITOR, new OptionControl(control.widget(), MODE_WIDTH, control.height(), control.lit(), control.reset()))
+            .setActive(monitor != null);
     }
 
     private static Component modeLabel(@Nullable Monitor monitor, int value) {

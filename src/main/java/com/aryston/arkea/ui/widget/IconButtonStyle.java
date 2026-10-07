@@ -10,6 +10,11 @@ public record IconButtonStyle(int fill, int hoverFill, int border, int iconColor
     public static final IconButtonStyle CLOSE = new IconButtonStyle(ArkColors.TRANSPARENT, ARROW_HOVER_FILL,
         ArkColors.TRANSPARENT, ArkColors.TEXT_MUTED, ArkColors.TEXT_PRIMARY, 10.0F, 10.0F);
 
+    public static final IconButtonStyle QUIET = new IconButtonStyle(ArkColors.TRANSPARENT, ARROW_HOVER_FILL,
+        ArkColors.TRANSPARENT, ArkColors.TEXT_SOFT, ArkColors.TEXT_PRIMARY, 12.0F, 12.0F);
+    public static final IconButtonStyle TILE = new IconButtonStyle(ArkColors.rgba(255, 255, 255, 0.04F), ARROW_HOVER_FILL,
+        ArkColors.BORDER_DEFAULT, ArkColors.TEXT_SOFT, ArkColors.TEXT_PRIMARY, 12.0F, 12.0F);
+
     public static IconButtonStyle brightening(int fill, int border, int iconColor, float iconSize) {
         return new IconButtonStyle(fill, ArkColors.brighten(fill, HOVER_BRIGHTNESS), border, iconColor,
             ArkColors.brighten(iconColor, HOVER_BRIGHTNESS), iconSize, iconSize);

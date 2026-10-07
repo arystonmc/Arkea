@@ -48,7 +48,9 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 - The window enters with opacity, a 16 pixel rise and a 0.98 scale (450 ms) and exits in reverse (220 ms); content rows stagger in with `renderRow`.
 - A subclass builds its content in `buildContent` inside the content box, returns where it ends and draws it in `renderContent`. Content taller than the area scrolls: it is clipped with a scissor, translated by the eased offset of `ScrollArea`, and widgets take their hit box from the clipped box. Keyboard focus scrolls the focused row into view.
 - `switchTo` moves between window screens without closing the window: the old content fades and rises 8 pixels in 160 ms, the next screen starts with the window already open and only its rows and title animate in.
-- Settings pages lay out with `SettingsPanel` (the two column grid of the design) and get their controls from `OptionControls`, which reads the value set of each vanilla `OptionInstance`. Vanilla values, listeners and side effects stay in charge; the controls only read and set options. Key binds, language and resource packs still open the vanilla screens.
+- Settings pages lay out with `SettingsPanel` (the two column grid of the design) and get their controls from `OptionControls`, which reads the value set of each vanilla `OptionInstance`. Vanilla values, listeners and side effects stay in charge; the controls only read and set options. Every vanilla options page has an Arkea version; Helion opens its own config screen.
+- Long pages only draw the rows inside the visible area. Pages with a search field (key binds, language, packs) rebuild their content on every change and keep the focus on the widget with the same key.
+- Popups (dropdown menus) render after the content and take input first; a click outside closes them.
 
 ## Motion
 
@@ -66,6 +68,7 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 
 ## Invariants
 
+- A text field must announce text input to the game (`onTextInputFocusChange`), otherwise 26.3 delivers no typed characters.
 - The frame in which a screen switches still draws the old screen, so a page switch never shows an empty frame.
 - Only one blur per frame exists in 26.3 (`blurBeforeThisStratum` throws on a second call). Screens never request blur themselves; `ArkScreen` does it for the dialog.
 - Every widget is drawn exactly once per frame through `ArkWidget.render`, otherwise its hit box is stale.
@@ -87,13 +90,18 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 | `OptionsScreen.getLastScreen`, `Options.fov`, `Options.save`, the vanilla options sub-screens, `IConfigScreenFactory` | Options screen |
 | `OptionInstance` (`values`, `toString`, `caption`, value set types) + `OptionInstanceAccessor`, `TooltipAccessor` | Option controls, labels, tooltips, defaults |
 | `OptionsSubScreen` + `OptionsSubScreenAccessor`, `ScreenEvent.Opening` | Replacing the vanilla options pages |
+| `Minecraft.onTextInputFocusChange`, `textInputManager().setTextInputArea` | Typed characters and IME position for `ArkTextField` |
+| `KeyMapping` (`same`, `setKeyModifierAndCode`, `resetMapping`), NeoForge `KeyModifier`, `IKeyMappingExtension` | Key binds page |
+| `Options.load` + `OptionsMixin` | Restoring modifier key bindings that NeoForge 26.3 beta drops |
+| `LanguageManager`, `Minecraft.reloadResourcePacks` | Language page |
+| `PackSelectionModel`, `PackDetector`, `Util.copyBetweenDirs`, `Options.updateResourcePacks` | Resource packs page |
 | `GpuWarnlistManager`, `UnsupportedGraphicsWarningScreen`, `Window.changeFullscreenVideoMode`, `Minecraft.updateMaxMipLevel`, `delayTextureReload` | Video page side effects copied from `VideoSettingsScreen` |
 
 ## Porting Checklist for a New Minecraft Version
 
 1. Check `GuiGraphicsExtractor`, `GuiElementRenderState`, `GuiRenderState` (layering and blur), `RenderPipelines.GUI` and `GUI_TEXTURED` (vertex format, culling) and `Screen.extractRenderStateWithTooltipAndSubtitles`.
 2. Check the input records (`MouseButtonEvent`, `KeyEvent`, `InputWithModifiers`) and `ContainerEventHandler` mouse release forwarding.
-3. Check the fields of `SplashRenderer`, `OptionInstance`, `Tooltip` and `OptionsSubScreen` for the accessors, the option lists of the vanilla options sub-screens (new options must be added to the pages) and the side effects of `VideoSettingsScreen`.
+3. Check whether NeoForge still drops modifier key bindings on load (the "Invalid keyMapping" warning); remove `KeyModifierRepair` and `OptionsMixin` once it does not. Check the fields of `SplashRenderer`, `OptionInstance`, `Tooltip` and `OptionsSubScreen` for the accessors, the option lists of the vanilla options sub-screens (new options must be added to the pages) and the side effects of `VideoSettingsScreen`.
 4. Run the client, open the title screen, hover, Tab through it, open and close the quit dialog, and compare with `screenshots/` of the design handoff.
 
 ## Testing Tools

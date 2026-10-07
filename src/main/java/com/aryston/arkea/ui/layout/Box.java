@@ -19,6 +19,10 @@ public record Box(float x, float y, float width, float height) {
         return this.y + this.height * 0.5F;
     }
 
+    public boolean isEmpty() {
+        return this.width <= 0.0F || this.height <= 0.0F;
+    }
+
     public boolean contains(float pointX, float pointY) {
         return pointX >= this.x && pointX < this.right() && pointY >= this.y && pointY < this.bottom();
     }

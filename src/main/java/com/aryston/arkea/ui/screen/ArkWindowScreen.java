@@ -13,9 +13,12 @@ import com.aryston.arkea.ui.theme.Theme;
 import com.aryston.arkea.ui.widget.ArkButton;
 import com.aryston.arkea.ui.widget.ArkIconButton;
 import com.aryston.arkea.ui.widget.ArkNavItem;
+import com.aryston.arkea.ui.widget.ArkTextField;
 import com.aryston.arkea.ui.widget.ArkWidget;
 import com.aryston.arkea.ui.widget.IconButtonStyle;
 import com.aryston.arkea.ui.widget.NavEntry;
+import com.aryston.arkea.ui.widget.TextFieldState;
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -23,6 +26,8 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -72,6 +77,10 @@ public abstract class ArkWindowScreen extends ArkScreen {
     private static final float REVEAL_MARGIN = 12.0F;
     private static final float CONTENT_SLIDE = 8.0F;
     private static final int CONTENT_OUT = 160;
+    private static final float SEARCH_WIDTH = 240.0F;
+    private static final int SEARCH_LENGTH = 64;
+    private static final float SEARCH_GAP = 14.0F;
+    private static final String SEARCH_KEY = "search";
     private static boolean continueWindow;
     private static final int WINDOW_FILL = ArkColors.rgba(20, 20, 22, 0.86F);
     private static final int DIM = ArkColors.rgba(8, 8, 9, 0.55F);
@@ -93,6 +102,9 @@ public abstract class ArkWindowScreen extends ArkScreen {
     private Box content = Box.EMPTY;
     private Box footer = Box.EMPTY;
     private final ScrollArea scroll = new ScrollArea();
+    private final TextFieldState search = new TextFieldState(SEARCH_LENGTH);
+    private @Nullable ArkTextField searchField;
+    private boolean swallowSlash;
     private boolean windowContinued;
     private boolean contentOnlyExit;
 
@@ -119,6 +131,35 @@ public abstract class ArkWindowScreen extends ArkScreen {
 
     protected abstract List<ArkButton> footerButtons();
 
+    protected @Nullable Component searchHint() {
+        return null;
+    }
+
+    protected String searchQuery() {
+        return this.search.text();
+    }
+
+    protected void afterLayout() {
+    }
+
+    protected void clearSearch() {
+        this.search.setText("");
+    }
+
+    protected void onSearchChanged() {
+        this.scroll.scrollTo(0.0F, this.now());
+        this.rebuild();
+    }
+
+    protected boolean focusSearchFirst() {
+        return false;
+    }
+
+    protected void scrollToReveal(Box content) {
+        this.scroll.reveal(content, REVEAL_MARGIN, this.now());
+        this.scroll.finish();
+    }
+
     @Override
     protected final void buildUi() {
         UiScale scale = this.uiScale();
@@ -136,6 +177,7 @@ public abstract class ArkWindowScreen extends ArkScreen {
             viewport.height() - CONTENT_INSET_Y * 2.0F);
         float contentBottom = this.buildContent(this.content);
         this.scroll.layout(viewport, contentBottom + CONTENT_INSET_Y - viewport.y());
+        this.afterLayout();
         this.buildFooter();
         if (this.sidebar != null) {
             this.buildSidebar(this.sidebar);
@@ -185,6 +227,47 @@ public abstract class ArkWindowScreen extends ArkScreen {
         close.setBounds(new Box(this.header.right() - HEADER_RIGHT - CLOSE_SIZE, this.header.centerY() - CLOSE_SIZE * 0.5F, CLOSE_SIZE, CLOSE_SIZE));
         close.setTooltip(closeLabel);
         this.chrome.add(close);
+        Component hint = this.searchHint();
+        this.searchField = null;
+        if (hint != null) {
+            ArkTextField field = this.add(new ArkTextField(this, hint, this.search, query -> this.onSearchChanged()));
+            field.key(SEARCH_KEY);
+            float x = close.bounds().x() - SEARCH_GAP - SEARCH_WIDTH;
+            field.setBounds(new Box(x, this.header.centerY() - ArkTextField.HEIGHT * 0.5F, SEARCH_WIDTH, ArkTextField.HEIGHT));
+            this.chrome.add(field);
+            this.searchField = field;
+        }
+    }
+
+    @Override
+    protected void setInitialFocus() {
+        if (this.focusSearchFirst() && this.searchField != null && this.getFocused() == null) {
+            this.setInitialFocus(this.searchField);
+            return;
+        }
+        super.setInitialFocus();
+    }
+
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        ArkTextField field = this.searchField;
+        if (field != null && !field.isFocused() && this.isInteractive() && event.key() == InputConstants.KEY_SLASH && event.modifiers() == 0) {
+            this.setFocused(field);
+            this.swallowSlash = true;
+            return true;
+        }
+        return super.keyPressed(event);
+    }
+
+    @Override
+    public boolean charTyped(CharacterEvent event) {
+        if (this.swallowSlash) {
+            this.swallowSlash = false;
+            if (event.codepoint() == '/') {
+                return true;
+            }
+        }
+        return super.charTyped(event);
     }
 
     @Override

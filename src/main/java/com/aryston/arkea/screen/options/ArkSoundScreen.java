@@ -16,7 +16,7 @@ public final class ArkSoundScreen extends OptionsPageScreen {
     protected void addSettings(SettingsPanel settings) {
         SettingsSection master = settings.section(this.section("master"), true);
         this.option(master, this.options.getSoundSourceOptionInstance(SoundSource.MASTER), Icons.SPEAKER);
-        this.option(master, this.options.soundDevice(), Icons.HEAD);
+        this.dropdown(master, this.options.soundDevice(), Icons.HEAD);
         SettingsSection categories = settings.section(this.section("categories"), true);
         for (SoundSource source : SoundSource.values()) {
             if (source != SoundSource.MASTER) {

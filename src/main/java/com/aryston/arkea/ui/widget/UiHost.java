@@ -1,6 +1,7 @@
 package com.aryston.arkea.ui.widget;
 
 import com.aryston.arkea.ui.layout.UiScale;
+import com.aryston.arkea.ui.overlay.Popup;
 import com.aryston.arkea.ui.render.TextMetrics;
 
 public interface UiHost {
@@ -11,4 +12,6 @@ public interface UiHost {
     long now();
 
     boolean showsKeyboardFocus();
+
+    void openPopup(Popup popup);
 }

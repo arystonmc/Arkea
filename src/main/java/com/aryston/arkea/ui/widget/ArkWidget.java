@@ -8,6 +8,7 @@ import com.aryston.arkea.ui.layout.UiScale;
 import com.aryston.arkea.ui.render.UiGraphics;
 import com.aryston.arkea.ui.theme.Theme;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.platform.cursor.CursorType;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
@@ -42,6 +43,7 @@ public abstract class ArkWidget implements GuiEventListener, NarratableEntry {
     private boolean pressed;
     private float mouseX;
     private @Nullable Component tooltip;
+    private @Nullable String key;
 
     protected ArkWidget(UiHost host) {
         this(host, Motion.HOVER, Easing.EASE);
@@ -61,7 +63,7 @@ public abstract class ArkWidget implements GuiEventListener, NarratableEntry {
         this.hover.setTarget(this.isHighlighted() ? 1.0F : 0.0F, now);
         this.press.setTarget(this.pressed && this.active ? 1.0F : 0.0F, now);
         if (this.hovered) {
-            graphics.cursor(this.active ? CursorTypes.POINTING_HAND : CursorTypes.NOT_ALLOWED);
+            graphics.cursor(this.active ? this.cursorType() : CursorTypes.NOT_ALLOWED);
         }
         graphics.push();
         graphics.translate(this.contentShiftX(), this.pressProgress());
@@ -70,6 +72,10 @@ public abstract class ArkWidget implements GuiEventListener, NarratableEntry {
             this.renderFocusRing(graphics);
         }
         graphics.pop();
+    }
+
+    protected CursorType cursorType() {
+        return CursorTypes.POINTING_HAND;
     }
 
     protected float contentShiftX() {
@@ -112,6 +118,12 @@ public abstract class ArkWidget implements GuiEventListener, NarratableEntry {
         this.visibleBox = bounds;
     }
 
+    public void hide() {
+        this.canvasBox = Box.EMPTY;
+        this.visibleBox = Box.EMPTY;
+        this.hovered = false;
+    }
+
     public Box hitBox() {
         return this.visibleBox;
     }
@@ -151,6 +163,15 @@ public abstract class ArkWidget implements GuiEventListener, NarratableEntry {
 
     public boolean isHovered() {
         return this.hovered;
+    }
+
+    public @Nullable String key() {
+        return this.key;
+    }
+
+    public ArkWidget key(String value) {
+        this.key = value;
+        return this;
     }
 
     public @Nullable Component tooltip() {

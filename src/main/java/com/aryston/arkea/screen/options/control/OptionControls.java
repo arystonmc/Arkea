@@ -3,6 +3,7 @@ package com.aryston.arkea.screen.options.control;
 import com.aryston.arkea.mixin.OptionInstanceAccessor;
 import com.aryston.arkea.ui.screen.SettingsPanel;
 import com.aryston.arkea.ui.widget.ArkCycle;
+import com.aryston.arkea.ui.widget.ArkDropdown;
 import com.aryston.arkea.ui.widget.ArkSlider;
 import com.aryston.arkea.ui.widget.ArkSwitch;
 import com.aryston.arkea.ui.widget.UiHost;
@@ -52,6 +53,20 @@ public final class OptionControls {
         OptionCycleModel<T> model = new OptionCycleModel<>(option, values, setter);
         ArkCycle widget = new ArkCycle(host, OptionText.name(option.caption), model);
         return new OptionControl(widget, ArkCycle.WIDTH, ArkCycle.HEIGHT, () -> !OptionText.isOff(model.label(model.index())), reset);
+    }
+
+    public static <T> OptionControl dropdown(UiHost host, OptionInstance<T> option, Supplier<List<T>> values, Consumer<T> setter, Runnable reset) {
+        OptionCycleModel<T> model = new OptionCycleModel<>(option, values, setter);
+        ArkDropdown widget = new ArkDropdown(host, OptionText.name(option.caption), model);
+        return new OptionControl(widget, ArkDropdown.WIDTH, ArkDropdown.HEIGHT, () -> true, reset);
+    }
+
+    public static <T> OptionControl dropdown(UiHost host, OptionInstance<T> option) {
+        if (!(option.values() instanceof OptionInstance.CycleableValueSet<T> cycleable)) {
+            return create(host, option);
+        }
+        return dropdown(host, option, () -> cycleable.valueListSupplier().getDefaultList(), value -> cycleable.valueSetter().set(option, value),
+            () -> option.set(initialValue(option)));
     }
 
     @SuppressWarnings("unchecked")

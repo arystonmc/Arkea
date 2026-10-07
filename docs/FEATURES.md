@@ -38,6 +38,11 @@ All settings in one calm window instead of a wall of buttons.
 - Video, Sound, Chat, Accessibility, Skin and Controls are redesigned too: every option has a short description, a switch, slider or selector, and the full explanation on hover
 - Switch pages from the sidebar without the window closing; long pages scroll with the wheel, the scrollbar or the keyboard
 - Reset to Defaults puts a page back after asking once
+- Key Binds: search by action or key, filters for changed, conflicting and unbound keys, "Find by key" to see everything a key does, Ctrl, Shift and Alt combinations and mouse buttons, reset one key or all; the debug and spectator keys of the game no longer show up as false conflicts
+- Key combinations with Ctrl, Shift or Alt keep working after a restart (works around a NeoForge beta bug that forgets them)
+- Language: every language in a searchable grid, accents ignored ("turk" finds Türkçe), plus the font options
+- Resource Packs: add, order and remove packs with their icons, drop pack files to install them, and the game only reloads when something changed
+- Dropdown menus for the fullscreen resolution and the sound device
 - When Helion is installed, the video page points to its shader settings
 - The window glides in over the blurred menu background or your world and glides out when you leave
 - Works with mouse, keyboard and the narrator; changes save automatically

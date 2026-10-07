@@ -1,12 +1,12 @@
 package com.aryston.arkea.screen.options;
 
+import com.aryston.arkea.screen.options.keys.ArkKeyBindsScreen;
 import com.aryston.arkea.ui.render.Icons;
 import com.aryston.arkea.ui.screen.SettingsPanel;
 import com.aryston.arkea.ui.screen.SettingsSection;
 import com.aryston.arkea.ui.widget.ItemContent;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.client.input.InputQuirks;
 import net.minecraft.network.chat.Component;
 
@@ -40,6 +40,6 @@ public final class ArkControlsScreen extends OptionsPageScreen {
         this.option(other, options.operatorItemsTab(), Icons.CMD);
         SettingsSection keys = settings.section(this.section("keys"), true);
         this.link(keys, new ItemContent(OptionsPage.KEY_BINDS.icon(), OptionsPage.KEY_BINDS.title(), OptionsPage.KEY_BINDS.description()),
-            Component.translatable("arkea.options.open"), () -> this.navigate(() -> new KeyBindsScreen(this, options)));
+            Component.translatable("arkea.options.open"), () -> this.openPage(OptionsPage.KEY_BINDS, () -> new ArkKeyBindsScreen(this)));
     }
 }

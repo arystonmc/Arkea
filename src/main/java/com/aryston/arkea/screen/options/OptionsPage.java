@@ -1,5 +1,7 @@
 package com.aryston.arkea.screen.options;
 
+import com.aryston.arkea.screen.options.keys.ArkKeyBindsScreen;
+import com.aryston.arkea.screen.options.packs.ArkPacksScreen;
 import com.aryston.arkea.ui.render.Icon;
 import com.aryston.arkea.ui.render.Icons;
 import com.aryston.arkea.ui.widget.NavEntry;
@@ -8,9 +10,6 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.options.LanguageSelectScreen;
-import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
-import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.network.chat.Component;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
@@ -20,14 +19,13 @@ public enum OptionsPage {
     OVERVIEW(Group.GAME, Icons.SLIDERS, "options.title", (parent, minecraft) -> parent),
     VIDEO(Group.GAME, Icons.MONITOR, "options.video", (parent, minecraft) -> new ArkVideoScreen(parent)),
     CONTROLS(Group.GAME, Icons.MOUSE, "options.controls", (parent, minecraft) -> new ArkControlsScreen(parent)),
-    KEY_BINDS(Group.GAME, Icons.KEYBOARD, "controls.keybinds", (parent, minecraft) -> new KeyBindsScreen(parent, minecraft.options)),
+    KEY_BINDS(Group.GAME, Icons.KEYBOARD, "controls.keybinds", (parent, minecraft) -> new ArkKeyBindsScreen(parent)),
     SOUND(Group.GAME, Icons.SPEAKER, "options.sounds", (parent, minecraft) -> new ArkSoundScreen(parent)),
     SKIN(Group.PLAYER, Icons.SHIRT, "options.skinCustomisation", (parent, minecraft) -> new ArkSkinScreen(parent)),
     CHAT(Group.PLAYER, Icons.CHAT, "options.chat", (parent, minecraft) -> new ArkChatScreen(parent)),
-    LANGUAGE(Group.PLAYER, Icons.GLOBE, "options.language",
-        (parent, minecraft) -> new LanguageSelectScreen(parent, minecraft.options, minecraft.getLanguageManager())),
+    LANGUAGE(Group.PLAYER, Icons.GLOBE, "options.language", (parent, minecraft) -> new ArkLanguageScreen(parent)),
     ACCESSIBILITY(Group.PLAYER, Icons.ACCESS, "options.accessibility", (parent, minecraft) -> new ArkAccessibilityScreen(parent)),
-    RESOURCE_PACKS(Group.CONTENT, Icons.PACK, "options.resourcepack", OptionsPage::packScreen),
+    RESOURCE_PACKS(Group.CONTENT, Icons.PACK, "options.resourcepack", (parent, minecraft) -> new ArkPacksScreen(parent)),
     HELION(Group.CONTENT, Icons.SPARKLE, "arkea.options.helion", OptionsPage::helionScreen);
 
     private static final String HELION_ID = "helion";
@@ -68,8 +66,8 @@ public enum OptionsPage {
 
     public boolean isWindow() {
         return switch (this) {
-            case OVERVIEW, VIDEO, CONTROLS, SOUND, SKIN, CHAT, ACCESSIBILITY -> true;
-            case KEY_BINDS, LANGUAGE, RESOURCE_PACKS, HELION -> false;
+            case OVERVIEW, VIDEO, CONTROLS, KEY_BINDS, SOUND, SKIN, CHAT, LANGUAGE, ACCESSIBILITY, RESOURCE_PACKS -> true;
+            case HELION -> false;
         };
     }
 
@@ -108,12 +106,6 @@ public enum OptionsPage {
         return text;
     }
 
-    private static Screen packScreen(Screen parent, Minecraft minecraft) {
-        return new PackSelectionScreen(minecraft.getResourcePackRepository(), repository -> {
-            minecraft.options.updateResourcePacks(repository);
-            minecraft.gui.setScreen(parent);
-        }, minecraft.getResourcePackDirectory(), Component.translatable("resourcePack.title"));
-    }
 
     private static Screen helionScreen(Screen parent, Minecraft minecraft) {
         return helionConfig()
