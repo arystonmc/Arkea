@@ -34,6 +34,15 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 | Custom menu backgrounds: library, import, playback | `BackgroundLibrary`, `BackgroundImporter`, `BackgroundPlayer`, `MenuBackground`, `PanoramaMixin` |
 | Arkea settings page (background gallery, accent, screen toggles) | `ArkArkeaScreen`, `BackgroundTile`, `ImportTile`, `JobTile`, `ArkSwatch` |
 | Native file picker | `FileDialogs` |
+| Singleplayer: world list, details, delete and edit dialogs | `ArkWorldSelectScreen`, `WorldRow`, `WorldDetails`, `WorldDialogs`, `WorldOperations` |
+| Create world | `ArkCreateWorldScreen`, `CreateWorldScreenInvoker` |
+| Multiplayer: servers, LAN, pings, server dialogs | `ArkMultiplayerScreen`, `ServerRow`, `ServerPings`, `ServerDialogs` |
+| Connecting, loading, disconnected screens | `LoadingSkin`, `LoadingViews` |
+| Mods list | `ArkModsScreen`, `ModEntry`, `ModDetails` |
+| Menu toasts | `ArkToasts`, `MenuToast`, `ToastTone` |
+| Dialog content (forms, hero image, thumbnail) | `ArkDialog`, `DialogForm`, `DialogBody` |
+| Checkbox, tabs, tags, letter tiles, empty states | `ArkCheckbox`, `ArkTab`, `Tag`, `LetterTile`, `EmptyState`, `PixelSpinner` |
+| Automated screenshots of screens | `UiCheck` |
 | Jump back in card, splash text | `JumpBackInCard`, `SplashText`, `RecentWorld`, `LastPlayed` |
 | Texts | `src/main/resources/assets/arkea/lang/` |
 | Mod name, version, loader versions, license, authors | `gradle.properties` |
@@ -70,6 +79,8 @@ Every class and source file of Arkea with its purpose. Find the right file here 
   - `ACCENT`: accent theme of every Arkea screen.
   - `BACKGROUND`: folder name of the selected menu background, or `vanilla` for the panorama.
   - `BACKGROUND_PAN`: slow pan over still image backgrounds.
+  - `MENU_SCREENS`: replaces the singleplayer, create world, multiplayer, mods and loading screens when on.
+  - `WORLD_SORT`: order of the singleplayer world list.
   - `set`: sets a value and saves the file at once (the Arkea settings page changes values live).
   - `SPEC`: the built spec.
 
@@ -77,8 +88,8 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### ClientEvents
 - Path: `src/main/java/com/aryston/arkea/integration/ClientEvents.java`
-- Role: Swaps a newly opened vanilla `TitleScreen` for `ArkTitleScreen` (not in demo mode), `OptionsScreen` for `ArkOptionsScreen` and the video, sound, chat, accessibility, skin, controls, mouse, key binds, language and font screens for the Arkea pages, keeping the previous screen, in `ScreenEvent.Opening`, each unless the config turns it off. Only the exact vanilla classes are replaced, so subclasses from other mods stay.
-- Also ticks `MenuBackground` every client tick so a background nobody draws frees its texture and decoder thread.
+- Role: Swaps a newly opened vanilla `TitleScreen` for `ArkTitleScreen` (not in demo mode), `OptionsScreen` for `ArkOptionsScreen` and the video, sound, chat, accessibility, skin, controls, mouse, key binds, language and font screens for the Arkea pages, keeping the previous screen, in `ScreenEvent.Opening`, each unless the config turns it off. With the menu screens on it also replaces `SelectWorldScreen`, `CreateWorldScreen`, `JoinMultiplayerScreen` and the NeoForge `ModListScreen`, and in `ScreenEvent.Render.Pre` lets `LoadingSkin` draw the connecting and loading screens instead of vanilla. Only the exact vanilla classes are replaced, so subclasses from other mods stay.
+- Also ticks `MenuBackground` every client tick so a background nobody draws frees its texture and decoder thread. Runs `UiCheck` when it is requested.
 - Depends on: `ArkeaConfig`, `ArkTitleScreen`, `ArkOptionsScreen`, the options pages, `OptionsSubScreenAccessor`, `MenuBackground`.
 
 #### KeyModifierRepair
@@ -99,7 +110,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### DropFolder
 - Path: `src/main/java/com/aryston/arkea/background/DropFolder.java`
-- Role: Tells which loose files in the backgrounds folder have finished copying: same size and modification time on two polls in a row, and no other program holds the file open for writing.
+- Role: Tells which loose files in the backgrounds folder have finished copying: same size and modification time on two polls in a row, and no other program holds the file open for writing. Files whose import was cancelled are ignored until they change.
 
 #### BackgroundEntry
 - Path: `src/main/java/com/aryston/arkea/background/BackgroundEntry.java`
@@ -142,7 +153,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### FrameWriter
 - Path: `src/main/java/com/aryston/arkea/background/FrameWriter.java`
-- Role: Encodes scaled frames to JPEG on its own threads and writes them to every output frame they fill, with a bounded queue so decoders wait instead of filling the memory. Writes the thumbnail from output frame 0 and keeps the first error.
+- Role: Encodes scaled frames to JPEG on its own threads and writes them to every output frame they fill, with a bounded queue so decoders wait instead of filling the memory. Writes the thumbnail from output frame 0 and keeps the first error. `close` waits for running encoders, so a cancelled import can delete its folder.
 
 #### WorkerThreads
 - Path: `src/main/java/com/aryston/arkea/background/WorkerThreads.java`
@@ -232,9 +243,9 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### UiGraphics
 - Path: `src/main/java/com/aryston/arkea/ui/render/UiGraphics.java`
 - Role: The only drawing API of Arkea screens. Wraps `GuiGraphicsExtractor` with a pose and alpha stack; draws pixel snapped rectangles, horizontal and vertical gradients, borders, top highlights, soft shadows and glows, the vignette, textures, icons and text in design pixels.
-- Members: `push`/`pop`, `translate`, `scaleAround`, `rotateAround`, `fade`, `fill`, `gradientHorizontal`, `gradientVertical`, `border`, `topHighlight`, `shadow`, `vignette`, `image`, `icon`, `text`, `metrics`, `canvasBox` (where a local box ends up on the canvas, used for hit tests), `clip`/`endClip` (scissor a local box), `visible` (the part of a canvas box inside the current clip), `cursor`.
+- Members: `push`/`pop`, `translate`, `scaleAround`, `rotateAround`, `fade`, `fill`, `gradientHorizontal`, `gradientVertical`, `border`, `topHighlight`, `shadow`, `vignette`, `image`, `icon`, `text`, `richText` (a component with its own colors, clipped with an ellipsis), `imageCover` (a texture cropped to fill a box), `dashedBorder`, `metrics`, `canvasBox` (where a local box ends up on the canvas, used for hit tests), `clip`/`endClip` (scissor a local box), `visible` (the part of a canvas box inside the current clip), `cursor`.
 - Depends on: `MeshBuilder`, `UiMeshRenderState`, `GeneratedTextures`, `TextMetrics`.
-- Notes: The GUI pipelines cull back faces, so every quad goes through `MeshBuilder`, which fixes the winding. A whole icon or shadow is one render state, because vanilla puts every overlapping element on its own layer.
+- Notes: The GUI pipelines cull back faces, so every quad goes through `MeshBuilder`, which fixes the winding. A whole icon or shadow is one render state, because vanilla puts every overlapping element on its own layer. Text is moved to the physical pixel grid before drawing, because the vanilla font is sampled nearest and a half pixel offset drops a row of every glyph.
 
 #### UiMeshRenderState
 - Path: `src/main/java/com/aryston/arkea/ui/render/UiMeshRenderState.java`
@@ -289,6 +300,18 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Path: `src/main/java/com/aryston/arkea/ui/render/Polyline.java`
 - Role: Point list with a closed flag.
 
+#### PixelSpinner
+- Path: `src/main/java/com/aryston/arkea/ui/render/PixelSpinner.java`
+- Role: The pixel spinner of the design: eight squares on a 24 pixel ring whose brightness runs around once every 0.8 s.
+
+#### EmptyState
+- Path: `src/main/java/com/aryston/arkea/ui/render/EmptyState.java`
+- Role: The dashed 280 high panel of empty lists (no servers, LAN scanning) with an optional spinner, a title and a hint.
+
+#### LetterTile
+- Path: `src/main/java/com/aryston/arkea/ui/render/LetterTile.java`
+- Role: Colored square with the first letter of a name and a darker bottom edge, used when a server or mod has no icon; the color comes from the name, so it stays the same.
+
 ### `com.aryston.arkea.ui.text`
 
 #### SearchText
@@ -307,7 +330,27 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### ArkButton
 - Path: `src/main/java/com/aryston/arkea/ui/widget/ArkButton.java`
-- Role: Standard 32 high button with label, optional leading and trailing icons (pixel icons keep their aspect), primary glow and hover brightness.
+- Role: Standard 32 high button with label and optional leading and trailing icons; drawn by `ButtonPainter`.
+
+#### ButtonPainter
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ButtonPainter.java`
+- Role: Draws a button of any variant (fill, border, primary glow, hover brightness, disabled fade, label and icons, pixel icons keep their aspect) and measures its width. Shared by `ArkButton` and the loading screens, which paint vanilla buttons in the Arkea style.
+
+#### ArkCheckbox
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkCheckbox.java`
+- Role: 16 pixel checkbox with a label: accent fill and pixel check when on, accent border on hover, fills in 200 ms.
+
+#### ArkTab
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkTab.java`
+- Role: Tab of a tab row: optional icon, label, optional count badge and a 2 pixel accent underline that fades in on the selected tab.
+
+#### ListCycleModel
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ListCycleModel.java`
+- Role: `CycleModel` over a list of values with a getter, setter and label function (difficulties, world presets).
+
+#### Tag
+- Path: `src/main/java/com/aryston/arkea/ui/widget/Tag.java`
+- Role: 12 high badge with 8 pixel spaced caps on a tone tint (HARDCORE, CHEATS, OUTDATED, CONFIG); measures and draws itself next to a name.
 
 #### ButtonVariant
 - Path: `src/main/java/com/aryston/arkea/ui/widget/ButtonVariant.java`
@@ -441,8 +484,33 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### ArkDialog
 - Path: `src/main/java/com/aryston/arkea/ui/overlay/ArkDialog.java`
-- Role: Modal popup: scrim, tone icon, title, wrapped body and right aligned buttons, with the pop enter and exit animations. Can refuse to close on a scrim click for destructive actions.
-- Members: `WIDTH_SMALL`, `WIDTH_MEDIUM`, `WIDTH_LARGE`, `button`, `keepOpenOnScrimClick`, `open`, `close`, `cancel`, `layout`, `render`.
+- Role: Modal popup: scrim, tone icon, title, wrapped body, optional custom content and right aligned buttons, with the pop enter and exit animations. Can refuse to close on a scrim click for destructive actions. A `hero` image fills the top 110 pixels and fades into the dialog (delete world), a `thumbnail` replaces the tone icon (edit world).
+- Members: `WIDTH_SMALL`, `WIDTH_MEDIUM`, `WIDTH_LARGE`, `button`, `keepOpenOnScrimClick`, `hero`, `thumbnail`, `content`, `open`, `close`, `cancel`, `layout`, `render`, `widgets` (content widgets and buttons, for focus and input).
+
+#### DialogBody
+- Path: `src/main/java/com/aryston/arkea/ui/overlay/DialogBody.java`
+- Role: Custom content of a dialog: its height for a width, layout, drawing and widgets.
+
+#### DialogForm
+- Path: `src/main/java/com/aryston/arkea/ui/overlay/DialogForm.java`
+- Role: `DialogBody` built from rows: caps field labels, full width fields, equal columns of buttons, a label with a control on the right, and a message line that appears when its supplier returns text (validation errors).
+
+#### DialogImage
+- Path: `src/main/java/com/aryston/arkea/ui/overlay/DialogImage.java`
+- Role: Something that draws itself into a box, for dialog hero images and thumbnails.
+
+#### ArkToasts
+- Path: `src/main/java/com/aryston/arkea/ui/overlay/ArkToasts.java`
+- Role: The menu toasts of the design: a stack at the bottom center of every Arkea screen, 40 high with a 38 wide tone column, at most three, newest at the bottom, enter with a 16 pixel rise and scale 0.95 (320 ms), leave with 12 pixels (200 ms), stay 2.4 s; errors, progress and busy toasts stay until finished. Optional action chip (Undo, Show), percentage with a 2 pixel bar, or a moving bar while busy. A click dismisses a toast and runs its action. Toasts survive screen switches.
+- Members: `show`, `progress`, `busy`, `click`, `contains`, `render`.
+
+#### MenuToast
+- Path: `src/main/java/com/aryston/arkea/ui/overlay/MenuToast.java`
+- Role: One toast: tone, message, optional action, progress or busy state, its presence and stack lift animations; `finish` turns a running toast into a result.
+
+#### ToastTone
+- Path: `src/main/java/com/aryston/arkea/ui/overlay/ToastTone.java`
+- Role: Success (accent light), info, warning and error, each with its icon and color.
 
 #### DialogContent
 - Path: `src/main/java/com/aryston/arkea/ui/overlay/DialogContent.java`
@@ -523,6 +591,127 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### MultiplayerAccess
 - Path: `src/main/java/com/aryston/arkea/screen/title/MultiplayerAccess.java`
 - Role: The reason multiplayer and Realms are disabled (name ban, account ban, disabled), like the vanilla title screen.
+
+### `com.aryston.arkea.screen.worlds`
+
+#### ArkWorldSelectScreen
+- Path: `src/main/java/com/aryston/arkea/screen/worlds/ArkWorldSelectScreen.java`
+- Role: The singleplayer window of the design (replaces `SelectWorldScreen`): world rows on the left, the details panel of the selected world on the right, search, a sort link that cycles last played, name and game mode (kept in the config), empty and loading states, and Create New World and Play Selected World in the footer. Double-click or Enter on the selected row plays, Delete opens the delete dialog, F5 reloads. The list reloads every time the screen is shown.
+- Depends on: `WorldLibrary`, `WorldOperations`, `WorldDialogs`, `WorldRow`, `WorldDetails`, `WorldSort`, `JoinTarget`.
+
+#### WorldLibrary
+- Path: `src/main/java/com/aryston/arkea/screen/worlds/WorldLibrary.java`
+- Role: Loads the level summaries asynchronously and counts versions so the screen rebuilds, loads world icons into favicon textures on demand and measures size and play time in the background.
+
+#### WorldFacts
+- Path: `src/main/java/com/aryston/arkea/screen/worlds/WorldFacts.java`
+- Role: Folder size and the local player's play time (from `players/stats/<uuid>.json`) of a world.
+
+#### WorldRow
+- Path: `src/main/java/com/aryston/arkea/screen/worlds/WorldRow.java`
+- Role: 72 high world row: 128 wide cover image, name with tags, mode, difficulty and version, last played, accent fill, border and play badge when selected. A click selects, a click on the badge, a double-click or Enter plays.
+
+#### WorldDetails
+- Path: `src/main/java/com/aryston/arkea/screen/worlds/WorldDetails.java`
+- Role: The 380 wide details panel: 190 high cover, name, folder, info rows (game mode, difficulty, version, last played, play time, size), Play, Edit, Re-Create and Delete.
+
+#### WorldImage
+- Path: `src/main/java/com/aryston/arkea/screen/worlds/WorldImage.java`
+- Role: Draws a world icon cropped to fill a box, or the dimmed vanilla panorama when the world has none.
+
+#### WorldTags
+- Path: `src/main/java/com/aryston/arkea/screen/worlds/WorldTags.java`
+- Role: Tags of a world: hardcore, cheats, open elsewhere, incompatible, newer or older version, experimental.
+
+#### WorldText
+- Path: `src/main/java/com/aryston/arkea/screen/worlds/WorldText.java`
+- Role: Game mode, difficulty and detail lines, relative last played times (today with the time, yesterday, days, months, years), sizes and play times.
+
+#### WorldSort
+- Path: `src/main/java/com/aryston/arkea/screen/worlds/WorldSort.java`
+- Role: World orders with their labels: last played, name, game mode.
+
+#### WorldDialogs
+- Path: `src/main/java/com/aryston/arkea/screen/worlds/WorldDialogs.java`
+- Role: The delete dialog with the world image and a backup checkbox, the edit dialog (rename, make backup, open folder, optimize, reset icon, backups folder) and the optimize confirmation with backup and erase cache options.
+
+#### WorldOperations
+- Path: `src/main/java/com/aryston/arkea/screen/worlds/WorldOperations.java`
+- Role: Plays, creates, recreates, renames, backs up, deletes and optimizes worlds the way `WorldSelectionList` and `EditWorldScreen` do; slow work runs on the IO pool with busy toasts and ends in a success or error toast.
+
+#### ArkCreateWorldScreen
+- Path: `src/main/java/com/aryston/arkea/screen/worlds/ArkCreateWorldScreen.java`
+- Role: The create world window of the design. Wraps the vanilla `CreateWorldScreen` that `ClientEvents` replaced and edits its `WorldCreationUiState` with Arkea controls in Game, World and More tabs; creating, game rules, data packs, experiments and the superflat editor run the vanilla code, so every return to the vanilla screen opens a new wrapper (the selected tab is kept per vanilla screen).
+- Depends on: `CreateWorldScreenInvoker`, `SettingsPanel`, `ListCycleModel`, `ArkTab`.
+
+### `com.aryston.arkea.screen.servers`
+
+#### ArkMultiplayerScreen
+- Path: `src/main/java/com/aryston/arkea/screen/servers/ArkMultiplayerScreen.java`
+- Role: The multiplayer window of the design (replaces `JoinMultiplayerScreen`): Servers and LAN Games tabs with counts, Refresh, search, server rows with move up and down, copy address, edit and delete on the selected row, LAN rows from the vanilla LAN detector, empty and scanning states, and Direct Connect, Add Server and Join Server in the footer. Shift and the arrow keys reorder, F5 refreshes. The pinger and icons are created every time the screen is shown and released when it closes.
+- Depends on: `ServerPings`, `ServerIcons`, `ServerDialogs`, `ServerRow`, `LanRow`, `JoinTarget`.
+
+#### ServerRow
+- Path: `src/main/java/com/aryston/arkea/screen/servers/ServerRow.java`
+- Role: 64 high server row: icon or letter tile, name with an outdated tag, colored MOTD (or the server version, or the error in red), player count and four ping bars with milliseconds (pulsing while pinging, red when offline). Its hit box leaves out the action buttons on top of it.
+
+#### LanRow
+- Path: `src/main/java/com/aryston/arkea/screen/servers/LanRow.java`
+- Role: Row of a LAN world with its MOTD and address (hidden when the option hides server addresses).
+
+#### ServerPings
+- Path: `src/main/java/com/aryston/arkea/screen/servers/ServerPings.java`
+- Role: Pings servers on five daemon threads with the vanilla `ServerStatusPinger` and marks servers that cannot be resolved or reached as unreachable, which the vanilla pinger leaves in the pinging state for unresolvable hosts.
+
+#### ServerIcons
+- Path: `src/main/java/com/aryston/arkea/screen/servers/ServerIcons.java`
+- Role: Favicon textures of servers, uploaded again whenever the icon bytes change.
+
+#### ServerDialogs
+- Path: `src/main/java/com/aryston/arkea/screen/servers/ServerDialogs.java`
+- Role: Add and edit server (name, address with validation, resource pack mode), direct connect (remembers the last address) and remove server dialogs.
+
+### `com.aryston.arkea.screen.loading`
+
+#### LoadingSkin
+- Path: `src/main/java/com/aryston/arkea/screen/loading/LoadingSkin.java`
+- Role: Draws the connecting and loading design over vanilla loading screens without replacing them: background, spinner or error tile, kicker, title, detail, step label with percentage and an 8 pixel progress bar, step list, buttons and a tip card. The vanilla buttons keep handling input; every frame they are moved to where the design draws them and painted with `ButtonPainter`.
+- Notes: The vanilla screens cannot be replaced: game code checks `instanceof LevelLoadingScreen` (HUD, portals, music, packet handling) and `ConnectScreen` runs the connection itself.
+
+#### LoadingViews
+- Path: `src/main/java/com/aryston/arkea/screen/loading/LoadingViews.java`
+- Role: Builds the view of a supported vanilla screen: `ConnectScreen` (steps from the connection status), `LevelLoadingScreen` (world, server terrain or portal travel), `ProgressScreen`, `GenericMessageScreen` and `DisconnectedScreen` (error with the reason).
+
+#### LoadingView
+- Path: `src/main/java/com/aryston/arkea/screen/loading/LoadingView.java`
+- Role: Mood, texts, progress and steps of one loading frame.
+
+#### JoinTarget
+- Path: `src/main/java/com/aryston/arkea/screen/loading/JoinTarget.java`
+- Role: Name of the world or server the player last chose, shown as the loading title.
+
+### `com.aryston.arkea.screen.mods`
+
+#### ArkModsScreen
+- Path: `src/main/java/com/aryston/arkea/screen/mods/ArkModsScreen.java`
+- Role: The mods window of the design (replaces the NeoForge `ModListScreen`): 340 wide mod list with search, details panel, Open Settings, Homepage and Report Issue (through the vanilla link confirmation), Open Mods Folder.
+- Depends on: `ModEntry`, `ModIcons`, `ModRow`, `ModDetails`.
+
+#### ModEntry
+- Path: `src/main/java/com/aryston/arkea/screen/mods/ModEntry.java`
+- Role: A mod container with its NeoForge `ModDisplayInfo` (custom or default), icon resource (the vanilla pack icon for Minecraft), config screen factory and update check result.
+
+#### ModRow
+- Path: `src/main/java/com/aryston/arkea/screen/mods/ModRow.java`
+- Role: 56 high mod row with icon or letter tile, name, version and UPDATE and CONFIG tags.
+
+#### ModDetails
+- Path: `src/main/java/com/aryston/arkea/screen/mods/ModDetails.java`
+- Role: Details panel: 72 pixel icon, name, version and loader chips, authors, mod id, license, credits, latest version, description and the buttons, or "No config screen".
+
+#### ModIcons
+- Path: `src/main/java/com/aryston/arkea/screen/mods/ModIcons.java`
+- Role: Loads mod icons from their pack resources into dynamic textures, freed when the screen closes.
 
 ### `com.aryston.arkea.screen.options`
 
@@ -684,6 +873,28 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### OptionsSubScreenAccessor
 - Path: `src/main/java/com/aryston/arkea/mixin/OptionsSubScreenAccessor.java`
 - Role: Reads the previous screen of a vanilla options sub screen when `ClientEvents` replaces it.
+
+#### SelectWorldScreenAccessor, JoinMultiplayerScreenAccessor, ModListScreenAccessor
+- Path: `src/main/java/com/aryston/arkea/mixin/SelectWorldScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/JoinMultiplayerScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/ModListScreenAccessor.java`
+- Role: Read the private previous screen of the singleplayer, multiplayer and NeoForge mods screens when `ClientEvents` replaces them.
+
+#### CreateWorldScreenInvoker
+- Path: `src/main/java/com/aryston/arkea/mixin/CreateWorldScreenInvoker.java`
+- Role: Calls the private `onCreate`, `openExperimentsScreen` and `openDataPackSelectionScreen` of `CreateWorldScreen`, so `ArkCreateWorldScreen` keeps the whole vanilla creation flow.
+
+#### ConnectScreenAccessor, LevelLoadingScreenAccessor, ProgressScreenAccessor, DisconnectedScreenAccessor
+- Path: `src/main/java/com/aryston/arkea/mixin/ConnectScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/LevelLoadingScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/ProgressScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/DisconnectedScreenAccessor.java`
+- Role: Read the status, load tracker and reason, header, stage and progress, and disconnection details that `LoadingViews` shows; none of these screens exposes them.
+
+### `com.aryston.arkea.debug`
+
+#### UiCheck
+- Path: `src/main/java/com/aryston/arkea/debug/UiCheck.java`
+- Role: Developer check (`-Define arkea.uiCheck=all` or a comma list of groups: title, options, worlds, create, servers, mods, loading, toasts). Opens screens, presses widgets by key, sends keys, saves a screenshot after every step as `screenshots/arkea_<step>.png` and closes the game. Does nothing in production.
+
+#### UiCheckToasts, UiCheckLoading, UiCheckServers
+- Path: `src/main/java/com/aryston/arkea/debug/UiCheckToasts.java`, `src/main/java/com/aryston/arkea/debug/UiCheckLoading.java`, `src/main/java/com/aryston/arkea/debug/UiCheckServers.java`
+- Role: Check helpers: sample toasts, a progress screen and a connection to an unroutable address (cancelled again), and temporary sample servers that are removed at the end.
 
 ## Tests
 

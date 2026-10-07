@@ -93,6 +93,8 @@ public final class ArkArkeaScreen extends OptionsPageScreen {
             Component.translatable("arkea.settings.title.description")), ArkeaConfig.TITLE_SCREEN::get, value -> ArkeaConfig.set(ArkeaConfig.TITLE_SCREEN, value), true);
         this.toggle(screens, new ItemContent(Icons.LAYERS, Component.translatable("arkea.configuration.optionsScreen"),
             Component.translatable("arkea.settings.options.description")), ArkeaConfig.OPTIONS_SCREEN::get, value -> ArkeaConfig.set(ArkeaConfig.OPTIONS_SCREEN, value), true);
+        this.toggle(screens, new ItemContent(Icons.WORLD, Component.translatable("arkea.configuration.menuScreens"),
+            Component.translatable("arkea.settings.menus.description")), ArkeaConfig.MENU_SCREENS::get, value -> ArkeaConfig.set(ArkeaConfig.MENU_SCREENS, value), true);
         this.addReset(() -> {
             this.library.select(null);
             ArkeaConfig.set(ArkeaConfig.ACCENT, Accent.GREEN);

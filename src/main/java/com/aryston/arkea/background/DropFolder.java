@@ -13,13 +13,21 @@ import org.jspecify.annotations.Nullable;
 
 final class DropFolder {
     private final Map<Path, Snapshot> seen = new HashMap<>();
+    private final Map<Path, Snapshot> ignored = new HashMap<>();
+
+    void ignore(Path file) {
+        Snapshot snapshot = Snapshot.of(file);
+        if (snapshot != null) {
+            this.ignored.put(file, snapshot);
+        }
+    }
 
     List<Path> settled(List<Path> files) {
         List<Path> settled = new ArrayList<>();
         Map<Path, Snapshot> current = new HashMap<>();
         for (Path file : files) {
             Snapshot snapshot = Snapshot.of(file);
-            if (snapshot == null) {
+            if (snapshot == null || snapshot.equals(this.ignored.get(file))) {
                 continue;
             }
             if (snapshot.equals(this.seen.get(file)) && isClosed(file)) {

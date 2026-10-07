@@ -16,6 +16,7 @@ import com.aryston.arkea.ui.widget.ArkIconButton;
 import com.aryston.arkea.ui.widget.ArkWidget;
 import com.aryston.arkea.ui.widget.ButtonVariant;
 import com.aryston.arkea.ui.widget.IconButtonStyle;
+import com.aryston.arkea.ui.widget.Tag;
 import com.mojang.blaze3d.Blaze3D;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -114,11 +115,11 @@ public final class ArkPacksScreen extends OptionsPageScreen {
             }
         }
         boolean compatible = entry.getCompatibility().isCompatible();
-        PackRow.Tag tag = null;
+        Tag tag = null;
         if (!compatible) {
-            tag = new PackRow.Tag(Component.translatable("arkea.packs.incompatible"), INCOMPATIBLE, INCOMPATIBLE_FILL);
+            tag = new Tag(Component.translatable("arkea.packs.incompatible"), INCOMPATIBLE, INCOMPATIBLE_FILL);
         } else if (selected && (entry.isRequired() || entry.isFixedPosition())) {
-            tag = new PackRow.Tag(Component.translatable("arkea.packs.required"), REQUIRED, REQUIRED_FILL);
+            tag = new Tag(Component.translatable("arkea.packs.required"), REQUIRED, REQUIRED_FILL);
         }
         Component description = Component.literal(entry.getDescription().getString().lines().findFirst().orElse(""));
         Component tooltip = compatible ? entry.getExtendedDescription()

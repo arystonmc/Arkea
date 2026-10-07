@@ -15,6 +15,9 @@ public record IconButtonStyle(int fill, int hoverFill, int border, int iconColor
     public static final IconButtonStyle TILE = new IconButtonStyle(ArkColors.rgba(255, 255, 255, 0.04F), ARROW_HOVER_FILL,
         ArkColors.BORDER_DEFAULT, ArkColors.TEXT_SOFT, ArkColors.TEXT_PRIMARY, 12.0F, 12.0F);
 
+    public static final IconButtonStyle DANGER = new IconButtonStyle(ArkColors.rgba(184, 70, 58, 0.18F), ArkColors.rgba(184, 70, 58, 0.30F),
+        ArkColors.rgba(208, 88, 74, 0.6F), ArkColors.DANGER_TEXT, ArkColors.TEXT_PRIMARY, 12.0F, 12.0F);
+
     public static IconButtonStyle brightening(int fill, int border, int iconColor, float iconSize) {
         return new IconButtonStyle(fill, ArkColors.brighten(fill, HOVER_BRIGHTNESS), border, iconColor,
             ArkColors.brighten(iconColor, HOVER_BRIGHTNESS), iconSize, iconSize);

@@ -2,6 +2,7 @@ package com.aryston.arkea.screen.title;
 
 import com.aryston.arkea.Arkea;
 import com.aryston.arkea.mixin.SplashRendererAccessor;
+import com.aryston.arkea.screen.loading.JoinTarget;
 import com.aryston.arkea.screen.options.OptionsPage;
 import com.aryston.arkea.ui.anim.Motion;
 import com.aryston.arkea.ui.anim.Timeline;
@@ -392,6 +393,7 @@ public final class ArkTitleScreen extends ArkScreen {
             this.navigate(() -> NoticeWithLinkScreen.createWorldSymlinkWarningScreen(() -> this.minecraft.gui.setScreen(this)));
             return;
         }
+        JoinTarget.set(summary.getLevelName());
         this.leave(() -> this.minecraft.createWorldOpenFlows().openWorld(summary.getLevelId(), () -> this.minecraft.gui.setScreen(this)));
     }
 

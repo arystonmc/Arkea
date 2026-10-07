@@ -97,6 +97,12 @@ public final class Icons {
     public static final Icon FOLDER = Icon.stroke("M1.5 3.5h4.5l1.5 1.5h7v8h-13z");
     public static final Icon DROP = Icon.stroke("M8 2v8M4.5 6.5L8 10l3.5-3.5M2 13.5h12");
     public static final Icon RESET = Icon.stroke("M3.5 8a4.5 4.5 0 1 0 1.3-3.2M3.5 2v3h3");
+    public static final Icon EDIT = Icon.stroke("M10.5 2.5l3 3-8 8H2.5v-3z");
+    public static final Icon COPY = Icon.stroke("M5.5 5.5h8v8h-8zM2.5 10.5v-8h8");
+    public static final Icon TICK = Icon.stroke("M3 8.5l3 3 7-7");
+    public static final Icon INFO = Icon.stroke("M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM8 7v4.5M8 4.5v.01");
+    public static final Icon ERROR = Icon.stroke("M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM5.5 5.5l5 5M10.5 5.5l-5 5");
+    public static final Icon UPLOAD = Icon.stroke("M8 11V2.5M4.5 6L8 2.5 11.5 6M2.5 13.5h11");
     public static final Icon CHECK = Icon.pixels("M6 0h1v1H6zM5 1h1v1H5zM0 2h1v1H0zM4 2h1v1H4zM1 3h1v1H1zM3 3h1v1H3zM2 4h1v1H2z", 7.0F, 5.0F);
 
     private Icons() {

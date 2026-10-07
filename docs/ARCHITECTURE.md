@@ -53,6 +53,14 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 - Long pages only draw the rows inside the visible area. Pages with a search field (key binds, language, packs) rebuild their content on every change and keep the focus on the widget with the same key.
 - Popups (dropdown menus) render after the content and take input first; a click outside closes them.
 
+## Menu Screens
+
+- Window screens without a sidebar (singleplayer, create world, multiplayer, mods) return `null` from `brand()`; the header then spans the whole window. List screens keep their selection, sort and tab in screen fields and rebuild on every change, like the settings pages.
+- Replaceable screens are swapped in `ScreenEvent.Opening` (exact class only) and keep the vanilla previous screen through an accessor. Screens whose vanilla instance holds the logic are wrapped instead: `ArkCreateWorldScreen` edits the `WorldCreationUiState` of the vanilla `CreateWorldScreen` and calls its private creation methods through an invoker. Vanilla sub screens (game rules, data packs, experiments, superflat, optimize) still return to the vanilla instance, which `ClientEvents` wraps again.
+- Loading screens are never replaced, because game code depends on their classes (`instanceof LevelLoadingScreen` in the HUD, portals, music and packet handling) and `ConnectScreen` runs the connection. `ScreenEvent.Render.Pre` is cancelled for them and `LoadingSkin` draws the design from the screen state (accessors). The vanilla buttons stay the input targets: every frame they are moved to the boxes the design draws and painted with `ButtonPainter`.
+- Slow world operations (backup, delete, rename, measuring sizes) run on the IO pool and report with menu toasts; dialogs carry custom content through `DialogForm`, and the delete dialog shows the world image as a hero.
+- Menu toasts (`ArkToasts`) live outside any screen, so a toast started on one screen finishes on the next; every `ArkScreen` draws them above its content and below dialogs, and a click on a toast is handled before the content.
+
 ## Menu Backgrounds
 
 - The player picks a background on the Arkea settings page. `PanoramaMixin` cancels `Panorama.extractRenderState` and `MenuBackground` draws the selected background instead, so it shows wherever vanilla would show the panorama: the title screen, the options window over it and other menus.
@@ -111,16 +119,23 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 | `LanguageManager`, `Minecraft.reloadResourcePacks` | Language page |
 | `PackSelectionModel`, `PackDetector`, `Util.copyBetweenDirs`, `Options.updateResourcePacks` | Resource packs page |
 | `GpuWarnlistManager`, `UnsupportedGraphicsWarningScreen`, `Window.changeFullscreenVideoMode`, `Minecraft.updateMaxMipLevel`, `delayTextureReload` | Video page side effects copied from `VideoSettingsScreen` |
+| `SelectWorldScreen` + accessor, `LevelSummary`, `LevelStorageAccess` (`makeWorldBackup`, `deleteLevel`, `renameLevel`), `WorldOpenFlows` (`openWorld`, `recreateWorldData`), `OptimizeWorldScreen.create`, `CreateWorldScreen.openFresh`, `createFromExisting` | Singleplayer screen |
+| `CreateWorldScreen` + `CreateWorldScreenInvoker`, `WorldCreationUiState`, `WorldCreationGameRulesScreen`, `PresetEditor` | Create world screen |
+| `JoinMultiplayerScreen` + accessor, `ServerList`, `ServerData`, `ServerStatusPinger`, `LanServerDetection`, `ConnectScreen.startConnecting`, `ServerAddress` | Multiplayer screen |
+| `ScreenEvent.Render.Pre`, `ConnectScreen`, `LevelLoadingScreen`, `LevelLoadTracker`, `ProgressScreen`, `GenericMessageScreen`, `DisconnectedScreen` + accessors | Loading skin |
+| NeoForge `ModListScreen` + accessor, `ModDisplayInfo`, `DefaultModDisplayInfo`, `ImageResource`, `IConfigScreenFactory`, `VersionChecker`, `ConfirmLinkScreen` | Mods screen |
 
 ## Porting Checklist for a New Minecraft Version
 
 1. Check `GuiGraphicsExtractor`, `GuiElementRenderState`, `GuiRenderState` (layering and blur), `RenderPipelines.GUI` and `GUI_TEXTURED` (vertex format, culling) and `Screen.extractRenderStateWithTooltipAndSubtitles`.
 2. Check the input records (`MouseButtonEvent`, `KeyEvent`, `InputWithModifiers`) and `ContainerEventHandler` mouse release forwarding.
 3. Check that `Panorama.extractRenderState` still exists with that name (otherwise `PanoramaMixin` fails to apply and the custom background never shows) and that the `blit` overload with a texture view and a sampler is still there. Check whether NeoForge still drops modifier key bindings on load (the "Invalid keyMapping" warning); remove `KeyModifierRepair` and `OptionsMixin` once it does not. Check the fields of `SplashRenderer`, `OptionInstance`, `Tooltip` and `OptionsSubScreen` for the accessors, the option lists of the vanilla options sub-screens (new options must be added to the pages) and the side effects of `VideoSettingsScreen`.
-4. Run the client, open the title screen, hover, Tab through it, open and close the quit dialog, and compare with `screenshots/` of the design handoff.
+4. Check the private fields and methods behind the accessors and the invoker (`lastScreen` of the singleplayer, multiplayer and mods screens, `onCreate` and the pack screens of `CreateWorldScreen`, the state fields of the loading screens) and whether game code still checks the loading screen classes.
+5. Run `-Define arkea.uiCheck=all` and compare the screenshots with the design handoff. Run the client, open the title screen, hover, Tab through it, open and close the quit dialog, and compare with `screenshots/` of the design handoff.
 
 ## Testing Tools
 
 - Unit tests cover motion, scaling, the path parser, shadow profiles, dates, language files and background import (image, GIF and video conversion).
+- `-Define arkea.uiCheck=all` (or groups such as `worlds,servers,loading`) opens every Arkea screen and popup, saves `screenshots/arkea_<step>.png` and closes the game; run it in a 1366 x 768 window to compare with the design at one to one.
 - A file dropped into `run/arkea/backgrounds` is imported within about two seconds while the Arkea page is open, which tests imports without a file picker (the SDL picker needs a desktop portal on Linux, so it reports "unavailable" headless).
 - In a cloud session the client runs headless: `Xvfb :99`, Mesa `mesa-vulkan-drivers` (llvmpipe Vulkan), `DISPLAY=:99 ./gradlew runClient`. `xdotool` moves the mouse, clicks and types, `import -window root` takes screenshots, so hover, focus, dialogs and screen switches can be checked frame by frame.

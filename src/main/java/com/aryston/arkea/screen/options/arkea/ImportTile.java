@@ -27,19 +27,8 @@ final class ImportTile extends MediaTile {
 
     @Override
     protected void renderThumbnail(UiGraphics graphics, Box thumbnail, float hover) {
-        float line = graphics.scale().snapThickness(1.0F);
         Box area = thumbnail.inset(10.0F);
-        int color = ArkColors.lerp(hover, DASH_COLOR, Theme.accent().border());
-        for (float x = area.x(); x < area.right(); x += DASH * 2.0F) {
-            float width = Math.min(DASH, area.right() - x);
-            graphics.fill(x, area.y(), width, line, color);
-            graphics.fill(x, area.bottom() - line, width, line, color);
-        }
-        for (float y = area.y(); y < area.bottom(); y += DASH * 2.0F) {
-            float height = Math.min(DASH, area.bottom() - y);
-            graphics.fill(area.x(), y, line, height, color);
-            graphics.fill(area.right() - line, y, line, height, color);
-        }
+        graphics.dashedBorder(area, DASH, ArkColors.lerp(hover, DASH_COLOR, Theme.accent().border()));
         TextMetrics metrics = graphics.metrics();
         String hint = metrics.ellipsize(Component.translatable("arkea.background.import.hint").getString(), HINT, area.width() - GAP * 2.0F);
         float block = ICON_BOX + GAP + metrics.capHeight(HINT);

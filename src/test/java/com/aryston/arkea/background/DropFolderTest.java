@@ -38,6 +38,20 @@ class DropFolderTest {
     }
 
     @Test
+    void ignoredFileWaitsUntilItChanges() throws IOException {
+        Path file = Files.write(this.folder.resolve("clip.mp4"), new byte[] {1});
+        DropFolder drop = new DropFolder();
+        drop.ignore(file);
+
+        drop.settled(List.of(file));
+        assertTrue(drop.settled(List.of(file)).isEmpty(), "a cancelled import must not start again");
+
+        Files.write(file, new byte[] {1, 2});
+        drop.settled(List.of(file));
+        assertEquals(List.of(file), drop.settled(List.of(file)));
+    }
+
+    @Test
     void missingFilesAreForgotten() {
         DropFolder drop = new DropFolder();
 

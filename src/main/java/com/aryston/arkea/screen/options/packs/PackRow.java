@@ -10,6 +10,7 @@ import com.aryston.arkea.ui.render.UiGraphics;
 import com.aryston.arkea.ui.theme.ArkColors;
 import com.aryston.arkea.ui.theme.Theme;
 import com.aryston.arkea.ui.widget.ArkWidget;
+import com.aryston.arkea.ui.widget.Tag;
 import com.aryston.arkea.ui.widget.PanelRow;
 import java.util.List;
 import net.minecraft.network.chat.Component;
@@ -24,15 +25,11 @@ final class PackRow implements PanelRow {
     private static final float GAP = 12.0F;
     private static final float ACTION_GAP = 6.0F;
     private static final float LINE_GAP = 7.0F;
-    private static final float TAG_HEIGHT = 12.0F;
-    private static final float TAG_PADDING = 4.0F;
-    private static final float TAG_GAP = 8.0F;
     private static final float SELECTED_FILL_ALPHA = 0.08F;
     private static final float SELECTED_BORDER_ALPHA = 0.35F;
     private static final int BORDER = ArkColors.rgba(255, 255, 255, 0.07F);
     private static final TextStyle NAME = TextStyle.of(13.0F);
     private static final TextStyle DESCRIPTION = TextStyle.of(10.0F);
-    private static final TextStyle TAG = TextStyle.of(8.0F).spacing(1.0F);
 
     private final Identifier icon;
     private final Component name;
@@ -99,14 +96,11 @@ final class PackRow implements PanelRow {
         float right = (this.actions.isEmpty() ? box.right() - PADDING : this.actions.getFirst().bounds().x()) - GAP;
         float block = metrics.capHeight(NAME) + LINE_GAP + metrics.capHeight(DESCRIPTION);
         float nameY = box.centerY() - block * 0.5F;
-        float tagWidth = this.tag != null ? metrics.width(this.tag.text().getString(), TAG) + TAG_PADDING * 2.0F + TAG_GAP : 0.0F;
+        float tagWidth = this.tag != null ? this.tag.width(metrics) + Tag.GAP : 0.0F;
         String name = metrics.ellipsize(this.name.getString(), NAME, right - textX - tagWidth);
         graphics.text(name, textX, nameY, NAME, ArkColors.TEXT_PRIMARY);
         if (this.tag != null) {
-            Box tagBox = new Box(textX + metrics.width(name, NAME) + TAG_GAP, nameY + metrics.capHeight(NAME) * 0.5F - TAG_HEIGHT * 0.5F,
-                tagWidth - TAG_GAP, TAG_HEIGHT);
-            graphics.fill(tagBox, this.tag.fill());
-            graphics.text(this.tag.text().getString(), tagBox.x() + TAG_PADDING, tagBox.centerY() - metrics.capHeight(TAG) * 0.5F, TAG, this.tag.color());
+            this.tag.draw(graphics, textX + metrics.width(name, NAME) + Tag.GAP, nameY + metrics.capHeight(NAME) * 0.5F);
         }
         String description = metrics.ellipsize(this.description.getString(), DESCRIPTION, right - textX);
         graphics.text(description, textX, nameY + metrics.capHeight(NAME) + LINE_GAP, DESCRIPTION, ArkColors.TEXT_DESCRIPTION);
@@ -129,8 +123,5 @@ final class PackRow implements PanelRow {
     public void hide() {
         PanelRow.super.hide();
         this.hovered = false;
-    }
-
-    record Tag(Component text, int color, int fill) {
     }
 }

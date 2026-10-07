@@ -3,10 +3,18 @@
   "minVersion": "0.8",
   "package": "com.aryston.arkea.mixin",
   "client": [
+    "ConnectScreenAccessor",
+    "CreateWorldScreenInvoker",
+    "DisconnectedScreenAccessor",
+    "JoinMultiplayerScreenAccessor",
+    "LevelLoadingScreenAccessor",
+    "ModListScreenAccessor",
     "OptionInstanceAccessor",
     "OptionsMixin",
     "OptionsSubScreenAccessor",
     "PanoramaMixin",
+    "ProgressScreenAccessor",
+    "SelectWorldScreenAccessor",
     "SplashRendererAccessor",
     "TooltipAccessor"
   ],

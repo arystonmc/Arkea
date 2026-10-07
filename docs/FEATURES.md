@@ -63,5 +63,58 @@ Arkea has its own page in the options window, no need to go through the mod list
 
 - Menu background gallery and import
 - Accent color for every Arkea screen: green, emerald, gold or stone
-- Switches for the Arkea title screen and options window
+- Switches for the Arkea title screen, options window and menu screens
+- Since: 0.1
+
+### Singleplayer
+Your worlds at a glance, with everything you need to look after them.
+
+- Every world as a card with its picture, game mode, difficulty, version and when you last played, plus tags for hardcore, cheats and older or newer versions
+- A details panel shows play time and folder size of the selected world
+- Search by name, and sort by last played, name or game mode (remembered)
+- Double-click or press Enter to play, Delete to remove a world, F5 to reload
+- Delete asks first and can make a backup before deleting
+- Edit renames the world, makes a backup, opens its folder or the backups folder, optimizes it or resets its icon; long tasks show their progress in a notification
+- Since: 0.1
+
+### Create New World
+All world settings on three clear tabs.
+
+- Game: name, game mode, difficulty and commands
+- World: world type, seed, structures, bonus chest and the superflat editor
+- More: game rules, data packs and experiments
+- Since: 0.1
+
+### Multiplayer
+Servers and LAN games in one window.
+
+- Server cards with icon, colored message of the day, player count and ping bars; offline and outdated servers stand out
+- Move servers up and down (or Shift and the arrow keys), copy an address, edit or remove a server right on its card
+- Add Server and Direct Connect check the address before you join
+- The LAN tab scans your network and lists open worlds
+- Search servers by name or address, refresh with F5
+- Since: 0.1
+
+### Loading Screens
+Connecting and loading show what is happening.
+
+- Server connections list each step (connecting, logging in, joining, loading terrain) with a progress bar
+- World loading, saving, portal travel and other waits share the same look, with a tip at the bottom
+- A lost connection shows the reason clearly with one button back
+- Since: 0.1
+
+### Mods
+A clean list of every installed mod.
+
+- Icons, versions and tags for mods with settings or an available update
+- Details with authors, mod id, license, credits and description
+- Open a mod's settings, its homepage or its issue tracker, or the mods folder
+- Since: 0.1
+
+### Notifications
+Short messages at the bottom of every Arkea screen.
+
+- Success, info, warning and error notifications; errors stay until you click them
+- Long tasks such as backups show a moving bar and finish with the result
+- Some notifications offer an action, such as showing the new backup
 - Since: 0.1

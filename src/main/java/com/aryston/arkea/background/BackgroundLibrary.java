@@ -162,6 +162,7 @@ public final class BackgroundLibrary {
 
     public void dismiss(ImportJob job) {
         job.cancel();
+        this.dropFolder.ignore(job.source());
         this.jobs.remove(job);
         this.version++;
     }
@@ -181,8 +182,9 @@ public final class BackgroundLibrary {
     }
 
     private void run(ImportJob job, boolean moveSourceAfterwards) {
-        if (job.isCancelled()) {
+        if (job.isCancelled() || !Files.exists(job.source())) {
             job.state(ImportJob.State.CANCELLED);
+            Minecraft.getInstance().execute(() -> this.dismiss(job));
             return;
         }
         job.state(ImportJob.State.RUNNING);
@@ -214,6 +216,9 @@ public final class BackgroundLibrary {
     }
 
     private void moveSource(ImportJob job, String folderName) {
+        if (!Files.exists(job.source())) {
+            return;
+        }
         try {
             Path folder = this.root().resolve(folderName);
             Files.createDirectories(folder);

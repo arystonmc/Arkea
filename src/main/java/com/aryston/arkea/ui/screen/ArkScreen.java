@@ -2,6 +2,7 @@ package com.aryston.arkea.ui.screen;
 
 import com.aryston.arkea.ui.layout.UiScale;
 import com.aryston.arkea.ui.overlay.ArkDialog;
+import com.aryston.arkea.ui.overlay.ArkToasts;
 import com.aryston.arkea.ui.overlay.ArkTooltip;
 import com.aryston.arkea.ui.overlay.Popup;
 import com.aryston.arkea.ui.overlay.TooltipHint;
@@ -12,6 +13,7 @@ import com.aryston.arkea.ui.widget.UiHost;
 import com.mojang.blaze3d.platform.Window;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -106,6 +108,10 @@ public abstract class ArkScreen extends Screen implements UiHost {
         this.arkWidgets.add(widget);
         this.addWidget(widget);
         return widget;
+    }
+
+    public Optional<ArkWidget> findWidget(String widgetKey) {
+        return this.arkWidgets.stream().filter(widget -> widgetKey.equals(widget.key())).findFirst();
     }
 
     @Override
@@ -206,6 +212,7 @@ public abstract class ArkScreen extends Screen implements UiHost {
         }
         this.tooltip.track(contentInteractive && shownPopup == null ? this.hoveredHint() : null, now, designX, designY);
         this.tooltip.render(ui);
+        ArkToasts.render(ui);
         graphics.pose().popMatrix();
         this.renderDialog(graphics, ui, designX, designY);
     }
@@ -264,6 +271,9 @@ public abstract class ArkScreen extends Screen implements UiHost {
             return true;
         }
         if (this.dialog == null) {
+            if (ArkToasts.click(this.scale.toDesign(event.x()), this.scale.toDesign(event.y()))) {
+                return true;
+            }
             return super.mouseClicked(event, doubleClick);
         }
         if (!this.dialog.isOpen()) {

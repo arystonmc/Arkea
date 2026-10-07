@@ -1,5 +1,6 @@
 package com.aryston.arkea.background;
 
+import com.aryston.arkea.Arkea;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,6 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 final class FrameWriter implements AutoCloseable {
     private static final int QUEUED_PER_ENCODER = 2;
     private static final long FINISH_TIMEOUT_MINUTES = 10L;
+    private static final long STOP_TIMEOUT_SECONDS = 30L;
 
     private final Path target;
     private final ExecutorService encoders;
@@ -99,5 +101,12 @@ final class FrameWriter implements AutoCloseable {
     @Override
     public void close() {
         this.encoders.shutdownNow();
+        try {
+            if (!this.encoders.awaitTermination(STOP_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                Arkea.LOGGER.warn("Frame encoders of {} did not stop in time", this.target);
+            }
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+        }
     }
 }

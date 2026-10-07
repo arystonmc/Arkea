@@ -15,11 +15,15 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.locale.Language;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix3x2fStack;
 import org.joml.Vector2f;
 
 public final class UiGraphics {
+    private static final String ELLIPSIS = "...";
     private static final int MAX_DEPTH = 64;
     private static final int TOP_LEFT = 0;
     private static final int BOTTOM_LEFT = 1;
@@ -136,6 +140,20 @@ public final class UiGraphics {
         this.fill(box.right() - line, box.y() + line, line, box.height() - line * 2.0F, color);
     }
 
+    public void dashedBorder(Box box, float dash, int color) {
+        float line = this.scale.snapThickness(1.0F);
+        for (float x = box.x(); x < box.right(); x += dash * 2.0F) {
+            float width = Math.min(dash, box.right() - x);
+            this.fill(x, box.y(), width, line, color);
+            this.fill(x, box.bottom() - line, width, line, color);
+        }
+        for (float y = box.y(); y < box.bottom(); y += dash * 2.0F) {
+            float height = Math.min(dash, box.bottom() - y);
+            this.fill(box.x(), y, line, height, color);
+            this.fill(box.right() - line, y, line, height, color);
+        }
+    }
+
     public void topHighlight(Box box, int color) {
         float line = this.scale.snapThickness(1.0F);
         float edge = this.scale.snapThickness(1.0F);
@@ -169,6 +187,13 @@ public final class UiGraphics {
         AbstractTexture source = Minecraft.getInstance().getTextureManager().getTexture(texture);
         this.addTexturedQuad(box.x(), box.y(), box.right(), box.bottom(), u0, v0, u1, v1, this.applyAlpha(color));
         this.flush(RenderPipelines.GUI_TEXTURED, TextureSetup.singleTexture(source.getTextureView(), source.getSampler()), true);
+    }
+
+    public void imageCover(Identifier texture, Box box, float sourceAspect, int color) {
+        float boxAspect = box.width() / box.height();
+        float u = boxAspect < sourceAspect ? (1.0F - boxAspect / sourceAspect) * 0.5F : 0.0F;
+        float v = boxAspect > sourceAspect ? (1.0F - sourceAspect / boxAspect) * 0.5F : 0.0F;
+        this.image(texture, box, u, v, 1.0F - u, 1.0F - v, color);
     }
 
     public void image(AbstractTexture texture, Box box, float u0, float v0, float u1, float v1, int color) {
@@ -209,6 +234,22 @@ public final class UiGraphics {
         this.drawText(text, x, y, style, color);
     }
 
+    public void richText(Component text, float x, float y, float maxWidth, TextStyle style, int color) {
+        int tinted = this.applyAlpha(color);
+        if (ArkColors.alpha(tinted) <= 0.0F) {
+            return;
+        }
+        float fontScale = this.metrics.fontScale(style);
+        int available = Math.max(0, (int) Math.ceil(maxWidth / fontScale) + 1);
+        FormattedText clipped = this.font.width(text) <= available ? text
+            : FormattedText.composite(this.font.substrByWidth(text, Math.max(0, available - this.font.width(ELLIPSIS))), FormattedText.of(ELLIPSIS));
+        this.pose.pushMatrix();
+        this.translateSnapped(x, y);
+        this.pose.scale(fontScale);
+        this.graphics.text(this.font, Language.getInstance().getVisualOrder(clipped), 0, 0, tinted, false);
+        this.pose.popMatrix();
+    }
+
     public void cursor(CursorType cursor) {
         this.graphics.requestCursor(cursor);
     }
@@ -220,7 +261,8 @@ public final class UiGraphics {
         }
         float fontScale = this.metrics.fontScale(style);
         this.pose.pushMatrix();
-        this.pose.translate(x, y).scale(fontScale);
+        this.translateSnapped(x, y);
+        this.pose.scale(fontScale);
         if (style.letterSpacing() == 0.0F) {
             this.graphics.text(this.font, text, 0, 0, tinted, false);
         } else {
@@ -326,6 +368,18 @@ public final class UiGraphics {
     private void transformCorner(int corner, float x, float y, float u, float v, int color) {
         this.pose.transformPosition(x, y, this.point);
         this.quad.corner(corner, this.point.x, this.point.y, u, v, color);
+    }
+
+    private void translateSnapped(float x, float y) {
+        if (!this.isAxisAligned()) {
+            this.pose.translate(x, y);
+            return;
+        }
+        float guiScale = this.scale.guiScale();
+        this.pose.transformPosition(x, y, this.point);
+        float offsetX = (snap(this.point.x, guiScale) - this.point.x) / this.pose.m00();
+        float offsetY = (snap(this.point.y, guiScale) - this.point.y) / this.pose.m11();
+        this.pose.translate(x + offsetX, y + offsetY);
     }
 
     private boolean isAxisAligned() {

@@ -1,5 +1,6 @@
 package com.aryston.arkea.config;
 
+import com.aryston.arkea.screen.worlds.WorldSort;
 import com.aryston.arkea.ui.theme.Accent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
@@ -16,6 +17,10 @@ public final class ArkeaConfig {
         .translation("arkea.configuration.optionsScreen")
         .define("optionsScreen", true);
 
+    public static final ModConfigSpec.BooleanValue MENU_SCREENS = BUILDER
+        .translation("arkea.configuration.menuScreens")
+        .define("menuScreens", true);
+
     public static final ModConfigSpec.EnumValue<Accent> ACCENT = BUILDER
         .translation("arkea.configuration.accent")
         .defineEnum("accent", Accent.GREEN);
@@ -27,6 +32,10 @@ public final class ArkeaConfig {
     public static final ModConfigSpec.BooleanValue BACKGROUND_PAN = BUILDER
         .translation("arkea.configuration.backgroundPan")
         .define("backgroundPan", true);
+
+    public static final ModConfigSpec.EnumValue<WorldSort> WORLD_SORT = BUILDER
+        .translation("arkea.configuration.worldSort")
+        .defineEnum("worldSort", WorldSort.LAST_PLAYED);
 
     public static final ModConfigSpec SPEC = BUILDER.build();
 
