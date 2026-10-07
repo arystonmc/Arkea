@@ -2,6 +2,7 @@ package com.aryston.arkea.screen.title;
 
 import com.aryston.arkea.Arkea;
 import com.aryston.arkea.mixin.SplashRendererAccessor;
+import com.aryston.arkea.screen.options.OptionsPage;
 import com.aryston.arkea.ui.anim.Motion;
 import com.aryston.arkea.ui.anim.Timeline;
 import com.aryston.arkea.ui.layout.Box;
@@ -48,14 +49,12 @@ import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.storage.LevelSummary;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.client.gui.modlist.ModListScreen;
 import org.jspecify.annotations.Nullable;
 
 public final class ArkTitleScreen extends ArkScreen {
-    private static final Identifier LOGO = Identifier.fromNamespaceAndPath(Arkea.MOD_ID, "textures/gui/arkea_logo.png");
     private static final float EDGE = 96.0F;
     private static final float COLUMN_WIDTH = 360.0F;
     private static final float HEADER_HEIGHT = 80.0F;
@@ -351,7 +350,7 @@ public final class ArkTitleScreen extends ArkScreen {
         String brand = this.brandText();
         float brandX = scale.canvasWidth() - EDGE - metrics.width(brand, FOOTER);
         float logoX = brandX - LOGO_GAP - LOGO_SIZE;
-        graphics.image(LOGO, new Box(logoX, y + textHeight * 0.5F - LOGO_SIZE * 0.5F, LOGO_SIZE, LOGO_SIZE), 0.0F, 0.0F, 1.0F, 1.0F,
+        graphics.image(OptionsPage.ARKEA_LOGO, new Box(logoX, y + textHeight * 0.5F - LOGO_SIZE * 0.5F, LOGO_SIZE, LOGO_SIZE), 0.0F, 0.0F, 1.0F, 1.0F,
             ArkColors.TEXT_PRIMARY);
         graphics.text(brand, brandX, y, FOOTER, ArkColors.TEXT_MUTED);
     }

@@ -52,9 +52,9 @@ All settings in one calm window instead of a wall of buttons.
 ### Custom Menu Backgrounds
 Replace the rotating panorama with your own video, GIF or picture.
 
-- Import MP4, MOV, GIF, PNG or JPG from the Arkea page of the options, drop a file on the game window, or put it in the backgrounds folder
+- Import MP4, MOV, GIF, PNG or JPG from the Arkea page of the options, drop a file on the game window, or put it in the backgrounds folder (new files are picked up within a second while the Arkea page is open)
 - Every background plays on the title screen and in every menu that normally shows the panorama
-- Videos are converted once into a light frame sequence (up to 60 seconds, 720p, 30 fps), so playback barely costs any performance; pictures can drift slowly so the menu never looks frozen
+- Videos are converted once into a light frame sequence (up to 60 seconds, 720p, 30 fps) on every processor core, about ten seconds for a typical 1080p clip, so playback barely costs any performance; pictures can drift slowly so the menu never looks frozen
 - A gallery shows every background with a preview, its length and size; pick one with a click, delete it, or go back to the vanilla panorama any time
 - Since: 0.1
 

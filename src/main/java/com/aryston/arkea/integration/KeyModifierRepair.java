@@ -11,10 +11,6 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Options;
 import net.neoforged.neoforge.client.settings.KeyModifier;
 
-/**
- * NeoForge 26.3.0.51-beta parses a saved key with a modifier ("key.keyboard.j:CONTROL") as a key name first, fails and unbinds
- * the mapping on every start. This puts those bindings back right after the options are loaded, before the game saves them again.
- */
 public final class KeyModifierRepair {
     private static final String PREFIX = "key_";
     private static final char SEPARATOR = ':';

@@ -9,13 +9,16 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public final class BackgroundLibrary {
@@ -24,18 +27,17 @@ public final class BackgroundLibrary {
     private static final String FAILED_FOLDER = "failed";
     private static final int NAME_LENGTH = 40;
     private static final int ID_LENGTH = 24;
+    private static final long POLL_INTERVAL_MS = 1000L;
     private static @Nullable BackgroundLibrary instance;
 
     private final Path root;
     private final List<ImportJob> jobs = new CopyOnWriteArrayList<>();
-    private final ExecutorService worker = Executors.newSingleThreadExecutor(runnable -> {
-        Thread thread = new Thread(runnable, "Arkea background import");
-        thread.setDaemon(true);
-        thread.setPriority(Thread.MIN_PRIORITY);
-        return thread;
-    });
+    private final ExecutorService worker = Executors.newSingleThreadExecutor(WorkerThreads.named("Arkea background import"));
+    private final DropFolder dropFolder = new DropFolder();
     private List<BackgroundEntry> entries = List.of();
+    private Set<Path> folders = Set.of();
     private boolean scanned;
+    private long lastPoll;
     private int version;
 
     private BackgroundLibrary(Path root) {
@@ -74,36 +76,61 @@ public final class BackgroundLibrary {
     }
 
     public void refresh() {
+        this.read(this.list());
+    }
+
+    public void poll() {
+        long now = Util.getMillis();
+        if (now - this.lastPoll < POLL_INTERVAL_MS) {
+            return;
+        }
+        this.lastPoll = now;
+        Listing listing = this.list();
+        if (!this.scanned || !listing.folders().equals(this.folders)) {
+            this.read(listing);
+        }
+        for (Path file : this.dropFolder.settled(listing.files())) {
+            if (this.jobs.stream().noneMatch(job -> job.source().equals(file))) {
+                this.importFile(file, true);
+            }
+        }
+    }
+
+    private void read(Listing listing) {
         this.scanned = true;
+        this.folders = listing.folders();
         List<BackgroundEntry> found = new ArrayList<>();
-        List<Path> loose = new ArrayList<>();
+        for (Path folder : listing.folders()) {
+            BackgroundEntry entry = BackgroundEntry.read(folder);
+            if (entry != null) {
+                found.add(entry);
+            }
+        }
+        found.sort(Comparator.comparingLong(BackgroundEntry::created).reversed());
+        this.entries = List.copyOf(found);
+        this.version++;
+    }
+
+    private Listing list() {
+        boolean firstScan = !this.scanned;
+        Set<Path> folders = new HashSet<>();
+        List<Path> files = new ArrayList<>();
         try (DirectoryStream<Path> paths = Files.newDirectoryStream(this.root())) {
             for (Path path : paths) {
-                String fileName = path.getFileName().toString();
-                if (Files.isDirectory(path)) {
-                    if (fileName.startsWith(TEMP_PREFIX)) {
-                        deleteFolder(path);
-                    } else {
-                        BackgroundEntry entry = BackgroundEntry.read(path);
-                        if (entry != null) {
-                            found.add(entry);
-                        }
+                if (!Files.isDirectory(path)) {
+                    if (BackgroundImporter.detect(path) != null) {
+                        files.add(path);
                     }
-                } else if (BackgroundImporter.detect(path) != null) {
-                    loose.add(path);
+                } else if (!path.getFileName().toString().startsWith(TEMP_PREFIX)) {
+                    folders.add(path);
+                } else if (firstScan) {
+                    deleteFolder(path);
                 }
             }
         } catch (IOException exception) {
             Arkea.LOGGER.warn("Could not read the background library", exception);
         }
-        found.sort(Comparator.comparingLong(BackgroundEntry::created).reversed());
-        this.entries = List.copyOf(found);
-        this.version++;
-        for (Path file : loose) {
-            if (this.jobs.stream().noneMatch(job -> job.source().equals(file))) {
-                this.importFile(file, true);
-            }
-        }
+        return new Listing(Set.copyOf(folders), List.copyOf(files));
     }
 
     public @Nullable BackgroundEntry selected() {
@@ -212,6 +239,9 @@ public final class BackgroundLibrary {
             slug = slug.substring(0, ID_LENGTH);
         }
         return (slug.isEmpty() ? "background" : slug) + "-" + Long.toString(System.currentTimeMillis(), Character.MAX_RADIX);
+    }
+
+    private record Listing(Set<Path> folders, List<Path> files) {
     }
 
     static void deleteFolder(Path folder) {

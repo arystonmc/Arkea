@@ -53,7 +53,10 @@ public final class BackgroundImporter {
         if (type == Source.IMAGE) {
             return convertImage(ImageIO.read(source.toFile()), target, name);
         }
-        try (MediaFrames frames = type == Source.VIDEO ? new VideoFrames(source) : new GifFrames(source)) {
+        if (type == Source.VIDEO) {
+            return convertVideo(source, target, name, progress, cancelled);
+        }
+        try (MediaFrames frames = new GifFrames(source)) {
             return convertFrames(frames, target, name, progress, cancelled);
         }
     }
@@ -67,6 +70,15 @@ public final class BackgroundImporter {
         Files.write(target.resolve(BackgroundEntry.IMAGE), jpeg);
         writeThumbnail(scaled, target);
         BackgroundEntry entry = new BackgroundEntry(target, name, BackgroundEntry.Kind.IMAGE, scaled.getWidth(), scaled.getHeight(), 0, 1,
+            folderSize(target), System.currentTimeMillis());
+        entry.write();
+        return entry;
+    }
+
+    private static BackgroundEntry convertVideo(Path source, Path target, String name, Progress progress, BooleanSupplier cancelled)
+        throws IOException {
+        VideoConverter.Result video = VideoConverter.convert(source, target, progress, cancelled);
+        BackgroundEntry entry = new BackgroundEntry(target, name, BackgroundEntry.Kind.VIDEO, video.width(), video.height(), video.fps(), video.frames(),
             folderSize(target), System.currentTimeMillis());
         entry.write();
         return entry;
@@ -131,7 +143,7 @@ public final class BackgroundImporter {
         return draw(source, width, height, 0, 0, source.getWidth(), source.getHeight());
     }
 
-    private static void writeThumbnail(BufferedImage source, Path target) throws IOException {
+    static void writeThumbnail(BufferedImage source, Path target) throws IOException {
         float sourceAspect = source.getWidth() / (float) source.getHeight();
         float targetAspect = THUMBNAIL_WIDTH / (float) THUMBNAIL_HEIGHT;
         int cropWidth = sourceAspect > targetAspect ? Math.round(source.getHeight() * targetAspect) : source.getWidth();

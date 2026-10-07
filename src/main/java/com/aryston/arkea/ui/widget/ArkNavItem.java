@@ -10,6 +10,8 @@ import com.aryston.arkea.ui.theme.Accent;
 import com.aryston.arkea.ui.theme.ArkColors;
 import com.aryston.arkea.ui.theme.Theme;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 
 public class ArkNavItem extends ArkWidget {
     public static final float HEIGHT = 32.0F;
@@ -25,6 +27,7 @@ public class ArkNavItem extends ArkWidget {
     private static final TextStyle LABEL = TextStyle.of(13.0F);
 
     private final Icon icon;
+    private final @Nullable Identifier logo;
     private final Component label;
     private final boolean selected;
     private final boolean external;
@@ -33,6 +36,7 @@ public class ArkNavItem extends ArkWidget {
     public ArkNavItem(UiHost host, NavEntry entry, boolean selected, Runnable action) {
         super(host, TRANSITION, Easing.EASE);
         this.icon = entry.icon();
+        this.logo = entry.logo();
         this.label = entry.label();
         this.external = entry.external();
         this.selected = selected;
@@ -55,7 +59,12 @@ public class ArkNavItem extends ArkWidget {
             color = ArkColors.lerp(hover, ArkColors.TEXT_MUTED, ArkColors.TEXT_PRIMARY);
         }
         float iconX = box.x() + PADDING_X;
-        graphics.icon(this.icon, iconX, box.centerY() - ICON_SIZE * 0.5F, ICON_SIZE, ICON_SIZE, color);
+        Box iconBox = new Box(iconX, box.centerY() - ICON_SIZE * 0.5F, ICON_SIZE, ICON_SIZE);
+        if (this.logo != null) {
+            graphics.image(this.logo, iconBox, 0.0F, 0.0F, 1.0F, 1.0F, ArkColors.TEXT_PRIMARY);
+        } else {
+            graphics.icon(this.icon, iconBox.x(), iconBox.y(), ICON_SIZE, ICON_SIZE, color);
+        }
         float textX = iconX + ICON_SIZE + GAP;
         float textWidth = box.right() - PADDING_X - textX - (this.external ? EXTERNAL_SIZE + GAP : 0.0F);
         String text = graphics.metrics().ellipsize(this.label.getString(), LABEL, textWidth);

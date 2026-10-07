@@ -94,8 +94,12 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### BackgroundLibrary
 - Path: `src/main/java/com/aryston/arkea/background/BackgroundLibrary.java`
-- Role: The menu backgrounds in `<game folder>/arkea/backgrounds`: scans the entry folders, imports files on one background worker thread (into a temporary folder, then an atomic move), auto imports loose media files dropped into the folder (the originals move to `imported/`, or `failed/`), selects the new entry after an import, deletes entries and counts changes in `version` so the settings page rebuilds.
-- Depends on: `BackgroundImporter`, `BackgroundEntry`, `ImportJob`, `ArkeaConfig`, `MenuBackground`.
+- Role: The menu backgrounds in `<game folder>/arkea/backgrounds`: scans the entry folders when the Arkea page opens and polls the folder once a second while it is open (`poll`), imports files one at a time on a background worker (into a temporary folder, then an atomic move), auto imports loose media files dropped into the folder once `DropFolder` reports them settled (the originals move to `imported/`, or `failed/`), removes leftover temporary folders only on the first scan, selects the new entry after an import, deletes entries and counts changes in `version` so the settings page rebuilds.
+- Depends on: `BackgroundImporter`, `BackgroundEntry`, `ImportJob`, `DropFolder`, `WorkerThreads`, `ArkeaConfig`, `MenuBackground`.
+
+#### DropFolder
+- Path: `src/main/java/com/aryston/arkea/background/DropFolder.java`
+- Role: Tells which loose files in the backgrounds folder have finished copying: same size and modification time on two polls in a row, and no other program holds the file open for writing.
 
 #### BackgroundEntry
 - Path: `src/main/java/com/aryston/arkea/background/BackgroundEntry.java`
@@ -103,16 +107,46 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### BackgroundImporter
 - Path: `src/main/java/com/aryston/arkea/background/BackgroundImporter.java`
-- Role: Converts MP4, M4V, MOV, GIF, PNG, JPG and BMP into a background folder. Videos and animations become a JPEG frame sequence at their own frame rate (at most 30 fps, 1280 x 720 and 60 seconds); stills and single frame files become one image of at most 1920 x 1080. Writes a 384 x 216 thumbnail and the manifest, reports progress and stops when cancelled.
+- Role: Converts MP4, M4V, MOV, GIF, PNG, JPG and BMP into a background folder. Videos and animations become a JPEG frame sequence at their own frame rate (at most 30 fps, 1280 x 720 and 60 seconds); Videos go to `VideoConverter`, GIFs are converted frame by frame here; stills and single frame files become one image of at most 1920 x 1080. Writes a 384 x 216 thumbnail and the manifest, reports progress and stops when cancelled.
 - Notes: Playing JPEG frames needs no video decoder at runtime; JPEG decoding through STB is about ten times faster than decoding H.264 in Java, so playback stays cheap.
 
 #### MediaFrames
 - Path: `src/main/java/com/aryston/arkea/background/MediaFrames.java`
 - Role: A source of decoded frames with their time, for the importer.
 
-#### VideoFrames
-- Path: `src/main/java/com/aryston/arkea/background/VideoFrames.java`
-- Role: Decodes MP4 and MOV (H.264) with JCodec, converts to RGB and returns frames in presentation order (a small reorder buffer, because frames come out of the decoder in decode order when the video has B frames).
+#### VideoConverter
+- Path: `src/main/java/com/aryston/arkea/background/VideoConverter.java`
+- Role: Converts an MP4 or MOV into the JPEG frame sequence in parallel. Splits the video at its key frames into `VideoSegment`s, decodes them on a pool of low priority threads (one less than the cores, fewer when the free memory cannot hold that many decoders) and hands the frames to `FrameWriter`. Stops every thread on cancel or the first error and reports that error.
+- Depends on: `VideoSegment`, `VideoPlan`, `FrameWriter`, `WorkerThreads`.
+- Notes: JCodec decodes about 8 frames per second of 4K H.264 on one core; the parallel segments and the skipped frames make a 17 second 4K 60 fps clip take about 20 seconds instead of over three minutes.
+
+#### VideoSegment
+- Path: `src/main/java/com/aryston/arkea/background/VideoSegment.java`
+- Role: One key frame to key frame part of a video, decoded with its own file channel and JCodec decoder. Reads the presentation times of its packets first, maps them to output frames with `FrameSlots`, then decodes in decode order, skips non-reference frames that no output frame shows without decoding them, and scales only shown frames with `PictureScaler`.
+
+#### VideoPlan
+- Path: `src/main/java/com/aryston/arkea/background/VideoPlan.java`
+- Role: Time origin, output frame rate, frame limit and codec of a video, shared by its segments.
+
+#### FrameSlots
+- Path: `src/main/java/com/aryston/arkea/background/FrameSlots.java`
+- Role: Maps the presentation times of source frames to the output frames each one fills at the output frame rate (a 60 fps frame between two 30 fps outputs fills none, a slow frame fills several).
+
+#### NalUnits
+- Path: `src/main/java/com/aryston/arkea/background/NalUnits.java`
+- Role: Reads the first slice header of an Annex B H.264 packet and tells whether no other frame references it, so it can be skipped.
+
+#### PictureScaler
+- Path: `src/main/java/com/aryston/arkea/background/PictureScaler.java`
+- Role: Turns a decoded JCodec picture into an RGB image of at most the given size: area averages the YUV 4:2:0 planes inside the crop and converts only the small result (BT.709 for HD, BT.601 otherwise, full range for JPEG YUV). Other pixel formats go through JCodec's color transform and `BackgroundImporter.fit`.
+
+#### FrameWriter
+- Path: `src/main/java/com/aryston/arkea/background/FrameWriter.java`
+- Role: Encodes scaled frames to JPEG on its own threads and writes them to every output frame they fill, with a bounded queue so decoders wait instead of filling the memory. Writes the thumbnail from output frame 0 and keeps the first error.
+
+#### WorkerThreads
+- Path: `src/main/java/com/aryston/arkea/background/WorkerThreads.java`
+- Role: Thread factory for numbered, low priority daemon threads of the importer.
 
 #### GifFrames
 - Path: `src/main/java/com/aryston/arkea/background/GifFrames.java`
@@ -377,7 +411,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### NavEntry
 - Path: `src/main/java/com/aryston/arkea/ui/widget/NavEntry.java`
-- Role: Id, icon, label and external flag of a sidebar entry.
+- Role: Id, icon, optional logo texture (drawn instead of the icon), label and external flag of a sidebar entry.
 
 #### ArkTile
 - Path: `src/main/java/com/aryston/arkea/ui/widget/ArkTile.java`
@@ -500,7 +534,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### OptionsPage
 - Path: `src/main/java/com/aryston/arkea/screen/options/OptionsPage.java`
-- Role: Every options page with its sidebar group, icon, title (vanilla text without the trailing dots), label, description and the Arkea window page it opens. Helion appears only when it registers a config screen and opens its own screen. Arkea has its own page in the Content group.
+- Role: Every options page with its sidebar group, icon, title (vanilla text without the trailing dots), label, description and the Arkea window page it opens. Helion appears only when it registers a config screen and opens its own screen. Arkea has its own page in the Content group. Arkea and Helion show their logos (`ARKEA_LOGO`, `HELION_LOGO`) in the sidebar, as in the design.
 
 #### OptionsNavigation
 - Path: `src/main/java/com/aryston/arkea/screen/options/OptionsNavigation.java`
@@ -670,6 +704,10 @@ Plain JUnit 5 tests without a running game, run by `./gradlew build` and the CI.
 | `src/test/java/com/aryston/arkea/ui/widget/SliderRangeTest.java` | Slider fraction, step snapping, clamping and an empty range. |
 | `src/test/java/com/aryston/arkea/screen/options/control/OptionTextTest.java` | Vanilla "Caption: value" labels reduce to the value, percent labels use the Arkea key, unknown labels stay. |
 | `src/test/java/com/aryston/arkea/background/BackgroundImporterTest.java` | File type detection, frame rate rounding and the 30 fps cap, scaling without upscaling, image, GIF and video conversion (frame order with B frames from `src/test/resources/background/ramp.mp4`), single frame GIFs, cancelling, manifest round trip and broken manifests. |
+| `src/test/java/com/aryston/arkea/background/FrameSlotsTest.java` | 60 fps frames between two 30 fps outputs are skipped, slow frames fill several outputs, the frame limit, unknown times. |
+| `src/test/java/com/aryston/arkea/background/NalUnitsTest.java` | Non-reference slices are disposable, reference and key frames are kept, parameter sets and SEI before the slice are skipped, data without a slice is kept. |
+| `src/test/java/com/aryston/arkea/background/PictureScalerTest.java` | Limited and full range colors, shrinking 4K to 720p, the crop hides coded padding, area averaging. |
+| `src/test/java/com/aryston/arkea/background/DropFolderTest.java` | A dropped file settles on the second poll, a growing file waits, missing files are ignored. |
 | `src/test/java/com/aryston/arkea/screen/title/LastPlayedTest.java` | Today, yesterday across midnight, and the localized date for older worlds. |
 
 ## Source Files
@@ -684,7 +722,7 @@ Plain JUnit 5 tests without a running game, run by `./gradlew build` and the CI.
 | Folder | Contents |
 |---|---|
 | `src/main/resources/assets/arkea/lang/` | `en_us.json` and `tr_tr.json`: config, title screen, window and options texts, short option descriptions (`arkea.option.*`). Menu labels reuse vanilla keys so every game language shows them. |
-| `src/main/resources/assets/arkea/textures/gui/` | `arkea_logo.png`: 32 x 32 logo of the "UI by Arkea" footer. `helion_logo.png` and `helion_preview.png`: logo and preview of the Helion banner, from the design handoff. |
+| `src/main/resources/assets/arkea/textures/gui/` | `arkea_logo.png` and `helion_logo.png`: 48 x 48 logos (scaled from the 128 pixel design handoff logos) for the sidebar, the "UI by Arkea" footer and the Helion banner, with `.png.mcmeta` files that turn on linear filtering. `helion_preview.png`: preview of the Helion banner. |
 
 ## Build Files
 

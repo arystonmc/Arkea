@@ -12,9 +12,11 @@ import java.util.function.BiFunction;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import org.jspecify.annotations.Nullable;
 
 public enum OptionsPage {
     OVERVIEW(Group.GAME, Icons.SLIDERS, "options.title", (parent, minecraft) -> parent),
@@ -30,6 +32,8 @@ public enum OptionsPage {
     ARKEA(Group.CONTENT, Icons.ARKEA, "arkea.options.arkea", (parent, minecraft) -> new ArkArkeaScreen(parent)),
     HELION(Group.CONTENT, Icons.SPARKLE, "arkea.options.helion", OptionsPage::helionScreen);
 
+    public static final Identifier ARKEA_LOGO = Identifier.fromNamespaceAndPath("arkea", "textures/gui/arkea_logo.png");
+    public static final Identifier HELION_LOGO = Identifier.fromNamespaceAndPath("arkea", "textures/gui/helion_logo.png");
     private static final String HELION_ID = "helion";
     private static final String TRAILING_DOTS = "...";
     private static final String TRAILING_ELLIPSIS = "…";
@@ -86,7 +90,15 @@ public enum OptionsPage {
     }
 
     public NavEntry navEntry() {
-        return new NavEntry(this.id(), this.icon, this.navLabel(), this.isExternal());
+        return new NavEntry(this.id(), this.icon, this.logo(), this.navLabel(), this.isExternal());
+    }
+
+    public @Nullable Identifier logo() {
+        return switch (this) {
+            case ARKEA -> ARKEA_LOGO;
+            case HELION -> HELION_LOGO;
+            default -> null;
+        };
     }
 
     public Screen open(Screen parent, Minecraft minecraft) {

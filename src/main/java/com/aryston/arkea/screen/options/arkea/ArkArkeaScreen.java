@@ -174,8 +174,15 @@ public final class ArkArkeaScreen extends OptionsPageScreen {
     }
 
     @Override
+    public void added() {
+        this.library.refresh();
+        super.added();
+    }
+
+    @Override
     public void tick() {
         super.tick();
+        this.library.poll();
         if (this.library.version() != this.shownVersion) {
             this.rebuild();
         }

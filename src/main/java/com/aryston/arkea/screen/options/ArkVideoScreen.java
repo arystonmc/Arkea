@@ -32,7 +32,6 @@ import org.jspecify.annotations.Nullable;
 
 public final class ArkVideoScreen extends OptionsPageScreen {
     private static final Identifier HELION_PREVIEW = Identifier.fromNamespaceAndPath("arkea", "textures/gui/helion_preview.png");
-    private static final Identifier HELION_LOGO = Identifier.fromNamespaceAndPath("arkea", "textures/gui/helion_logo.png");
     private static final ArkBanner.Banner.Image PREVIEW_CROP = new ArkBanner.Banner.Image(HELION_PREVIEW, 0.029F, 0.0F, 0.993F, 1.0F);
     private static final float MODE_WIDTH = 200.0F;
     private static final int CURRENT_MODE = -1;
@@ -62,7 +61,7 @@ public final class ArkVideoScreen extends OptionsPageScreen {
         if (!OptionsPage.HELION.isAvailable()) {
             return null;
         }
-        ArkBanner.Banner banner = new ArkBanner.Banner(PREVIEW_CROP, HELION_LOGO, Component.translatable("arkea.options.helion.banner.title"),
+        ArkBanner.Banner banner = new ArkBanner.Banner(PREVIEW_CROP, OptionsPage.HELION_LOGO, Component.translatable("arkea.options.helion.banner.title"),
             Component.translatable("arkea.options.helion.banner.subtitle"), Component.translatable("arkea.options.helion.banner.action"));
         return new ArkBanner(this, banner, () -> this.navigate(() -> OptionsPage.HELION.open(this, this.minecraft)));
     }

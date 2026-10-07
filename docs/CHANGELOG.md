@@ -20,3 +20,6 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 
 ### Fixed
 - Keep key bindings with Ctrl, Shift or Alt after a restart
+- Import videos dropped into the backgrounds folder while the game is running, once they finish copying
+- Import videos about ten times faster, using every processor core
+- Show the Arkea and Helion logos in the options sidebar
