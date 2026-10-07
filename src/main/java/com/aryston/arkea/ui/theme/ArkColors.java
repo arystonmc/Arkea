@@ -12,6 +12,10 @@ public final class ArkColors {
     public static final int CONTROL_FILL = rgba(0, 0, 0, 0.30F);
     public static final int TRACK = rgb(0x38383B);
     public static final int TRACK_EMPTY = rgba(255, 255, 255, 0.10F);
+    public static final int CONTROL_IDLE = rgb(0x8A8A8C);
+    public static final int CONTROL_HOVER = rgba(255, 255, 255, 0.08F);
+    public static final int SCROLL_THUMB = rgba(255, 255, 255, 0.16F);
+    public static final int SCROLL_THUMB_HOVER = rgba(255, 255, 255, 0.32F);
 
     public static final int BORDER_SUBTLE = rgba(255, 255, 255, 0.06F);
     public static final int BORDER_DEFAULT = rgba(255, 255, 255, 0.08F);

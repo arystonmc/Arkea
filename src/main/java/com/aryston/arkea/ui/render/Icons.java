@@ -90,6 +90,7 @@ public final class Icons {
     public static final Icon CHEVRON_RIGHT = Icon.pixels("M0 0h1v1H0zM1 1h1v1H1zM2 2h1v1H2zM1 3h1v1H1zM0 4h1v1H0z", 3.0F, 5.0F);
     public static final Icon CHEVRON_LEFT = Icon.pixels("M2 0h1v1H2zM1 1h1v1H1zM0 2h1v1H0zM1 3h1v1H1zM2 4h1v1H2z", 3.0F, 5.0F);
     public static final Icon CHEVRON_DOWN = Icon.pixels("M0 0h5v1H0zM1 1h3v1H1zM2 2h1v1H2z", 5.0F, 3.0F);
+    public static final Icon RESET = Icon.stroke("M3.5 8a4.5 4.5 0 1 0 1.3-3.2M3.5 2v3h3");
     public static final Icon CHECK = Icon.pixels("M6 0h1v1H6zM5 1h1v1H5zM0 2h1v1H0zM4 2h1v1H4zM1 3h1v1H1zM3 3h1v1H3zM2 4h1v1H2z", 7.0F, 5.0F);
 
     private Icons() {

@@ -3,7 +3,10 @@
   "minVersion": "0.8",
   "package": "com.aryston.arkea.mixin",
   "client": [
-    "SplashRendererAccessor"
+    "OptionInstanceAccessor",
+    "OptionsSubScreenAccessor",
+    "SplashRendererAccessor",
+    "TooltipAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

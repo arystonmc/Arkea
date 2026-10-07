@@ -35,6 +35,10 @@ All settings in one calm window instead of a wall of buttons.
 - A sidebar groups every settings page into Game, Player and Content; Helion settings appear there when Helion is installed
 - Field of View has a smooth slider right on the overview; drag it, click it or use the arrow keys (Shift for bigger steps)
 - Every settings page has its own tile with a short description, and Telemetry and Credits stay one click away
+- Video, Sound, Chat, Accessibility, Skin and Controls are redesigned too: every option has a short description, a switch, slider or selector, and the full explanation on hover
+- Switch pages from the sidebar without the window closing; long pages scroll with the wheel, the scrollbar or the keyboard
+- Reset to Defaults puts a page back after asking once
+- When Helion is installed, the video page points to its shader settings
 - The window glides in over the blurred menu background or your world and glides out when you leave
 - Works with mouse, keyboard and the narrator; changes save automatically
 - Turn it off in Mods, Arkea, Config to get the vanilla options menu back

@@ -5,6 +5,8 @@ import com.aryston.arkea.ui.layout.UiScale;
 import com.aryston.arkea.ui.theme.ArkColors;
 import com.mojang.blaze3d.platform.cursor.CursorType;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -35,6 +37,7 @@ public final class UiGraphics {
     private final Vector2f point = new Vector2f();
     private final QuadGeometry quad = new QuadGeometry();
     private final MeshBuilder mesh = new MeshBuilder();
+    private final Deque<Box> clips = new ArrayDeque<>();
     private int depth;
     private float alpha = 1.0F;
 
@@ -86,6 +89,21 @@ public final class UiGraphics {
         float x1 = this.point.x / poseScale;
         float y1 = this.point.y / poseScale;
         return new Box(Math.min(x0, x1), Math.min(y0, y1), Math.abs(x1 - x0), Math.abs(y1 - y0));
+    }
+
+    public void clip(Box local) {
+        this.graphics.enableScissor((int) Math.floor(local.x()), (int) Math.floor(local.y()), (int) Math.ceil(local.right()), (int) Math.ceil(local.bottom()));
+        Box canvas = this.canvasBox(local);
+        this.clips.push(this.clips.isEmpty() ? canvas : this.clips.peek().intersect(canvas));
+    }
+
+    public void endClip() {
+        this.graphics.disableScissor();
+        this.clips.pop();
+    }
+
+    public Box visible(Box canvas) {
+        return this.clips.isEmpty() ? canvas : this.clips.peek().intersect(canvas);
     }
 
     public void fade(float factor) {

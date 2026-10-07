@@ -3,6 +3,7 @@ package com.aryston.arkea.ui.screen;
 import com.aryston.arkea.ui.layout.UiScale;
 import com.aryston.arkea.ui.overlay.ArkDialog;
 import com.aryston.arkea.ui.overlay.ArkTooltip;
+import com.aryston.arkea.ui.overlay.TooltipHint;
 import com.aryston.arkea.ui.render.TextMetrics;
 import com.aryston.arkea.ui.render.UiGraphics;
 import com.aryston.arkea.ui.widget.ArkWidget;
@@ -154,7 +155,6 @@ public abstract class ArkScreen extends Screen implements UiHost {
         if (this.isLeaving() && this.sinceLeft() >= this.exitDuration() && !this.navigating) {
             this.navigating = true;
             this.destination.run();
-            return;
         }
         long now = this.now();
         UiGraphics ui = new UiGraphics(graphics, this.scale, this.font, now);
@@ -165,7 +165,7 @@ public abstract class ArkScreen extends Screen implements UiHost {
         graphics.pose().pushMatrix();
         graphics.pose().scale(this.scale.poseScale());
         this.renderUi(ui, contentX, designY);
-        this.tooltip.track(contentInteractive ? this.hoveredWidget() : null, now, designX, designY);
+        this.tooltip.track(contentInteractive ? this.hoveredHint() : null, now, designX, designY);
         this.tooltip.render(ui);
         graphics.pose().popMatrix();
         this.renderDialog(graphics, ui, designX, designY);
@@ -194,13 +194,18 @@ public abstract class ArkScreen extends Screen implements UiHost {
         return this.minecraft.options.getMenuBackgroundBlurriness() >= BLUR_THRESHOLD;
     }
 
-    private @Nullable ArkWidget hoveredWidget() {
+    protected @Nullable TooltipHint hoveredHint() {
         for (ArkWidget widget : this.arkWidgets) {
-            if (widget.isHovered()) {
-                return widget;
+            Component text = widget.tooltip();
+            if (widget.isHovered() && text != null) {
+                return new TooltipHint(widget, text);
             }
         }
         return null;
+    }
+
+    protected boolean isInteractive() {
+        return this.dialog == null && !this.isLeaving();
     }
 
     @Override

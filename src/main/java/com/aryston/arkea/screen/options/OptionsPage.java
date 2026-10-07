@@ -8,13 +8,7 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.options.AccessibilityOptionsScreen;
-import net.minecraft.client.gui.screens.options.ChatOptionsScreen;
 import net.minecraft.client.gui.screens.options.LanguageSelectScreen;
-import net.minecraft.client.gui.screens.options.SkinCustomizationScreen;
-import net.minecraft.client.gui.screens.options.SoundOptionsScreen;
-import net.minecraft.client.gui.screens.options.VideoSettingsScreen;
-import net.minecraft.client.gui.screens.options.controls.ControlsScreen;
 import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.network.chat.Component;
@@ -24,15 +18,15 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
 public enum OptionsPage {
     OVERVIEW(Group.GAME, Icons.SLIDERS, "options.title", (parent, minecraft) -> parent),
-    VIDEO(Group.GAME, Icons.MONITOR, "options.video", (parent, minecraft) -> new VideoSettingsScreen(parent, minecraft, minecraft.options)),
-    CONTROLS(Group.GAME, Icons.MOUSE, "options.controls", (parent, minecraft) -> new ControlsScreen(parent, minecraft.options)),
+    VIDEO(Group.GAME, Icons.MONITOR, "options.video", (parent, minecraft) -> new ArkVideoScreen(parent)),
+    CONTROLS(Group.GAME, Icons.MOUSE, "options.controls", (parent, minecraft) -> new ArkControlsScreen(parent)),
     KEY_BINDS(Group.GAME, Icons.KEYBOARD, "controls.keybinds", (parent, minecraft) -> new KeyBindsScreen(parent, minecraft.options)),
-    SOUND(Group.GAME, Icons.SPEAKER, "options.sounds", (parent, minecraft) -> new SoundOptionsScreen(parent, minecraft.options)),
-    SKIN(Group.PLAYER, Icons.SHIRT, "options.skinCustomisation", (parent, minecraft) -> new SkinCustomizationScreen(parent, minecraft.options)),
-    CHAT(Group.PLAYER, Icons.CHAT, "options.chat", (parent, minecraft) -> new ChatOptionsScreen(parent, minecraft.options)),
+    SOUND(Group.GAME, Icons.SPEAKER, "options.sounds", (parent, minecraft) -> new ArkSoundScreen(parent)),
+    SKIN(Group.PLAYER, Icons.SHIRT, "options.skinCustomisation", (parent, minecraft) -> new ArkSkinScreen(parent)),
+    CHAT(Group.PLAYER, Icons.CHAT, "options.chat", (parent, minecraft) -> new ArkChatScreen(parent)),
     LANGUAGE(Group.PLAYER, Icons.GLOBE, "options.language",
         (parent, minecraft) -> new LanguageSelectScreen(parent, minecraft.options, minecraft.getLanguageManager())),
-    ACCESSIBILITY(Group.PLAYER, Icons.ACCESS, "options.accessibility", (parent, minecraft) -> new AccessibilityOptionsScreen(parent, minecraft.options)),
+    ACCESSIBILITY(Group.PLAYER, Icons.ACCESS, "options.accessibility", (parent, minecraft) -> new ArkAccessibilityScreen(parent)),
     RESOURCE_PACKS(Group.CONTENT, Icons.PACK, "options.resourcepack", OptionsPage::packScreen),
     HELION(Group.CONTENT, Icons.SPARKLE, "arkea.options.helion", OptionsPage::helionScreen);
 
@@ -72,6 +66,13 @@ public enum OptionsPage {
         return this == HELION;
     }
 
+    public boolean isWindow() {
+        return switch (this) {
+            case OVERVIEW, VIDEO, CONTROLS, SOUND, SKIN, CHAT, ACCESSIBILITY -> true;
+            case KEY_BINDS, LANGUAGE, RESOURCE_PACKS, HELION -> false;
+        };
+    }
+
     public Component title() {
         return withoutEllipsis(Component.translatable(this.titleKey));
     }
@@ -92,7 +93,7 @@ public enum OptionsPage {
         return this.factory.apply(parent, minecraft);
     }
 
-    private String key() {
+    String key() {
         return this.name().toLowerCase(Locale.ROOT);
     }
 

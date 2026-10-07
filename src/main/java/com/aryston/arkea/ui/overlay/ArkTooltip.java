@@ -9,7 +9,6 @@ import com.aryston.arkea.ui.render.TextMetrics;
 import com.aryston.arkea.ui.render.TextStyle;
 import com.aryston.arkea.ui.render.UiGraphics;
 import com.aryston.arkea.ui.theme.ArkColors;
-import com.aryston.arkea.ui.widget.ArkWidget;
 import java.util.List;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
@@ -27,23 +26,23 @@ public final class ArkTooltip {
     private static final TextStyle TEXT = TextStyle.of(11.0F);
 
     private final Presence presence = new Presence(Motion.TOOLTIP_IN, Motion.TOOLTIP_OUT, Easing.EASE_OUT, Easing.EXIT);
-    private @Nullable ArkWidget target;
+    private @Nullable Object target;
     private @Nullable Component text;
     private long hoverStart;
     private float anchorX;
     private float anchorY;
 
-    public void track(@Nullable ArkWidget hovered, long now, float mouseX, float mouseY) {
-        ArkWidget candidate = hovered != null && hovered.tooltip() != null ? hovered : null;
+    public void track(@Nullable TooltipHint hint, long now, float mouseX, float mouseY) {
+        Object candidate = hint != null ? hint.owner() : null;
         if (candidate != this.target) {
             this.presence.hide(now);
             this.target = candidate;
             this.hoverStart = now;
         }
-        if (candidate == null) {
+        if (hint == null) {
             return;
         }
-        this.text = candidate.tooltip();
+        this.text = hint.text();
         if (!this.presence.isShown()) {
             this.anchorX = mouseX;
             this.anchorY = mouseY;

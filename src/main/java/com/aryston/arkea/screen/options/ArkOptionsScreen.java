@@ -13,10 +13,10 @@ import com.aryston.arkea.ui.widget.ArkSlider;
 import com.aryston.arkea.ui.widget.ArkTile;
 import com.aryston.arkea.ui.widget.ArkWidget;
 import com.aryston.arkea.ui.widget.ButtonVariant;
+import com.aryston.arkea.ui.widget.IntSliderModel;
 import com.aryston.arkea.ui.widget.ItemContent;
 import com.aryston.arkea.ui.widget.NavEntry;
 import com.aryston.arkea.ui.widget.SettingRow;
-import com.aryston.arkea.ui.widget.SliderBinding;
 import com.aryston.arkea.ui.widget.SliderRange;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,17 +60,12 @@ public final class ArkOptionsScreen extends ArkWindowScreen {
 
     @Override
     protected SidebarBrand brand() {
-        return new SidebarBrand(Icons.SLIDERS, Component.translatable("arkea.options.brand"), Component.translatable("arkea.options.brand.subtitle"));
+        return OptionsNavigation.brand();
     }
 
     @Override
     protected List<NavGroup> navigation() {
-        return Arrays.stream(OptionsPage.Group.values())
-            .map(group -> new NavGroup(group.label(), Arrays.stream(OptionsPage.values())
-                .filter(page -> page.group() == group && page.isAvailable())
-                .map(OptionsPage::navEntry)
-                .toList()))
-            .toList();
+        return OptionsNavigation.groups();
     }
 
     @Override
@@ -80,12 +75,11 @@ public final class ArkOptionsScreen extends ArkWindowScreen {
 
     @Override
     protected void openNav(NavEntry entry) {
-        OptionsPage page = OptionsPage.valueOf(entry.id());
-        this.navigate(() -> page.open(this, this.minecraft));
+        this.openPage(OptionsPage.valueOf(entry.id()));
     }
 
     @Override
-    protected void buildContent(Box area) {
+    protected float buildContent(Box area) {
         this.sectionLabels.clear();
         this.rows.clear();
         this.tiles.clear();
@@ -100,8 +94,9 @@ public final class ArkOptionsScreen extends ArkWindowScreen {
         float tileWidth = (area.width() - TILE_GAP * (TILE_COLUMNS - 1)) / TILE_COLUMNS;
         for (int index = 0; index < pages.size(); index++) {
             OptionsPage page = pages.get(index);
-            this.addTile(new ItemContent(page.icon(), page.title(), page.description()), () -> page.open(this, this.minecraft),
-                this.tileBox(area.x(), y, tileWidth, index));
+            ArkTile tile = this.add(new ArkTile(this, new ItemContent(page.icon(), page.title(), page.description()), () -> this.openPage(page)));
+            tile.setBounds(this.tileBox(area.x(), y, tileWidth, index));
+            this.tiles.add(tile);
         }
         int tileRows = (pages.size() + TILE_COLUMNS - 1) / TILE_COLUMNS;
         y = this.addSectionLabel("arkea.options.section.more", area.x(), y + tileRows * (ArkTile.HEIGHT + TILE_GAP) - TILE_GAP + SECTION_GAP);
@@ -113,6 +108,18 @@ public final class ArkOptionsScreen extends ArkWindowScreen {
         }
         this.addTile(new ItemContent(Icons.HEART, OptionsPage.withoutEllipsis(Component.translatable("options.credits_and_attribution")),
             Component.translatable("arkea.options.description.credits")), () -> new CreditsAndAttributionScreen(this), this.tileBox(area.x(), y, tileWidth, 1));
+        return y + ArkTile.HEIGHT;
+    }
+
+    private void openPage(OptionsPage page) {
+        if (page == OptionsPage.OVERVIEW) {
+            return;
+        }
+        if (page.isWindow()) {
+            this.switchTo(() -> page.open(this, this.minecraft));
+            return;
+        }
+        this.navigate(() -> page.open(this, this.minecraft));
     }
 
     private float addSectionLabel(String key, float x, float y) {
@@ -137,8 +144,9 @@ public final class ArkOptionsScreen extends ArkWindowScreen {
         SettingRow row = new SettingRow(new ItemContent(Icons.EYE, Component.translatable("arkea.options.fov.name"),
             Component.translatable("arkea.options.fov.description")));
         row.setBounds(box);
-        SliderBinding binding = new SliderBinding(() -> this.options.fov().get(), value -> this.options.fov().set(value), ArkOptionsScreen::fovLabel);
-        ArkSlider slider = this.add(new ArkSlider(this, Component.translatable("arkea.options.fov.name"), new SliderRange(FOV_MIN, FOV_MAX, 1), binding));
+        IntSliderModel model = new IntSliderModel(new SliderRange(FOV_MIN, FOV_MAX, 1), () -> this.options.fov().get(),
+            value -> this.options.fov().set(value), ArkOptionsScreen::fovLabel);
+        ArkSlider slider = this.add(new ArkSlider(this, Component.translatable("arkea.options.fov.name"), model));
         slider.setBounds(row.controlSlot(ArkSlider.WIDTH, CONTROL_HEIGHT));
         this.rows.add(new RowEntry(row, slider));
     }

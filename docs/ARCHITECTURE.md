@@ -46,7 +46,9 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 - `ArkWindowScreen` draws the shell of every settings screen: 1238 x 704 window centered on the canvas, sidebar with brand and grouped navigation, header with back, breadcrumb, title and close, content area, footer with a note and buttons.
 - Its background is the vanilla panorama on the title screen or the world in game, blurred once, with a dim layer that fades with the window.
 - The window enters with opacity, a 16 pixel rise and a 0.98 scale (450 ms) and exits in reverse (220 ms); content rows stagger in with `renderRow`.
-- A subclass builds its content in `buildContent` inside the content box and draws it in `renderContent`; options pages open vanilla screens until their Arkea versions exist.
+- A subclass builds its content in `buildContent` inside the content box, returns where it ends and draws it in `renderContent`. Content taller than the area scrolls: it is clipped with a scissor, translated by the eased offset of `ScrollArea`, and widgets take their hit box from the clipped box. Keyboard focus scrolls the focused row into view.
+- `switchTo` moves between window screens without closing the window: the old content fades and rises 8 pixels in 160 ms, the next screen starts with the window already open and only its rows and title animate in.
+- Settings pages lay out with `SettingsPanel` (the two column grid of the design) and get their controls from `OptionControls`, which reads the value set of each vanilla `OptionInstance`. Vanilla values, listeners and side effects stay in charge; the controls only read and set options. Key binds, language and resource packs still open the vanilla screens.
 
 ## Motion
 
@@ -64,6 +66,7 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 
 ## Invariants
 
+- The frame in which a screen switches still draws the old screen, so a page switch never shows an empty frame.
 - Only one blur per frame exists in 26.3 (`blurBeforeThisStratum` throws on a second call). Screens never request blur themselves; `ArkScreen` does it for the dialog.
 - Every widget is drawn exactly once per frame through `ArkWidget.render`, otherwise its hit box is stale.
 - A widget moves its own content only through `contentShiftX` and the press offset of `ArkWidget`, never with its own pose translation, so the focus ring and hit box move with it.
@@ -82,12 +85,15 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 | `Minecraft.allowsMultiplayer`, `isNameBanned`, `multiplayerBan` | Disabled multiplayer and Realms buttons |
 | `ModList.get().size()`, `ModListScreen.create` | Mods button |
 | `OptionsScreen.getLastScreen`, `Options.fov`, `Options.save`, the vanilla options sub-screens, `IConfigScreenFactory` | Options screen |
+| `OptionInstance` (`values`, `toString`, `caption`, value set types) + `OptionInstanceAccessor`, `TooltipAccessor` | Option controls, labels, tooltips, defaults |
+| `OptionsSubScreen` + `OptionsSubScreenAccessor`, `ScreenEvent.Opening` | Replacing the vanilla options pages |
+| `GpuWarnlistManager`, `UnsupportedGraphicsWarningScreen`, `Window.changeFullscreenVideoMode`, `Minecraft.updateMaxMipLevel`, `delayTextureReload` | Video page side effects copied from `VideoSettingsScreen` |
 
 ## Porting Checklist for a New Minecraft Version
 
 1. Check `GuiGraphicsExtractor`, `GuiElementRenderState`, `GuiRenderState` (layering and blur), `RenderPipelines.GUI` and `GUI_TEXTURED` (vertex format, culling) and `Screen.extractRenderStateWithTooltipAndSubtitles`.
 2. Check the input records (`MouseButtonEvent`, `KeyEvent`, `InputWithModifiers`) and `ContainerEventHandler` mouse release forwarding.
-3. Check the fields of `SplashRenderer` for the accessor.
+3. Check the fields of `SplashRenderer`, `OptionInstance`, `Tooltip` and `OptionsSubScreen` for the accessors, the option lists of the vanilla options sub-screens (new options must be added to the pages) and the side effects of `VideoSettingsScreen`.
 4. Run the client, open the title screen, hover, Tab through it, open and close the quit dialog, and compare with `screenshots/` of the design handoff.
 
 ## Testing Tools

@@ -18,9 +18,12 @@ import com.aryston.arkea.ui.widget.IconButtonStyle;
 import com.aryston.arkea.ui.widget.NavEntry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
@@ -66,6 +69,10 @@ public abstract class ArkWindowScreen extends ArkScreen {
     private static final int ROW_STAGGER = 30;
     private static final float TITLE_SLIDE = 8.0F;
     private static final int TITLE_IN = 300;
+    private static final float REVEAL_MARGIN = 12.0F;
+    private static final float CONTENT_SLIDE = 8.0F;
+    private static final int CONTENT_OUT = 160;
+    private static boolean continueWindow;
     private static final int WINDOW_FILL = ArkColors.rgba(20, 20, 22, 0.86F);
     private static final int DIM = ArkColors.rgba(8, 8, 9, 0.55F);
     private static final int FOOTER_FILL = ArkColors.rgba(0, 0, 0, 0.12F);
@@ -85,6 +92,9 @@ public abstract class ArkWindowScreen extends ArkScreen {
     private Box header = Box.EMPTY;
     private Box content = Box.EMPTY;
     private Box footer = Box.EMPTY;
+    private final ScrollArea scroll = new ScrollArea();
+    private boolean windowContinued;
+    private boolean contentOnlyExit;
 
     protected ArkWindowScreen(Component title, Screen lastScreen) {
         super(title);
@@ -101,7 +111,7 @@ public abstract class ArkWindowScreen extends ArkScreen {
 
     protected abstract void openNav(NavEntry entry);
 
-    protected abstract void buildContent(Box area);
+    protected abstract float buildContent(Box area);
 
     protected abstract void renderContent(UiGraphics graphics, float mouseX, float mouseY);
 
@@ -121,10 +131,11 @@ public abstract class ArkWindowScreen extends ArkScreen {
         float mainWidth = this.window.right() - mainX;
         this.header = new Box(mainX, this.window.y(), mainWidth, HEADER_HEIGHT);
         this.footer = new Box(mainX, this.window.bottom() - FOOTER_HEIGHT, mainWidth, FOOTER_HEIGHT);
-        float contentTop = this.header.bottom() + CONTENT_INSET_Y;
-        this.content = new Box(mainX + CONTENT_INSET_X, contentTop, mainWidth - CONTENT_INSET_X * 2.0F,
-            this.footer.y() - CONTENT_INSET_Y - contentTop);
-        this.buildContent(this.content);
+        Box viewport = new Box(mainX, this.header.bottom(), mainWidth, this.footer.y() - this.header.bottom());
+        this.content = new Box(viewport.x() + CONTENT_INSET_X, viewport.y() + CONTENT_INSET_Y, viewport.width() - CONTENT_INSET_X * 2.0F,
+            viewport.height() - CONTENT_INSET_Y * 2.0F);
+        float contentBottom = this.buildContent(this.content);
+        this.scroll.layout(viewport, contentBottom + CONTENT_INSET_Y - viewport.y());
         this.buildFooter();
         if (this.sidebar != null) {
             this.buildSidebar(this.sidebar);
@@ -177,10 +188,31 @@ public abstract class ArkWindowScreen extends ArkScreen {
     }
 
     @Override
+    public void added() {
+        super.added();
+        this.windowContinued = continueWindow;
+        this.contentOnlyExit = false;
+        continueWindow = false;
+    }
+
+    protected void switchTo(Supplier<Screen> next) {
+        if (this.isLeaving()) {
+            return;
+        }
+        this.contentOnlyExit = true;
+        this.navigate(() -> {
+            Screen screen = next.get();
+            continueWindow = screen instanceof ArkWindowScreen;
+            return screen;
+        });
+    }
+
+    @Override
     protected final void renderUi(UiGraphics graphics, float mouseX, float mouseY) {
-        float enter = Timeline.enter(this.sinceOpened(), 0, Motion.WINDOW_IN);
-        float exit = this.isLeaving() ? Timeline.exit(this.sinceLeft(), Motion.WINDOW_OUT) : 1.0F;
+        float enter = this.windowContinued ? 1.0F : Timeline.enter(this.sinceOpened(), 0, Motion.WINDOW_IN);
+        float exit = this.isLeaving() && !this.contentOnlyExit ? Timeline.exit(this.sinceLeft(), Motion.WINDOW_OUT) : 1.0F;
         float progress = enter * exit;
+        float content = this.contentProgress();
         UiScale scale = graphics.scale();
         graphics.fill(0.0F, 0.0F, scale.canvasWidth(), scale.canvasHeight(), ArkColors.multiplyAlpha(DIM, progress));
         graphics.push();
@@ -192,7 +224,14 @@ public abstract class ArkWindowScreen extends ArkScreen {
             this.renderSidebar(graphics, this.sidebar);
         }
         this.renderHeader(graphics);
+        graphics.clip(this.scroll.viewport());
+        graphics.push();
+        graphics.fade(content);
+        graphics.translate(0.0F, -this.scroll.offset(graphics.now()) - CONTENT_SLIDE * (1.0F - content));
         this.renderContent(graphics, mouseX, mouseY);
+        graphics.pop();
+        graphics.endClip();
+        this.scroll.render(graphics, mouseX, mouseY);
         this.renderFooter(graphics);
         for (ArkWidget widget : this.chrome) {
             widget.render(graphics, mouseX, mouseY);
@@ -275,22 +314,79 @@ public abstract class ArkWindowScreen extends ArkScreen {
         });
     }
 
+    private float contentProgress() {
+        return this.isLeaving() && this.contentOnlyExit ? Timeline.exit(this.sinceLeft(), CONTENT_OUT) : 1.0F;
+    }
+
     private void renderTitleText(UiGraphics graphics, Runnable draw) {
         float enter = Timeline.enter(this.sinceOpened(), 0, TITLE_IN);
         graphics.push();
-        graphics.fade(enter);
+        graphics.fade(enter * this.contentProgress());
         graphics.translate(-TITLE_SLIDE * (1.0F - enter), 0.0F);
         draw.run();
         graphics.pop();
     }
 
     @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        UiScale scale = this.uiScale();
+        if (this.isInteractive() && this.scroll.isOver(scale.toDesign(mouseX), scale.toDesign(mouseY))) {
+            this.scroll.scrollBy((float) -scrollY * ScrollArea.WHEEL_STEP, this.now());
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    @Override
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        UiScale scale = this.uiScale();
+        if (this.isInteractive() && this.scroll.press(scale.toDesign(event.x()), scale.toDesign(event.y()), this.now())) {
+            return true;
+        }
+        return super.mouseClicked(event, doubleClick);
+    }
+
+    @Override
+    public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+        if (this.scroll.isDragging()) {
+            this.scroll.drag(this.uiScale().toDesign(event.y()));
+            return true;
+        }
+        return super.mouseDragged(event, dragX, dragY);
+    }
+
+    @Override
+    public boolean mouseReleased(MouseButtonEvent event) {
+        if (this.scroll.isDragging()) {
+            this.scroll.release();
+            return true;
+        }
+        return super.mouseReleased(event);
+    }
+
+    @Override
+    public void setFocused(@Nullable GuiEventListener focused) {
+        super.setFocused(focused);
+        if (focused instanceof ArkWidget widget && !this.chrome.contains(widget)) {
+            this.scroll.reveal(this.revealBox(widget), REVEAL_MARGIN, this.now());
+        }
+    }
+
+    protected Box revealBox(ArkWidget widget) {
+        return widget.bounds();
+    }
+
+    @Override
     protected int exitDuration() {
-        return Motion.WINDOW_OUT;
+        return this.contentOnlyExit ? CONTENT_OUT : Motion.WINDOW_OUT;
     }
 
     @Override
     public void onClose() {
+        if (this.lastScreen instanceof ArkWindowScreen) {
+            this.switchTo(() -> this.lastScreen);
+            return;
+        }
         this.navigate(() -> this.lastScreen);
     }
 

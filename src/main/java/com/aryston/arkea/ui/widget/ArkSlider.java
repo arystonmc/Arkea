@@ -9,9 +9,6 @@ import com.aryston.arkea.ui.render.UiGraphics;
 import com.aryston.arkea.ui.theme.ArkColors;
 import com.aryston.arkea.ui.theme.Theme;
 import com.mojang.blaze3d.platform.InputConstants;
-import java.util.function.IntConsumer;
-import java.util.function.IntFunction;
-import java.util.function.IntSupplier;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.KeyEvent;
@@ -30,33 +27,26 @@ public class ArkSlider extends ArkWidget {
     private static final float HANDLE_SHADOW_OFFSET = 2.0F;
     private static final float HANDLE_HOVER_BRIGHTNESS = 0.06F;
     private static final int FILL_ANIMATION = 250;
-    private static final int LARGE_STEP = 10;
     private static final int HANDLE = ArkColors.rgb(0xF0F0F0);
     private static final int HANDLE_SHADOW = ArkColors.rgba(0, 0, 0, 0.50F);
     private static final TextStyle VALUE = TextStyle.of(11.0F);
 
     private final Component name;
-    private final SliderRange range;
-    private final IntSupplier getter;
-    private final IntConsumer setter;
-    private final IntFunction<Component> label;
+    private final SliderModel model;
     private final Transition position;
     private boolean dragging;
 
-    public ArkSlider(UiHost host, Component name, SliderRange range, SliderBinding binding) {
+    public ArkSlider(UiHost host, Component name, SliderModel model) {
         super(host);
         this.name = name;
-        this.range = range;
-        this.getter = binding.getter();
-        this.setter = binding.setter();
-        this.label = binding.label();
-        this.position = new Transition(range.fraction(this.getter.getAsInt()), FILL_ANIMATION, Easing.EASE_OUT);
+        this.model = model;
+        this.position = new Transition(model.fraction(), FILL_ANIMATION, Easing.EASE_OUT);
     }
 
     @Override
     protected void renderWidget(UiGraphics graphics) {
         Box box = this.bounds();
-        float target = this.range.fraction(this.getter.getAsInt());
+        float target = this.model.fraction();
         if (this.dragging) {
             this.position.snap(target);
         } else {
@@ -72,19 +62,19 @@ public class ArkSlider extends ArkWidget {
         Box handle = new Box(track.x() + filled - HANDLE_WIDTH * 0.5F, box.centerY() - HEIGHT * 0.5F, HANDLE_WIDTH, HEIGHT);
         graphics.shadow(handle, HANDLE_SHADOW_BLUR, HANDLE_SHADOW_OFFSET, HANDLE_SHADOW);
         graphics.fill(handle, ArkColors.brighten(HANDLE, 1.0F + HANDLE_HOVER_BRIGHTNESS * this.hoverProgress()));
-        String text = this.label.apply(this.getter.getAsInt()).getString();
+        String text = this.model.label().getString();
         float textX = box.right() - graphics.metrics().width(text, VALUE);
         graphics.text(text, textX, box.centerY() - graphics.metrics().capHeight(VALUE) * 0.5F, VALUE, ArkColors.TEXT_PRIMARY);
     }
 
     private Box trackBox(TextMetrics metrics) {
         Box box = this.bounds();
-        float valueWidth = Math.max(VALUE_WIDTH, Math.max(this.labelWidth(metrics, this.range.min()), this.labelWidth(metrics, this.range.max())));
+        float valueWidth = Math.max(VALUE_WIDTH, Math.max(this.labelWidth(metrics, 0.0F), this.labelWidth(metrics, 1.0F)));
         return new Box(box.x(), box.y(), box.width() - valueWidth - VALUE_GAP, box.height());
     }
 
-    private float labelWidth(TextMetrics metrics, int value) {
-        return metrics.width(this.label.apply(value).getString(), VALUE);
+    private float labelWidth(TextMetrics metrics, float fraction) {
+        return metrics.width(this.model.labelAt(fraction).getString(), VALUE);
     }
 
     @Override
@@ -111,6 +101,9 @@ public class ArkSlider extends ArkWidget {
         boolean wasDragging = this.dragging;
         this.dragging = false;
         super.mouseReleased(event);
+        if (wasDragging) {
+            this.model.release();
+        }
         return wasDragging;
     }
 
@@ -123,19 +116,14 @@ public class ArkSlider extends ArkWidget {
         if (direction == 0) {
             return false;
         }
-        int step = this.range.step() * (event.hasShiftDown() ? LARGE_STEP : 1);
-        this.setter.accept(this.range.clamp(this.getter.getAsInt() + direction * step));
+        this.model.step(direction, event.hasShiftDown());
         return true;
     }
 
     private void setFromMouse(double guiX) {
-        float canvasX = this.host.uiScale().toDesign(guiX);
-        Box hit = this.hitBox();
+        float localX = this.localX(this.host.uiScale().toDesign(guiX));
         Box track = this.trackBox(this.host.metrics());
-        float scale = hit.width() / this.bounds().width();
-        float trackLeft = hit.x() + (track.x() - this.bounds().x()) * scale;
-        float fraction = (canvasX - trackLeft) / (track.width() * scale);
-        this.setter.accept(this.range.valueAt(fraction));
+        this.model.drag(Math.clamp((localX - track.x()) / track.width(), 0.0F, 1.0F));
     }
 
     @Override
@@ -153,7 +141,7 @@ public class ArkSlider extends ArkWidget {
 
     @Override
     public void updateNarration(NarrationElementOutput output) {
-        Component value = this.label.apply(this.getter.getAsInt());
+        Component value = this.model.label();
         output.add(NarratedElementType.TITLE, Component.translatable("gui.narrate.slider", Component.empty().append(this.name).append(": ").append(value)));
         if (this.isActive()) {
             String usage = this.isFocused() ? "narration.slider.usage.focused" : "narration.slider.usage.hovered";

@@ -35,10 +35,12 @@ public abstract class ArkWidget implements GuiEventListener, NarratableEntry {
     private final Transition press = new Transition(0.0F, Motion.PRESS, Easing.EASE);
     private Box bounds = Box.EMPTY;
     private Box canvasBox = Box.EMPTY;
+    private Box visibleBox = Box.EMPTY;
     private boolean active = true;
     private boolean focused;
     private boolean hovered;
     private boolean pressed;
+    private float mouseX;
     private @Nullable Component tooltip;
 
     protected ArkWidget(UiHost host) {
@@ -53,6 +55,8 @@ public abstract class ArkWidget implements GuiEventListener, NarratableEntry {
     public final void render(UiGraphics graphics, float mouseX, float mouseY) {
         long now = this.host.now();
         this.canvasBox = graphics.canvasBox(this.bounds);
+        this.visibleBox = graphics.visible(this.canvasBox);
+        this.mouseX = mouseX;
         this.hovered = this.containsPoint(mouseX, mouseY);
         this.hover.setTarget(this.isHighlighted() ? 1.0F : 0.0F, now);
         this.press.setTarget(this.pressed && this.active ? 1.0F : 0.0F, now);
@@ -105,15 +109,31 @@ public abstract class ArkWidget implements GuiEventListener, NarratableEntry {
     public void setBounds(Box bounds) {
         this.bounds = bounds;
         this.canvasBox = bounds;
+        this.visibleBox = bounds;
     }
 
     public Box hitBox() {
+        return this.visibleBox;
+    }
+
+    public Box canvasBox() {
         return this.canvasBox;
     }
 
     protected boolean containsPoint(float x, float y) {
         Box box = this.hitBox();
         return new Box(box.x(), box.y(), box.width() + this.contentReachX(), box.height()).contains(x, y);
+    }
+
+    protected float localX(float canvasX) {
+        if (this.canvasBox.width() <= 0.0F) {
+            return this.bounds.x();
+        }
+        return this.bounds.x() + (canvasX - this.canvasBox.x()) * this.bounds.width() / this.canvasBox.width();
+    }
+
+    protected float localMouseX() {
+        return this.localX(this.mouseX);
     }
 
     protected float contentReachX() {
@@ -207,7 +227,7 @@ public abstract class ArkWidget implements GuiEventListener, NarratableEntry {
     @Override
     public ScreenRectangle getRectangle() {
         UiScale scale = this.host.uiScale();
-        Box box = this.hitBox();
+        Box box = this.canvasBox;
         int left = Math.round(scale.toGui(box.x()));
         int top = Math.round(scale.toGui(box.y()));
         int right = Math.round(scale.toGui(box.right()));

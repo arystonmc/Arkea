@@ -34,4 +34,12 @@ public record Box(float x, float y, float width, float height) {
     public Box expand(float amount) {
         return this.inset(-amount);
     }
+
+    public Box intersect(Box other) {
+        float left = Math.max(this.x, other.x);
+        float top = Math.max(this.y, other.y);
+        float right = Math.min(this.right(), other.right());
+        float bottom = Math.min(this.bottom(), other.bottom());
+        return new Box(left, top, Math.max(0.0F, right - left), Math.max(0.0F, bottom - top));
+    }
 }
