@@ -1,0 +1,23 @@
+{
+  "arkea.configuration.title": "Arkea Settings",
+  "arkea.configuration.section.arkea.client.toml": "Client Settings",
+  "arkea.configuration.section.arkea.client.toml.title": "Arkea Client Settings",
+  "arkea.configuration.titleScreen": "Arkea Title Screen",
+  "arkea.configuration.titleScreen.tooltip": "Replaces the main menu with the animated Arkea title screen. Turn it off to use the vanilla main menu.",
+  "arkea.title.hero": "MINECRAFT",
+  "arkea.title.edition": "JAVA EDITION",
+  "arkea.title.singleplayer.description": "Play your worlds",
+  "arkea.title.multiplayer.description": "Servers and LAN games",
+  "arkea.title.realms.description": "Your own private server",
+  "arkea.title.mods.description": "%s mods loaded",
+  "arkea.title.options.description": "Video, controls, sound",
+  "arkea.title.jump_back_in": "JUMP BACK IN",
+  "arkea.title.play": "Play",
+  "arkea.title.last_played.today": "Last played today, %s",
+  "arkea.title.last_played.yesterday": "Last played yesterday, %s",
+  "arkea.title.last_played.earlier": "Last played %s",
+  "arkea.title.version": "Minecraft %s · NeoForge · %s mods",
+  "arkea.title.brand": "UI by Arkea",
+  "arkea.title.quit.title": "Quit Minecraft?",
+  "arkea.title.quit.message": "Your worlds are saved. See you next time."
+}

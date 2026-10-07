@@ -18,4 +18,13 @@ Arkea is a client-side interface library for Minecraft mods. It gives settings s
 
 ## Features
 
-No player-facing features yet.
+### Animated Title Screen
+A calm, modern main menu that keeps everything the vanilla menu can do.
+
+- Large menu entries for Singleplayer, Multiplayer, Realms, Mods and Options with short descriptions; they slide in when the menu opens and lean toward the cursor on hover
+- A "Jump back in" card shows your most recently played world with its picture, game mode and when you last played it; one click starts it
+- The splash text pulses next to the title; click it for a new one
+- Quit asks once before closing the game, and Language, Accessibility and Friends sit one click away
+- Works with mouse, keyboard (Tab, arrows, Enter, Escape) and the narrator
+- Turn it off in Mods, Arkea, Config to get the vanilla main menu back
+- Since: 0.1

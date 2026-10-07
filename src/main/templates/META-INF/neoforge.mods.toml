@@ -13,6 +13,9 @@ description='''
 Client-side interface library for Minecraft: animated, consistent settings screens for mods.
 '''
 
+[[mixins]]
+config="${mod_id}.mixins.json"
+
 [[dependencies.${mod_id}]]
     modId="neoforge"
     type="required"

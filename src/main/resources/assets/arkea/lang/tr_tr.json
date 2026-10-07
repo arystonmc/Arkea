@@ -1,0 +1,23 @@
+{
+  "arkea.configuration.title": "Arkea Ayarları",
+  "arkea.configuration.section.arkea.client.toml": "İstemci Ayarları",
+  "arkea.configuration.section.arkea.client.toml.title": "Arkea İstemci Ayarları",
+  "arkea.configuration.titleScreen": "Arkea Ana Menüsü",
+  "arkea.configuration.titleScreen.tooltip": "Ana menüyü animasyonlu Arkea ana menüsüyle değiştirir. Vanilla ana menüyü kullanmak için kapatın.",
+  "arkea.title.hero": "MINECRAFT",
+  "arkea.title.edition": "JAVA EDITION",
+  "arkea.title.singleplayer.description": "Dünyalarında oyna",
+  "arkea.title.multiplayer.description": "Sunucular ve LAN oyunları",
+  "arkea.title.realms.description": "Sana özel sunucu",
+  "arkea.title.mods.description": "%s mod yüklü",
+  "arkea.title.options.description": "Görüntü, kontroller, ses",
+  "arkea.title.jump_back_in": "KALDIĞIN YERDEN DEVAM ET",
+  "arkea.title.play": "Oyna",
+  "arkea.title.last_played.today": "Son oynama bugün, %s",
+  "arkea.title.last_played.yesterday": "Son oynama dün, %s",
+  "arkea.title.last_played.earlier": "Son oynama %s",
+  "arkea.title.version": "Minecraft %s · NeoForge · %s mod",
+  "arkea.title.brand": "Arayüz: Arkea",
+  "arkea.title.quit.title": "Minecraft'tan çıkılsın mı?",
+  "arkea.title.quit.message": "Dünyaların kaydedildi. Görüşmek üzere."
+}
