@@ -43,7 +43,13 @@ See [docs/CHANGELOG.md](docs/CHANGELOG.md).
 ./gradlew build
 ```
 
-The jar is written to `build/libs/`.
+The jar is written to `build/libs/`. `./gradlew publish` also writes the Maven files to `build/repo/`.
+
+## Releasing
+
+Push a tag `v<mod_version>` (for example `v0.1`). The Release workflow checks that the tag matches `mod_version`, builds the jar, adds the version to the `maven` branch (the Maven repository mod developers use) and to GitHub Packages, and creates a GitHub release with the jar, the sources jar and the changelog of that version (or of Unreleased).
+
+Modrinth and CurseForge uploads run only when the repository has the secrets `MODRINTH_TOKEN` or `CURSEFORGE_TOKEN` and the variables `MODRINTH_ID` or `CURSEFORGE_ID`.
 
 ## License
 
