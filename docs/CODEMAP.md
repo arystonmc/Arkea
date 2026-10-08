@@ -48,6 +48,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 | Component gallery | `ArkGalleryScreen` |
 | Arkea look of every other screen and of other mods | `VanillaTheme`, theme mixins, `DialogSkin` |
 | Pause, death and statistics screens | `PauseSkin`, `PauseCard`, `DeathSkin`, `ArkStatsScreen` |
+| In-game HUD styles (Compact, Classic+, Minimal) and their settings page | `HudPainter`, `HudEvents`, `ArkHudScreen`, `HudPreview` |
 | F3 debug cards, chat bar | `DebugCards`, `DebugScreenOverlayMixin`, `ChatScreenMixin`, `VanillaTheme.chatBar` |
 | Jump back in card, splash text | `JumpBackInCard`, `SplashText`, `RecentWorld`, `LastPlayed` |
 | Texts | `src/main/resources/assets/arkea/lang/` |
@@ -87,6 +88,9 @@ Every class and source file of Arkea with its purpose. Find the right file here 
   - `BACKGROUND_PAN`: slow pan over still image backgrounds.
   - `MENU_SCREENS`: replaces the singleplayer, create world, multiplayer, mods and loading screens when on.
   - `WORLD_SORT`: order of the singleplayer world list.
+  - `HUD_STYLE`: in-game HUD style (`HudStyle`), Vanilla by default.
+  - `HUD_OPACITY`, `HUD_SIZE`: plate transparency and HUD size in percent.
+  - `HUD_EFFECTS`, `HUD_BOSS_BARS`, `HUD_SCOREBOARD`, `HUD_TAB_LIST`: effect chips, slim boss bars, the scoreboard card and the player list card while an Arkea HUD style is on.
   - `set`: sets a value and saves the file at once (the Arkea settings page changes values live).
   - `SPEC`: the built spec.
 
@@ -106,6 +110,50 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### FileDialogs
 - Path: `src/main/java/com/aryston/arkea/integration/FileDialogs.java`
 - Role: Opens the native "open file" dialog of the system through SDL (`SDL_ShowOpenFileDialog`) with a file type filter, and hands the chosen paths back on the render thread. Reports a failure when the system has no file picker.
+
+#### HudEvents
+- Path: `src/main/java/com/aryston/arkea/integration/HudEvents.java`
+- Role: While an Arkea HUD style is on, cancels the vanilla HUD layers it replaces in `RenderGuiLayerEvent.Pre` (hotbar, health, armor, food, vehicle health, air, the experience bar and level when the contextual bar shows experience, the selected item name, effects, scoreboard, Tab player list) and draws the Arkea version in the same layer, so layers of other mods keep their order. Boss bars are restyled one by one through `CustomizeGuiOverlayEvent.BossEventProgress`. Spectator mode and the locator and jump bars stay vanilla; nothing is drawn while the HUD is hidden (F1).
+- Also keeps the player list visibility and its narration in vanilla `PlayerTabOverlay.setVisible` with the vanilla rule (Tab held, not alone in singleplayer without a list objective).
+- Depends on: `HudPainter`, `HudEffects`, `HudBossBar`, `HudSidebar`, `HudTabList`, `HudSnapshot`, `HudSettings`, `HudAccessor`, `PlayerTabOverlayAccessor`.
+
+### `com.aryston.arkea.hud`
+
+#### HudStyle
+- Path: `src/main/java/com/aryston/arkea/hud/HudStyle.java`
+- Role: The HUD styles: `VANILLA` (untouched), `COMPACT` (slim numbered bars in the bottom corners), `CLASSIC` (vanilla icons on plates in the corners) and `MINIMAL` (Compact, bars fade out while health, hunger and air are full), with their names and descriptions.
+
+#### HudSettings
+- Path: `src/main/java/com/aryston/arkea/hud/HudSettings.java`
+- Role: The HUD config as one record (style, plate opacity, size, effect chips, boss bars, scoreboard, player list) with the slider ranges and defaults. `scale` turns the GUI scale into the HUD design scale (0.45 design pixels per GUI unit times the size), so the HUD grows and shrinks with the GUI scale option like vanilla.
+
+#### HudSnapshot
+- Path: `src/main/java/com/aryston/arkea/hud/HudSnapshot.java`
+- Role: Everything the HUD shows, read from the camera player: health, max health, absorption, heart type (poison, wither, frozen, through the NeoForge heart type event), hardcore, armor, food, saturation, hunger effect, air, vehicle health, experience, hotbar, offhand, attack indicator and the selected item name with its fade (from `HudAccessor`). `sample` builds a fixed player for previews, `sample(true)` a full one for Minimal.
+
+#### HudPainter
+- Path: `src/main/java/com/aryston/arkea/hud/HudPainter.java`
+- Role: Draws the health and armor (bottom left), food or vehicle health and air (bottom right), the hotbar with offhand and attack indicator, the experience line and level and the selected item name in design pixels. Compact bars have ten segments that fill smoothly, a gold line for absorption or saturation and a pulsing red edge at low health; Classic+ blits the vanilla heart, food, armor and air sprites at double size, in rows for extra health. Holds the fade of Minimal, so each preview and the game use their own painter. `plate` gives the plate color for the opacity setting.
+
+#### HudPreview
+- Path: `src/main/java/com/aryston/arkea/hud/HudPreview.java`
+- Role: Draws a style over the sample scene in any box: Arkea styles through `HudPainter` on a virtual screen as wide as the real HUD canvas (so a wide box shows the bottom strip at near real size), Vanilla with the vanilla sprites in GUI units.
+
+#### HudEffects
+- Path: `src/main/java/com/aryston/arkea/hud/HudEffects.java`
+- Role: Active effects as chips in the top right corner (beneficial in the first row, harmful in the second with a red edge): icon (or the mod's own icon through `IClientMobEffectExtensions`), level and time, ambient effects dimmed and ending effects blinking like vanilla.
+
+#### HudBossBar
+- Path: `src/main/java/com/aryston/arkea/hud/HudBossBar.java`
+- Role: One boss bar as a slim line with notches and its name above, in a muted version of the boss bar color.
+
+#### HudSidebar
+- Path: `src/main/java/com/aryston/arkea/hud/HudSidebar.java`
+- Role: The sidebar scoreboard as a transparent card on the right: picks the objective like vanilla (team color slot first), sorts and limits the scores like vanilla and keeps their formatting.
+
+#### HudTabList
+- Path: `src/main/java/com/aryston/arkea/hud/HudTabList.java`
+- Role: The Tab player list as a card at the top: header and footer from the server, players sorted and split into columns of 20 like vanilla, each slot with the player head (online mode), name with team formatting (spectators dimmed), score or hearts value of the list objective and four ping bars colored by latency. The local player's slot is highlighted with the accent.
 
 ### `com.aryston.arkea.background`
 
@@ -902,7 +950,7 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### OptionsPage
 - Path: `src/main/java/com/aryston/arkea/screen/options/OptionsPage.java`
-- Role: Every options page with its sidebar group, icon, title (vanilla text without the trailing dots), label, description and the Arkea window page it opens. Helion appears only when it registers a config screen and opens its own screen. Arkea has its own page in the Content group. Arkea and Helion show their logos (`ARKEA_LOGO`, `HELION_LOGO`) in the sidebar, as in the design.
+- Role: Every options page with its sidebar group, icon, title (vanilla text without the trailing dots), label, description and the Arkea window page it opens. Helion appears only when it registers a config screen and opens its own screen. Arkea and its HUD page are in the Content group. Arkea and Helion show their logos (`ARKEA_LOGO`, `HELION_LOGO`) in the sidebar, as in the design.
 
 #### OptionsNavigation
 - Path: `src/main/java/com/aryston/arkea/screen/options/OptionsNavigation.java`
@@ -981,7 +1029,7 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### ArkArkeaScreen
 - Path: `src/main/java/com/aryston/arkea/screen/options/arkea/ArkArkeaScreen.java`
-- Role: The Arkea settings page: Import (native file picker) and Open Folder buttons, a three column gallery of the panorama, every imported background (delete with confirmation), running imports and an import tile, then slow pan, accent color and the title and options screen switches. Files dropped on the window are imported. Rebuilds when the library changes.
+- Role: The Arkea settings page: Import (native file picker) and Open Folder buttons, a three column gallery of the panorama, every imported background (delete with confirmation), running imports and an import tile, then slow pan, accent color, a link to the HUD page and the screen switches. Files dropped on the window are imported. Rebuilds when the library changes.
 - Depends on: `OptionsPageScreen`, `BackgroundLibrary`, `FileDialogs`, `ArkeaConfig`.
 
 #### MediaTile
@@ -1003,6 +1051,21 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 #### TileRow
 - Path: `src/main/java/com/aryston/arkea/screen/options/arkea/TileRow.java`
 - Role: Grid row holding a tile and its optional corner button (delete, cancel, dismiss).
+
+### `com.aryston.arkea.screen.options.hud`
+
+#### ArkHudScreen
+- Path: `src/main/java/com/aryston/arkea/screen/options/hud/ArkHudScreen.java`
+- Role: The HUD settings page: a large live preview of the chosen style, four style cards with their own previews, plate transparency and HUD size sliders, and switches for effect chips, boss bars, the scoreboard card and the player list card.
+- Depends on: `OptionsPageScreen`, `ArkeaConfig`, `HudSettings`.
+
+#### HudStyleCard
+- Path: `src/main/java/com/aryston/arkea/screen/options/hud/HudStyleCard.java`
+- Role: Selectable card of one style: 16:9 preview with the current transparency and size, name, two lines of description and a check badge when chosen. Widget key `hud:<style>`.
+
+#### HudStyleRow, HudPreviewRow
+- Path: `src/main/java/com/aryston/arkea/screen/options/hud/HudStyleRow.java`, `src/main/java/com/aryston/arkea/screen/options/hud/HudPreviewRow.java`
+- Role: Panel rows: one style card with a height that follows its width, and the wide live preview (Minimal switches between a full and a hurt player every few seconds to show the fade).
 
 ### `com.aryston.arkea.screen.options.control`
 
@@ -1143,6 +1206,14 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 - Path: `src/main/java/com/aryston/arkea/mixin/AlertScreenAccessor.java`
 - Role: Read the private message of alerts, the description of the backup prompt, the cause and score of the death screen and the previous screen of the statistics screen. Paths of the others: `src/main/java/com/aryston/arkea/mixin/BackupConfirmScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/DeathScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/StatsScreenAccessor.java`.
 
+#### HudAccessor
+- Path: `src/main/java/com/aryston/arkea/mixin/HudAccessor.java`
+- Role: Reads the selected item name timer and item, the current contextual bar and the player list overlay of `Hud`, which have no getters.
+
+#### PlayerTabOverlayAccessor
+- Path: `src/main/java/com/aryston/arkea/mixin/PlayerTabOverlayAccessor.java`
+- Role: Reads the header and footer of the player list that the server sent.
+
 #### ClientPacketListenerMixin
 - Path: `src/main/java/com/aryston/arkea/mixin/ClientPacketListenerMixin.java`
 - Role: Tells `ArkStatsScreen` when the statistics arrive; vanilla only notifies `StatsScreen`.
@@ -1187,11 +1258,15 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### UiCheck
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheck.java`
-- Role: Developer check (`-Define arkea.uiCheck=all` or a comma list of groups: title, options, worlds, create, servers, mods, loading, toasts, gallery, config, helion, vanilla, game). `Step.await` waits for a condition such as a loaded world. Opens screens, presses widgets by key, sends keys, saves a screenshot after every step as `screenshots/arkea_<step>.png` and closes the game. Does nothing in production.
+- Role: Developer check (`-Define arkea.uiCheck=all` or a comma list of groups: title, options, worlds, create, servers, mods, loading, toasts, gallery, config, helion, vanilla, game, hud). `Step.await` waits for a condition such as a loaded world. Opens screens, presses widgets by key, sends keys, saves a screenshot after every step as `screenshots/arkea_<step>.png` and closes the game. Does nothing in production.
 
 #### UiCheckToasts, UiCheckLoading, UiCheckServers, UiCheckConfig, UiCheckGame
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheckToasts.java`, `src/main/java/com/aryston/arkea/debug/UiCheckLoading.java`, `src/main/java/com/aryston/arkea/debug/UiCheckServers.java`, `src/main/java/com/aryston/arkea/debug/UiCheckConfig.java`, `src/main/java/com/aryston/arkea/debug/UiCheckGame.java`
 - Role: Check helpers: sample toasts, a progress screen and a connection to an unroutable address (cancelled again), temporary sample servers that are removed at the end, the config screen of Helion when it is installed, and the statistics, death, F3 and chat screens in a fresh world.
+
+#### UiCheckHud
+- Path: `src/main/java/com/aryston/arkea/debug/UiCheckHud.java`
+- Role: Check helpers for the `hud` group: fills a fresh world with sample items, armor, effects, experience, a scoreboard and a boss bar through commands, switches the HUD style before each screenshot (changing the selected slot so the item name shows), sets low health and poison for the danger shot, holds the player list key with a sample header and footer, scrolls the HUD settings page to the style cards and switches back to Vanilla at the end.
 
 ## Tests
 
@@ -1230,7 +1305,7 @@ Plain JUnit 5 tests without a running game, run by `./gradlew build` and the CI.
 | Folder | Contents |
 |---|---|
 | `src/main/resources/assets/arkea/lang/` | `en_us.json` and `tr_tr.json`: config, title screen, window and options texts, short option descriptions (`arkea.option.*`). Menu labels reuse vanilla keys so every game language shows them. |
-| `src/main/resources/assets/arkea/textures/gui/` | `gallery_before.png` and `gallery_after.png`: sample images of the before and after preview in the gallery. `arkea_logo.png` and `helion_logo.png`: 48 x 48 logos (scaled from the 128 pixel design handoff logos) for the sidebar, the "UI by Arkea" footer and the Helion banner, with `.png.mcmeta` files that turn on linear filtering. `helion_preview.png`: preview of the Helion banner. |
+| `src/main/resources/assets/arkea/textures/gui/` | `gallery_before.png` and `gallery_after.png`: sample images of the before and after preview in the gallery. `arkea_logo.png` and `helion_logo.png`: 48 x 48 logos (scaled from the 128 pixel design handoff logos) for the sidebar, the "UI by Arkea" footer and the Helion banner, with `.png.mcmeta` files that turn on linear filtering. `helion_preview.png`: preview of the Helion banner. `hud_scene.png`: sample scene behind the HUD previews (from the design handoff). |
 
 ## Build Files
 

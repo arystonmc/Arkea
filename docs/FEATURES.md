@@ -150,6 +150,20 @@ The screens you see while playing match the rest of Arkea.
 - Turn it off on the Arkea page of the options (In-Game Screens)
 - Since: 0.1
 
+### Arkea HUD
+Players pick how health, hunger and the hotbar look while playing.
+
+- Four styles on a new HUD page of the options, each with its own live preview card, and a large live preview of the chosen style
+- Vanilla: the original HUD, untouched (default)
+- Compact: health in the bottom left and hunger in the bottom right as slim, semi-transparent bars with numbers; armor and air as thin lines above them; the center keeps only a slim hotbar, the experience line and the item name
+- Classic+: the vanilla hearts, food, armor and air icons on transparent plates in the same corners
+- Minimal: like Compact, but the bars fade out while health, hunger and air are full
+- Low health pulses the health bar; poison, wither, frozen, absorption, saturation, the hunger effect, vehicle health and extra health rows are all shown
+- Effect chips with time and level, slim boss bars, a transparent scoreboard card and a Tab player list card with heads, scores and ping bars, each with its own switch
+- Plate transparency (0 to 80 percent) and HUD size (75 to 150 percent) sliders; the HUD follows the GUI scale like vanilla
+- HUD parts added by other mods stay where they are; spectator mode, the locator bar and the jump bar stay vanilla
+- Since: 0.1
+
 ### Debug Screen and Chat Bar
 F3 and the chat input match Arkea.
 

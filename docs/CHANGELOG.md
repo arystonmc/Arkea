@@ -38,6 +38,8 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 - Draw every other screen and other mods' screens with Arkea buttons, sliders, fields, lists and backgrounds
 - Show confirmations, link warnings, alerts and backup prompts as Arkea dialogs
 - Show the F3 debug information as Arkea cards and draw the chat bar in the Arkea style
+- Add Arkea HUD styles (Compact, Classic+ and Minimal) with a settings page and live previews
+- Show the Tab player list as an Arkea card with heads, scores and ping bars
 
 ### Fixed
 - Keep key bindings with Ctrl, Shift or Alt after a restart

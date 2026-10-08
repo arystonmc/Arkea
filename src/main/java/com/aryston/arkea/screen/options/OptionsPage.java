@@ -1,6 +1,7 @@
 package com.aryston.arkea.screen.options;
 
 import com.aryston.arkea.screen.options.arkea.ArkArkeaScreen;
+import com.aryston.arkea.screen.options.hud.ArkHudScreen;
 import com.aryston.arkea.screen.options.keys.ArkKeyBindsScreen;
 import com.aryston.arkea.screen.options.packs.ArkPacksScreen;
 import com.aryston.arkea.ui.render.Icon;
@@ -30,6 +31,7 @@ public enum OptionsPage {
     ACCESSIBILITY(Group.PLAYER, Icons.ACCESS, "options.accessibility", (parent, minecraft) -> new ArkAccessibilityScreen(parent)),
     RESOURCE_PACKS(Group.CONTENT, Icons.PACK, "options.resourcepack", (parent, minecraft) -> new ArkPacksScreen(parent)),
     ARKEA(Group.CONTENT, Icons.ARKEA, "arkea.options.arkea", (parent, minecraft) -> new ArkArkeaScreen(parent)),
+    HUD(Group.CONTENT, Icons.MONITOR, "arkea.options.hud", (parent, minecraft) -> new ArkHudScreen(parent)),
     HELION(Group.CONTENT, Icons.SPARKLE, "arkea.options.helion", OptionsPage::helionScreen);
 
     public static final Identifier ARKEA_LOGO = Identifier.fromNamespaceAndPath("arkea", "textures/gui/arkea_logo.png");
@@ -72,7 +74,7 @@ public enum OptionsPage {
 
     public boolean isWindow() {
         return switch (this) {
-            case OVERVIEW, VIDEO, CONTROLS, KEY_BINDS, SOUND, SKIN, CHAT, LANGUAGE, ACCESSIBILITY, RESOURCE_PACKS, ARKEA -> true;
+            case OVERVIEW, VIDEO, CONTROLS, KEY_BINDS, SOUND, SKIN, CHAT, LANGUAGE, ACCESSIBILITY, RESOURCE_PACKS, ARKEA, HUD -> true;
             case HELION -> false;
         };
     }

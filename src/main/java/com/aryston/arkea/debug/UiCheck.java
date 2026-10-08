@@ -2,7 +2,9 @@ package com.aryston.arkea.debug;
 
 import com.aryston.arkea.Arkea;
 import com.aryston.arkea.api.config.ModConfigScreens;
+import com.aryston.arkea.hud.HudStyle;
 import com.aryston.arkea.screen.gallery.ArkGalleryScreen;
+import com.aryston.arkea.screen.options.hud.ArkHudScreen;
 import com.aryston.arkea.screen.palette.CommandPaletteScreen;
 import com.aryston.arkea.ui.screen.ArkScreen;
 import com.aryston.arkea.ui.widget.ArkWidget;
@@ -184,6 +186,21 @@ public final class UiCheck {
             new Step("game", "game_death", true, UiCheckGame::death),
             new Step("game", "game_debug", false, UiCheckGame::debug),
             new Step("game", "game_chat", true, UiCheckGame::chat),
+            new Step("hud", "hud_create", true, minecraft -> CreateWorldScreen.openFresh(minecraft, () -> minecraft.gui.setScreen(new TitleScreen()))),
+            Step.press("hud", "hud_start", "create"),
+            Step.await("hud", "hud_loaded", minecraft -> minecraft.level != null && minecraft.player != null && minecraft.gui.screen() == null),
+            new Step("hud", "hud_vanilla", false, UiCheckHud::setup),
+            new Step("hud", "hud_compact", false, UiCheckHud.style(HudStyle.COMPACT)),
+            new Step("hud", "hud_classic", false, UiCheckHud.style(HudStyle.CLASSIC)),
+            new Step("hud", "hud_minimal", false, UiCheckHud.style(HudStyle.MINIMAL)),
+            new Step("hud", "hud_danger", false, UiCheckHud::danger),
+            new Step("hud", "hud_tab_list", false, UiCheckHud::tabList),
+            new Step("hud", "hud_tab_released", false, UiCheckHud::releaseTabList),
+            Step.screen("hud", "hud_settings", ArkHudScreen::new),
+            Step.press("hud", "hud_settings_classic", "hud:classic"),
+            Step.on("hud", "hud_settings_cards", Screen.class, UiCheckHud::scroll),
+            Step.key("hud", "hud_settings_closed", InputConstants.KEY_ESCAPE),
+            new Step("hud", "hud_restored", false, UiCheckHud.style(HudStyle.VANILLA)),
             Step.screen("vanilla", "vanilla_telemetry", parent -> new TelemetryInfoScreen(parent, Minecraft.getInstance().options)),
             Step.screen("vanilla", "vanilla_credits", CreditsAndAttributionScreen::new),
             Step.screen("vanilla", "vanilla_safety", SafetyScreen::new),

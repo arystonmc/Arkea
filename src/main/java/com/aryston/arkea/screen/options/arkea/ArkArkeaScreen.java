@@ -90,6 +90,8 @@ public final class ArkArkeaScreen extends OptionsPageScreen {
             ArkeaConfig.BACKGROUND_PAN::get, value -> ArkeaConfig.set(ArkeaConfig.BACKGROUND_PAN, value), true);
         this.addAccent(appearance);
         SettingsSection screens = settings.section(this.section("screens"), true);
+        this.link(screens, new ItemContent(Icons.MONITOR, Component.translatable("arkea.options.hud"), Component.translatable("arkea.settings.hud.description")),
+            Component.translatable("arkea.hud.open"), () -> this.openNav(OptionsPage.HUD.navEntry()));
         this.toggle(screens, new ItemContent(Icons.SLIDERS, Component.translatable("arkea.configuration.titleScreen"),
             Component.translatable("arkea.settings.title.description")), ArkeaConfig.TITLE_SCREEN::get, value -> ArkeaConfig.set(ArkeaConfig.TITLE_SCREEN, value), true);
         this.toggle(screens, new ItemContent(Icons.LAYERS, Component.translatable("arkea.configuration.optionsScreen"),

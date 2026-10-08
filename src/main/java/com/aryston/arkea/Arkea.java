@@ -2,6 +2,7 @@ package com.aryston.arkea;
 
 import com.aryston.arkea.config.ArkeaConfig;
 import com.aryston.arkea.integration.ClientEvents;
+import com.aryston.arkea.integration.HudEvents;
 import com.aryston.arkea.screen.options.arkea.ArkArkeaScreen;
 import com.aryston.arkea.ui.theme.Theme;
 import com.mojang.logging.LogUtils;
@@ -22,6 +23,7 @@ public final class Arkea {
         container.registerExtensionPoint(IConfigScreenFactory.class, (mod, parent) -> new ArkArkeaScreen(parent));
         Theme.setAccentSource(ArkeaConfig::accent);
         ClientEvents.register();
+        HudEvents.register();
         LOGGER.info("Arkea initialized");
     }
 }

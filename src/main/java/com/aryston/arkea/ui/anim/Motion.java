@@ -22,6 +22,8 @@ public final class Motion {
     public static final int TITLE_SCREEN_OUT = 200;
     public static final int SPLASH_PULSE = 900;
     public static final int CHECK_POP = 280;
+    public static final int HUD_FADE = 400;
+    public static final int HUD_PULSE = 900;
 
     private Motion() {
     }

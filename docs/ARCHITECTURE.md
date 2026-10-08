@@ -68,7 +68,8 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 - `StatsScreen` is replaced by `ArkStatsScreen`; the only game code that knows it is the stats packet handler, which `ClientPacketListenerMixin` extends.
 - `DialogSkin` draws confirm, link, alert, popup, warning and backup screens as Arkea dialogs when all their children are buttons and text widgets.
 - Every other screen keeps its vanilla layout. `VanillaTheme` and the theme mixins replace only the sprites and textures of its widgets, lists, tabs, separators and background, so mod screens built from vanilla widgets look like Arkea too. Container screens are left alone.
-- The HUD stays vanilla except two parts drawn through narrow mixins: `DebugScreenOverlayMixin` hands the F3 lines to `DebugCards` (inside the pose the overlay scaled for its own scale option, so the cards build a `UiScale` from that width), and `ChatScreenMixin` redirects the one fill behind the chat input.
+- The Arkea HUD replaces vanilla HUD layers one by one in `RenderGuiLayerEvent.Pre` (`HudEvents`) instead of one big overlay, so the layers of other mods keep their place and order. Each replaced layer is cancelled and its Arkea version is drawn in the same event with a `UiScale` built from the GUI scale (`HudSettings.scale`). Health and food layers are cancelled together and drawn once at the health layer; `leftHeight` and `rightHeight` are left at their base value, so mod parts that stack above the vanilla bars sit just above the hotbar. Everything the painters need is read into a `HudSnapshot` first, so the same painters draw the settings previews from a sample snapshot.
+- The HUD stays vanilla except the Arkea HUD and two parts drawn through narrow mixins: `DebugScreenOverlayMixin` hands the F3 lines to `DebugCards` (inside the pose the overlay scaled for its own scale option, so the cards build a `UiScale` from that width), and `ChatScreenMixin` redirects the one fill behind the chat input.
 
 ## Config Windows
 
@@ -140,6 +141,7 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 | `CreateWorldScreen` + `CreateWorldScreenInvoker`, `WorldCreationUiState`, `WorldCreationGameRulesScreen`, `PresetEditor` | Create world screen |
 | `JoinMultiplayerScreen` + accessor, `ServerList`, `ServerData`, `ServerStatusPinger`, `LanServerDetection`, `ConnectScreen.startConnecting`, `ServerAddress` | Multiplayer screen |
 | `ScreenEvent.Render.Pre`, `ConnectScreen`, `LevelLoadingScreen`, `LevelLoadTracker`, `ProgressScreen`, `GenericMessageScreen`, `DisconnectedScreen` + accessors | Loading skin |
+| `RenderGuiLayerEvent.Pre`, `VanillaGuiLayers`, `CustomizeGuiOverlayEvent.BossEventProgress`, `Hud` (`isHidden`, `HeartType`, `getMobEffectSprite`) + `HudAccessor`, `ExperienceBar`, `ClientHooks.firePlayerHeartTypeEvent`, `IClientMobEffectExtensions`, `MobEffectUtil.formatDuration`, scoreboard objectives and `StyledFormat.SIDEBAR_DEFAULT`, `PlayerTabOverlay` (`setVisible`, `getNameForDisplay`) + `PlayerTabOverlayAccessor`, `PlayerFaceExtractor`, `AvatarRenderer.isPlayerUpsideDown` | Arkea HUD |
 | NeoForge `ModListScreen` + accessor, `ModDisplayInfo`, `DefaultModDisplayInfo`, `ImageResource`, `IConfigScreenFactory`, `VersionChecker`, `ConfirmLinkScreen` | Mods screen |
 
 ## Porting Checklist for a New Minecraft Version
@@ -148,7 +150,8 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 2. Check the input records (`MouseButtonEvent`, `KeyEvent`, `InputWithModifiers`) and `ContainerEventHandler` mouse release forwarding.
 3. Check that `Panorama.extractRenderState` still exists with that name (otherwise `PanoramaMixin` fails to apply and the custom background never shows) and that the `blit` overload with a texture view and a sampler is still there. Check whether NeoForge still drops modifier key bindings on load (the "Invalid keyMapping" warning); remove `KeyModifierRepair` and `OptionsMixin` once it does not. Check the fields of `SplashRenderer`, `OptionInstance`, `Tooltip` and `OptionsSubScreen` for the accessors, the option lists of the vanilla options sub-screens (new options must be added to the pages) and the side effects of `VideoSettingsScreen`.
 4. Check the private fields and methods behind the accessors and the invoker (`lastScreen` of the singleplayer, multiplayer and mods screens, `onCreate` and the pack screens of `CreateWorldScreen`, the state fields of the loading screens) and whether game code still checks the loading screen classes.
-5. Run `-Define arkea.uiCheck=all` and compare the screenshots with the design handoff. Run the client, open the title screen, hover, Tab through it, open and close the quit dialog, and compare with `screenshots/` of the design handoff.
+5. Check the HUD layer names in `VanillaGuiLayers`, the fields behind `HudAccessor` (`toolHighlightTimer`, `lastToolHighlight`, `contextualInfoBar`, `tabList`) and `PlayerTabOverlayAccessor` (`header`, `footer`), the player list order and visibility rule in `PlayerTabOverlay` and `Hud.extractTabList`, the HUD sprite names and how vanilla draws hearts, food, air and effects in `Hud`.
+6. Run `-Define arkea.uiCheck=all` and compare the screenshots with the design handoff. Run the client, open the title screen, hover, Tab through it, open and close the quit dialog, and compare with `screenshots/` of the design handoff.
 
 ## Testing Tools
 
