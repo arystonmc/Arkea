@@ -21,6 +21,10 @@ public final class ArkeaConfig {
         .translation("arkea.configuration.menuScreens")
         .define("menuScreens", true);
 
+    public static final ModConfigSpec.BooleanValue GAME_TOASTS = BUILDER
+        .translation("arkea.configuration.gameToasts")
+        .define("gameToasts", true);
+
     public static final ModConfigSpec.EnumValue<Accent> ACCENT = BUILDER
         .translation("arkea.configuration.accent")
         .defineEnum("accent", Accent.GREEN);

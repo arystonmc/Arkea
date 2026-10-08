@@ -356,7 +356,7 @@ public final class ArkMultiplayerScreen extends ArkWindowScreen {
     }
 
     private void join(ServerData data) {
-        JoinTarget.set(data.name);
+        JoinTarget.server(data);
         this.leave(() -> ConnectScreen.startConnecting(this, this.minecraft, ServerAddress.parseString(data.ip), data, false, null));
     }
 

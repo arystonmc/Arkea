@@ -27,7 +27,7 @@ import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public final class LoadingSkin {
-    private static final int TIP_COUNT = 12;
+    private static final int TIP_COUNT = 13;
     private static final int ENTER_MS = 300;
     private static final long PULSE_MS = 900L;
     private static final float ENTER_RISE = 12.0F;

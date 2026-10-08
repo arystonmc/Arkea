@@ -77,6 +77,7 @@ public final class ArkLanguageScreen extends OptionsPageScreen {
 
     @Override
     protected void afterLayout() {
+        super.afterLayout();
         if (!this.revealed && this.selectedTile != null) {
             this.revealed = true;
             Box tile = this.selectedTile.bounds();

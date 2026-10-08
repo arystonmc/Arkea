@@ -7,6 +7,7 @@ import com.aryston.arkea.ui.render.UiGraphics;
 import com.aryston.arkea.ui.theme.ArkColors;
 import com.aryston.arkea.ui.widget.ArkWidget;
 import com.aryston.arkea.ui.widget.PanelRow;
+import com.aryston.arkea.ui.widget.SettingRow;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.network.chat.Component;
@@ -30,6 +31,18 @@ public final class SettingsPanel {
         SettingsSection section = new SettingsSection(title, full);
         this.sections.add(section);
         return section;
+    }
+
+    public List<SettingRow> settingRows() {
+        List<SettingRow> rows = new ArrayList<>();
+        for (SettingsSection section : this.sections) {
+            for (PanelRow row : section.rows()) {
+                if (row instanceof SettingRow setting) {
+                    rows.add(setting);
+                }
+            }
+        }
+        return rows;
     }
 
     public float layout(Box area, float top) {

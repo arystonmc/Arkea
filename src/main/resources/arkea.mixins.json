@@ -3,6 +3,7 @@
   "minVersion": "0.8",
   "package": "com.aryston.arkea.mixin",
   "client": [
+    "AdvancementToastMixin",
     "ConnectScreenAccessor",
     "CreateWorldScreenInvoker",
     "DisconnectedScreenAccessor",
@@ -14,9 +15,13 @@
     "OptionsSubScreenAccessor",
     "PanoramaMixin",
     "ProgressScreenAccessor",
+    "RecipeToastEntryAccessor",
+    "RecipeToastMixin",
     "SelectWorldScreenAccessor",
     "SplashRendererAccessor",
-    "TooltipAccessor"
+    "SystemToastMixin",
+    "TooltipAccessor",
+    "TutorialToastMixin"
   ],
   "injectors": {
     "defaultRequire": 1

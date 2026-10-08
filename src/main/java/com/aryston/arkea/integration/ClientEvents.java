@@ -8,8 +8,10 @@ import com.aryston.arkea.mixin.ModListScreenAccessor;
 import com.aryston.arkea.mixin.OptionsSubScreenAccessor;
 import com.aryston.arkea.mixin.SelectWorldScreenAccessor;
 import com.aryston.arkea.screen.loading.LoadingSkin;
+import com.aryston.arkea.screen.loading.Reconnect;
 import com.aryston.arkea.screen.mods.ArkModsScreen;
 import com.aryston.arkea.screen.options.ArkAccessibilityScreen;
+import com.aryston.arkea.screen.palette.CommandPaletteScreen;
 import com.aryston.arkea.screen.options.ArkChatScreen;
 import com.aryston.arkea.screen.options.ArkControlsScreen;
 import com.aryston.arkea.screen.options.ArkLanguageScreen;
@@ -22,7 +24,9 @@ import com.aryston.arkea.screen.servers.ArkMultiplayerScreen;
 import com.aryston.arkea.screen.title.ArkTitleScreen;
 import com.aryston.arkea.screen.worlds.ArkCreateWorldScreen;
 import com.aryston.arkea.screen.worlds.ArkWorldSelectScreen;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
@@ -57,12 +61,32 @@ public final class ClientEvents {
         NeoForge.EVENT_BUS.addListener(ClientEvents::onScreenOpening);
         NeoForge.EVENT_BUS.addListener(ClientEvents::onClientTick);
         NeoForge.EVENT_BUS.addListener(ClientEvents::onScreenRender);
+        NeoForge.EVENT_BUS.addListener(ClientEvents::onScreenKey);
+        NeoForge.EVENT_BUS.addListener(ClientEvents::onScreenInit);
     }
 
     private static void onClientTick(ClientTickEvent.Post event) {
         MenuBackground.tick();
         if (UI_CHECK != null) {
             UI_CHECK.tick(Minecraft.getInstance());
+        }
+    }
+
+    private static void onScreenInit(ScreenEvent.Init.Post event) {
+        if (!ArkeaConfig.MENU_SCREENS.get()) {
+            return;
+        }
+        Button reconnect = Reconnect.button(event.getScreen());
+        if (reconnect != null) {
+            event.addListener(reconnect);
+        }
+    }
+
+    private static void onScreenKey(ScreenEvent.KeyPressed.Pre event) {
+        boolean shortcut = event.getKey() == InputConstants.KEY_K && event.getKeyEvent().hasControlDown();
+        if (shortcut && ArkeaConfig.MENU_SCREENS.get() && !(event.getScreen() instanceof CommandPaletteScreen)) {
+            event.setCanceled(true);
+            Minecraft.getInstance().gui.pushScreenLayer(new CommandPaletteScreen());
         }
     }
 

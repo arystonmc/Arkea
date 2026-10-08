@@ -499,6 +499,10 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Path: `src/main/java/com/aryston/arkea/ui/overlay/DialogImage.java`
 - Role: Something that draws itself into a box, for dialog hero images and thumbnails.
 
+#### GameToast, GameToastIcon
+- Path: `src/main/java/com/aryston/arkea/ui/overlay/GameToast.java`, `src/main/java/com/aryston/arkea/ui/overlay/GameToastIcon.java`
+- Role: In-game toast of the design (300 x 56 or larger, icon tile 40, yellow title, optional progress) drawn inside a vanilla toast slot; icons for items and tones.
+
 #### ArkToasts
 - Path: `src/main/java/com/aryston/arkea/ui/overlay/ArkToasts.java`
 - Role: The menu toasts of the design: a stack at the bottom center of every Arkea screen, 40 high with a 38 wide tone column, at most three, newest at the bottom, enter with a 16 pixel rise and scale 0.95 (320 ms), leave with 12 pixels (200 ms), stay 2.4 s; errors, progress and busy toasts stay until finished. Optional action chip (Undo, Show), percentage with a 2 pixel bar, or a moving bar while busy. A click dismisses a toast and runs its action. Toasts survive screen switches.
@@ -685,6 +689,10 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### LoadingView
 - Path: `src/main/java/com/aryston/arkea/screen/loading/LoadingView.java`
 - Role: Mood, texts, progress and steps of one loading frame.
+
+#### Reconnect
+- Path: `src/main/java/com/aryston/arkea/screen/loading/Reconnect.java`
+- Role: Reconnect button added to the disconnected screen after a server connection.
 
 #### JoinTarget
 - Path: `src/main/java/com/aryston/arkea/screen/loading/JoinTarget.java`
@@ -878,6 +886,10 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Path: `src/main/java/com/aryston/arkea/mixin/SelectWorldScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/JoinMultiplayerScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/ModListScreenAccessor.java`
 - Role: Read the private previous screen of the singleplayer, multiplayer and NeoForge mods screens when `ClientEvents` replaces them.
 
+#### SystemToastMixin, AdvancementToastMixin, RecipeToastMixin, TutorialToastMixin, RecipeToastEntryAccessor
+- Path: `src/main/java/com/aryston/arkea/mixin/SystemToastMixin.java`, `src/main/java/com/aryston/arkea/mixin/AdvancementToastMixin.java`, `src/main/java/com/aryston/arkea/mixin/RecipeToastMixin.java`, `src/main/java/com/aryston/arkea/mixin/TutorialToastMixin.java`, `src/main/java/com/aryston/arkea/mixin/RecipeToastEntryAccessor.java`
+- Role: Draw vanilla toasts in the Arkea style and size them; vanilla keeps timing and updates. No API exists to restyle toasts.
+
 #### CreateWorldScreenInvoker
 - Path: `src/main/java/com/aryston/arkea/mixin/CreateWorldScreenInvoker.java`
 - Role: Calls the private `onCreate`, `openExperimentsScreen` and `openDataPackSelectionScreen` of `CreateWorldScreen`, so `ArkCreateWorldScreen` keeps the whole vanilla creation flow.
@@ -886,7 +898,35 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Path: `src/main/java/com/aryston/arkea/mixin/ConnectScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/LevelLoadingScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/ProgressScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/DisconnectedScreenAccessor.java`
 - Role: Read the status, load tracker and reason, header, stage and progress, and disconnection details that `LoadingViews` shows; none of these screens exposes them.
 
+### `com.aryston.arkea.screen.palette`
+
+#### CommandPaletteScreen
+- Path: `src/main/java/com/aryston/arkea/screen/palette/CommandPaletteScreen.java`
+- Role: Ctrl+K command palette pushed as a screen layer over any menu: search field, grouped results (actions, pages, settings, worlds, servers), arrow keys, Enter, Esc and mouse.
+
+#### PaletteEntry
+- Path: `src/main/java/com/aryston/arkea/screen/palette/PaletteEntry.java`
+- Role: Group, icon, label, detail and action of one palette result.
+
+#### PaletteIndex
+- Path: `src/main/java/com/aryston/arkea/screen/palette/PaletteIndex.java`
+- Role: Builds palette entries: menu actions, folders, accent colors, options pages, every setting, recent worlds (async) and servers.
+
+#### SettingsIndex
+- Path: `src/main/java/com/aryston/arkea/screen/palette/SettingsIndex.java`
+- Role: Lists every setting row of the options pages by building each page off screen once per language.
+
+### `com.aryston.arkea.screen.toasts`
+
+#### GameToasts
+- Path: `src/main/java/com/aryston/arkea/screen/toasts/GameToasts.java`
+- Role: Turns vanilla system, advancement, recipe and tutorial toasts into `GameToast` content; checks the notifications switch.
+
 ### `com.aryston.arkea.debug`
+
+#### UiCheckGameToasts
+- Path: `src/main/java/com/aryston/arkea/debug/UiCheckGameToasts.java`
+- Role: Check helper that raises sample system and tutorial toasts.
 
 #### UiCheck
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheck.java`

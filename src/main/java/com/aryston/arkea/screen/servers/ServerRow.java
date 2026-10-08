@@ -16,7 +16,9 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
@@ -185,6 +187,21 @@ final class ServerRow extends ArkWidget {
 
     private boolean pinging() {
         return this.data.state() == ServerData.State.INITIAL || this.data.state() == ServerData.State.PINGING;
+    }
+
+    @Override
+    public @Nullable Component tooltip() {
+        if (this.data.state() != ServerData.State.SUCCESSFUL || this.data.playerList.isEmpty()) {
+            return null;
+        }
+        MutableComponent players = Component.empty();
+        for (int index = 0; index < this.data.playerList.size(); index++) {
+            if (index > 0) {
+                players.append(CommonComponents.NEW_LINE);
+            }
+            players.append(this.data.playerList.get(index));
+        }
+        return players;
     }
 
     @Override

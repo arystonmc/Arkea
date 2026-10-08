@@ -23,6 +23,10 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 - Add connecting and loading screens with steps, progress and tips
 - Add a mods screen with details, settings and links for every mod
 - Add notifications for backups, deleting, renaming and copying
+- Add a Ctrl+K command palette for settings, pages, worlds, servers and actions
+- Show advancement, recipe, tutorial and system notifications in the Arkea style
+- Add a Reconnect button after losing a server connection
+- Show the player list when hovering a server
 
 ### Fixed
 - Keep key bindings with Ctrl, Shift or Alt after a restart

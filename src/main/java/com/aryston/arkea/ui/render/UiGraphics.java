@@ -9,6 +9,7 @@ import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -19,6 +20,7 @@ import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.FormattedCharSequence;
 import org.joml.Matrix3x2fStack;
 import org.joml.Vector2f;
 
@@ -247,6 +249,26 @@ public final class UiGraphics {
         this.translateSnapped(x, y);
         this.pose.scale(fontScale);
         this.graphics.text(this.font, Language.getInstance().getVisualOrder(clipped), 0, 0, tinted, false);
+        this.pose.popMatrix();
+    }
+
+    public void textLine(FormattedCharSequence line, float x, float y, TextStyle style, int color) {
+        int tinted = this.applyAlpha(color);
+        if (ArkColors.alpha(tinted) <= 0.0F) {
+            return;
+        }
+        this.pose.pushMatrix();
+        this.translateSnapped(x, y);
+        this.pose.scale(this.metrics.fontScale(style));
+        this.graphics.text(this.font, line, 0, 0, tinted, false);
+        this.pose.popMatrix();
+    }
+
+    public void vanilla(Box box, float nativeSize, Consumer<GuiGraphicsExtractor> draw) {
+        this.pose.pushMatrix();
+        this.pose.translate(box.x(), box.y());
+        this.pose.scale(box.width() / nativeSize, box.height() / nativeSize);
+        draw.accept(this.graphics);
         this.pose.popMatrix();
     }
 

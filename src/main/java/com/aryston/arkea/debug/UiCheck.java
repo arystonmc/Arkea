@@ -1,6 +1,7 @@
 package com.aryston.arkea.debug;
 
 import com.aryston.arkea.Arkea;
+import com.aryston.arkea.screen.palette.CommandPaletteScreen;
 import com.aryston.arkea.ui.screen.ArkScreen;
 import com.aryston.arkea.ui.widget.ArkWidget;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -118,7 +119,11 @@ public final class UiCheck {
             Step.key("worlds", "worlds_after_edit", InputConstants.KEY_ESCAPE),
             Step.key("worlds", "worlds_delete", InputConstants.KEY_DELETE),
             Step.key("worlds", "worlds_after_delete", InputConstants.KEY_ESCAPE),
+            new Step("palette", "palette", false, minecraft -> minecraft.gui.pushScreenLayer(new CommandPaletteScreen())),
+            Step.key("palette", "palette_down", InputConstants.KEY_DOWN),
+            new Step("palette", "palette_close", false, minecraft -> minecraft.gui.popScreenLayer()),
             new Step("toasts", "toasts", false, minecraft -> UiCheckToasts.show()),
+            new Step("toasts", "game_toasts", false, UiCheckGameToasts::show),
             Step.screen("loading", "loading_message", parent -> new GenericMessageScreen(Component.translatable("menu.savingLevel"))),
             Step.screen("loading", "loading_progress", parent -> UiCheckLoading.progress()),
             Step.screen("loading", "loading_disconnected", parent -> new DisconnectedScreen(parent, Component.translatable("connect.failed"),

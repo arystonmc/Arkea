@@ -46,6 +46,7 @@ public abstract class OptionsPageScreen extends ArkWindowScreen {
     private SettingsPanel panel = new SettingsPanel();
     private float contentWidth;
     private @Nullable ArkBanner banner;
+    private @Nullable String pendingReveal;
 
     protected OptionsPageScreen(OptionsPage page, Screen lastScreen) {
         super(page.title(), lastScreen);
@@ -128,6 +129,30 @@ public abstract class OptionsPageScreen extends ArkWindowScreen {
             this.renderRow(graphics, index++, () -> shown.render(graphics, mouseX, mouseY));
         }
         this.panel.render(graphics, mouseX, mouseY, (row, draw) -> this.renderRow(graphics, row, draw), index);
+    }
+
+    public List<SettingRow> settingRows() {
+        return this.panel.settingRows();
+    }
+
+    public OptionsPageScreen reveal(Component settingName) {
+        this.pendingReveal = settingName.getString();
+        return this;
+    }
+
+    @Override
+    protected void afterLayout() {
+        if (this.pendingReveal == null) {
+            return;
+        }
+        for (SettingRow row : this.panel.settingRows()) {
+            if (row.name().getString().equals(this.pendingReveal)) {
+                this.pendingReveal = null;
+                this.scrollToReveal(row.bounds());
+                row.widgets().stream().findFirst().ifPresent(this::setFocused);
+                return;
+            }
+        }
     }
 
     protected float contentWidth() {

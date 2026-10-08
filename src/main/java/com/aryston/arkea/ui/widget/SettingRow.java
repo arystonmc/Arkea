@@ -100,6 +100,14 @@ public final class SettingRow implements PanelRow {
         return this.control == null ? List.of() : List.of(this.control);
     }
 
+    public Icon icon() {
+        return this.icon;
+    }
+
+    public Component description() {
+        return this.description;
+    }
+
     public Component name() {
         return this.name;
     }

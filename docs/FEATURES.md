@@ -93,6 +93,7 @@ Servers and LAN games in one window.
 - Add Server and Direct Connect check the address before you join
 - The LAN tab scans your network and lists open worlds
 - Search servers by name or address, refresh with F5
+- Hover a server to see who is online, and reconnect with one click after losing the connection
 - Since: 0.1
 
 ### Loading Screens
@@ -117,4 +118,12 @@ Short messages at the bottom of every Arkea screen.
 - Success, info, warning and error notifications; errors stay until you click them
 - Long tasks such as backups show a moving bar and finish with the result
 - Some notifications offer an action, such as showing the new backup
+- Advancement, recipe, tutorial and system notifications in the top right corner use the same look (turn it off on the Arkea page)
+- Since: 0.1
+
+### Command Palette
+Jump anywhere with the keyboard.
+
+- Press Ctrl+K in any menu and type: every setting, options page, recent world, server, folder and accent color is one Enter away
+- Choosing a setting opens its page and scrolls to it
 - Since: 0.1
