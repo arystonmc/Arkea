@@ -1,5 +1,6 @@
 plugins {
     id 'java-library'
+    id 'maven-publish'
     id 'net.neoforged.moddev' version '2.0.148'
     id 'idea'
 }
@@ -16,6 +17,10 @@ base {
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(java_version as int)
+
+java {
+    withSourcesJar()
+}
 
 repositories {
     mavenCentral()
@@ -92,6 +97,51 @@ tasks.named('processResources', ProcessResources) {
     }
     from('.') {
         include 'COPYING', 'COPYING.LESSER', 'THIRD_PARTY_NOTICES.md'
+    }
+}
+
+tasks.named('sourcesJar', Jar) {
+    from('.') {
+        include 'COPYING', 'COPYING.LESSER'
+    }
+}
+
+publishing {
+    publications {
+        register('mod', MavenPublication) {
+            artifactId = base.archivesName.get()
+            from components.java
+            pom {
+                name = mod_name
+                description = 'Client-side interface library for Minecraft mods with animated, consistent settings screens.'
+                url = mod_url
+                licenses {
+                    license {
+                        name = mod_license
+                        url = "https://www.gnu.org/licenses/lgpl-3.0.html"
+                    }
+                }
+                scm {
+                    url = mod_url
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'staging'
+            url = layout.buildDirectory.dir('repo')
+        }
+        if (providers.environmentVariable('GITHUB_TOKEN').isPresent()) {
+            maven {
+                name = 'GitHubPackages'
+                url = uri("https://maven.pkg.github.com/${providers.environmentVariable('GITHUB_REPOSITORY').getOrElse('lureidcom/Arkea')}")
+                credentials {
+                    username = providers.environmentVariable('GITHUB_ACTOR').getOrElse('')
+                    password = providers.environmentVariable('GITHUB_TOKEN').get()
+                }
+            }
+        }
     }
 }
 

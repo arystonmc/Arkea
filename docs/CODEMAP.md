@@ -43,6 +43,9 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 | Dialog content (forms, hero image, thumbnail) | `ArkDialog`, `DialogForm`, `DialogBody` |
 | Checkbox, tabs, tags, letter tiles, empty states | `ArkCheckbox`, `ArkTab`, `Tag`, `LetterTile`, `EmptyState`, `PixelSpinner` |
 | Automated screenshots of screens | `UiCheck` |
+| Config screen library for other mods | `ArkeaConfigScreen`, `ConfigOption`, `ModConfigScreens`, `ArkConfigScreen` |
+| Radio, stepper, chips, range, color picker, context menu, side sheet, preview | `ArkRadio`, `ArkStepper`, `ArkChip`, `ArkRangeSlider`, `ColorPickerPopup`, `ArkContextMenu`, `ArkSideSheet`, `ArkCompareView` |
+| Component gallery | `ArkGalleryScreen` |
 | Jump back in card, splash text | `JumpBackInCard`, `SplashText`, `RecentWorld`, `LastPlayed` |
 | Texts | `src/main/resources/assets/arkea/lang/` |
 | Mod name, version, loader versions, license, authors | `gradle.properties` |
@@ -196,7 +199,11 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### Theme
 - Path: `src/main/java/com/aryston/arkea/ui/theme/Theme.java`
-- Role: The accent in use, read from `ArkeaConfig.ACCENT` (green before the config loads).
+- Role: The accent in use. The design system asks a supplier set with `setAccentSource` (Arkea sets `ArkeaConfig::accent`), so `ui` never depends on the Arkea config.
+
+#### Hsv
+- Path: `src/main/java/com/aryston/arkea/ui/theme/Hsv.java`
+- Role: Hue, saturation and value of a color with conversion from and to RGB, for the color picker.
 
 ### `com.aryston.arkea.ui.anim`
 
@@ -311,6 +318,14 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### LetterTile
 - Path: `src/main/java/com/aryston/arkea/ui/render/LetterTile.java`
 - Role: Colored square with the first letter of a name and a darker bottom edge, used when a server or mod has no icon; the color comes from the name, so it stays the same.
+
+#### Meter
+- Path: `src/main/java/com/aryston/arkea/ui/render/Meter.java`
+- Role: Small painters of the design: ten segment meter (GPU impact), cost pips (1 to 3 squares), progress bar, step dots and the plain, labeled ("OR") and dashed dividers.
+
+#### ItemSlot
+- Path: `src/main/java/com/aryston/arkea/ui/render/ItemSlot.java`
+- Role: Pixel item slot of the design (40 x 40, inset bevel, white frame when selected) with a real `ItemStack` drawn through the vanilla item renderer.
 
 ### `com.aryston.arkea.ui.text`
 
@@ -478,7 +493,55 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### SettingRow
 - Path: `src/main/java/com/aryston/arkea/ui/widget/SettingRow.java`
-- Role: Frame of a setting: icon box, name, description and hover; not focusable. `controlSlot` places the control widget on its right and keeps the text clear of it, `litWhen` turns the icon from gray to the accent while the setting is on, `tooltip` supplies the hover text of the whole row, and the content fades when the control is disabled. As a `PanelRow` it places and draws the control given to `control`.
+- Role: Frame of a setting: icon box, name, description and hover; not focusable. `tags` and `cost` draw badges and cost pips after the name, `resettable` adds an undo button that shows while the value differs from its default, `accessory` adds other icon buttons (preview). `controlSlot` places the control widget on its right and keeps the text clear of it, `litWhen` turns the icon from gray to the accent while the setting is on, `tooltip` supplies the hover text of the whole row, and the content fades when the control is disabled. As a `PanelRow` it places and draws the control given to `control`.
+
+#### ArkRadio
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkRadio.java`
+- Role: Radio button with the square dot of the design that pops in (280 ms spring); selecting it runs the group callback.
+
+#### ArkStepper
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkStepper.java`
+- Role: Number stepper (140 x 30): minus, value, plus; arrow keys step (Shift for ten), holding a button repeats after 400 ms every 60 ms. Uses a `SliderModel`.
+
+#### ArkChip
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkChip.java`
+- Role: Chip of a multi-select (28 high): accent tint and pixel check when selected; `add` makes the dashed "+ Add" chip.
+
+#### ChipsRow
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ChipsRow.java`
+- Role: Setting row with a name, description and wrapping chips below; its height follows the width (`PanelRow.height(width)`).
+
+#### ArkRangeSlider
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkRangeSlider.java`
+- Role: Slider with two handles for a range; the handle closest to the click moves, Enter switches the handle for the arrow keys.
+
+#### RangeModel, IntRangeModel
+- Path: `src/main/java/com/aryston/arkea/ui/widget/RangeModel.java`
+- Role: Values of a range slider; `IntRangeModel` keeps two integers in a `SliderRange` and the low value below the high one. Path of the second file: `src/main/java/com/aryston/arkea/ui/widget/IntRangeModel.java`.
+
+#### DoubleSliderModel
+- Path: `src/main/java/com/aryston/arkea/ui/widget/DoubleSliderModel.java`
+- Role: `SliderModel` over a decimal value with min, max and step; ticks for five or fewer steps.
+
+#### ArkColorButton
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkColorButton.java`
+- Role: Row control of a color (140 x 30, swatch and hex) that opens the `ColorPickerPopup`.
+
+#### ArkDisclosure
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkDisclosure.java`
+- Role: Header of a collapsible section (40 high): rotating chevron, label and a count or tag on the right.
+
+#### ArkPagination
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkPagination.java`
+- Role: Previous and next arrows around "page / pages"; arrow keys work while focused.
+
+#### ArkPresetTile
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkPresetTile.java`
+- Role: Preset tile (84 high): icon box, title and description, lifts 2 pixels on hover, accent frame, glow and check badge when selected.
+
+#### ArkCompareView
+- Path: `src/main/java/com/aryston/arkea/ui/widget/ArkCompareView.java`
+- Role: Before and after images with a draggable split handle and Before, Split and After modes (the split animates 450 ms); used by preview dialogs.
 
 ### `com.aryston.arkea.ui.overlay`
 
@@ -526,7 +589,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### Popup
 - Path: `src/main/java/com/aryston/arkea/ui/overlay/Popup.java`
-- Role: Something drawn above the screen content that takes clicks, wheel and keys first while open (dropdown menus).
+- Role: Something drawn above the screen content that takes clicks, drags, wheel, keys and typed characters first while open (dropdown menus, context menus, the color picker).
 
 #### DropdownMenu
 - Path: `src/main/java/com/aryston/arkea/ui/overlay/DropdownMenu.java`
@@ -535,6 +598,93 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### TooltipHint
 - Path: `src/main/java/com/aryston/arkea/ui/overlay/TooltipHint.java`
 - Role: Owner and text of a tooltip; a new owner restarts the delay.
+
+#### Overlay
+- Path: `src/main/java/com/aryston/arkea/ui/overlay/Overlay.java`
+- Role: Modal layer of an `ArkScreen` (dialogs and side sheets): layout, open, close, cancel, widgets and drawing.
+
+#### ArkSideSheet
+- Path: `src/main/java/com/aryston/arkea/ui/overlay/ArkSideSheet.java`
+- Role: Side sheet of the design: 420 wide panel on the right with title, subtitle, close button, optional body and footer buttons; slides 24 pixels with a fade over a scrim.
+
+#### ArkContextMenu, ContextMenuItem
+- Path: `src/main/java/com/aryston/arkea/ui/overlay/ArkContextMenu.java`
+- Role: Context menu at the cursor (260 wide, rows 32, separators, right aligned shortcuts, disabled and danger items) with a 140 ms drop-in and 120 ms fade; arrow keys and Enter work. Path of the item record: `src/main/java/com/aryston/arkea/ui/overlay/ContextMenuItem.java`.
+
+#### ColorPickerPopup
+- Path: `src/main/java/com/aryston/arkea/ui/overlay/ColorPickerPopup.java`
+- Role: Color picker of the design: saturation and value field, hue bar, swatch with editable hex and six Minecraft friendly presets; drag and type input come through `Popup`.
+
+#### DialogList
+- Path: `src/main/java/com/aryston/arkea/ui/overlay/DialogList.java`
+- Role: Dialog body with rows of an icon, title, detail and tag: what's new, change reviews and profile lists.
+
+#### DialogProgress
+- Path: `src/main/java/com/aryston/arkea/ui/overlay/DialogProgress.java`
+- Role: Dialog body with a step label, percentage and an eased progress bar.
+
+### `com.aryston.arkea.api.config`
+
+Public library API. Other mods build Arkea screens with these classes; see `docs/API.md`.
+
+#### ArkeaConfigScreen
+- Path: `src/main/java/com/aryston/arkea/api/config/ArkeaConfigScreen.java`
+- Role: Entry point of the config screen API: a builder with brand, sidebar groups, pages, apply mode, apply listeners and a sidebar meter; `build` returns the screen, `factory` an `IConfigScreenFactory`.
+- Members: `builder`, `page`, `Builder.brand`, `group`, `page`, `applyMode`, `onApply`, `meter`, `build`, `factory`, `Definition`, `Group`.
+
+#### ConfigPage
+- Path: `src/main/java/com/aryston/arkea/api/config/ConfigPage.java`
+- Role: A sidebar page: sections, presets and an optional notice.
+
+#### ConfigSection
+- Path: `src/main/java/com/aryston/arkea/api/config/ConfigSection.java`
+- Role: A titled group of options, half or full width, optionally collapsible.
+
+#### ConfigOption
+- Path: `src/main/java/com/aryston/arkea/api/config/ConfigOption.java`
+- Role: One setting: id, `Binding`, kind and how it looks (name, description, icon, tooltip, tags, cost, restart, requirement, before and after preview, choice style, value labels).
+- Members: `toggle`, `choice`, `enumChoice`, `slider` (int and double), `stepper`, `text`, `color`, `multi`, `action`.
+
+#### OptionKind
+- Path: `src/main/java/com/aryston/arkea/api/config/OptionKind.java`
+- Role: Sealed kinds of option values: toggle, choice, int range, double range, text, color, multi-select and action.
+
+#### ChoiceStyle
+- Path: `src/main/java/com/aryston/arkea/api/config/ChoiceStyle.java`
+- Role: How a choice is shown: automatic (cycle up to six values, dropdown above), cycle, dropdown or segmented.
+
+#### Binding
+- Path: `src/main/java/com/aryston/arkea/api/config/Binding.java`
+- Role: Where an option reads and writes its value; `of(ConfigValue)` binds a `ModConfigSpec` value (saved and restart aware), `of(getter, setter, default)` anything else.
+
+#### SpecBinding
+- Path: `src/main/java/com/aryston/arkea/api/config/SpecBinding.java`
+- Role: `Binding` of a `ModConfigSpec.ConfigValue`: raw value, default, `save` and the restart type of the spec.
+
+#### ConfigPreset
+- Path: `src/main/java/com/aryston/arkea/api/config/ConfigPreset.java`
+- Role: A named set of option values shown as a preset tile; active while every value matches.
+
+#### ConfigMeter
+- Path: `src/main/java/com/aryston/arkea/api/config/ConfigMeter.java`
+- Role: Sidebar meter (label, value, fraction and note) computed from the values shown on screen, such as an estimated GPU impact.
+
+#### ConfigValues
+- Path: `src/main/java/com/aryston/arkea/api/config/ConfigValues.java`
+- Role: Read access to the values on screen, including changes that are not applied yet.
+
+#### ApplyMode
+- Path: `src/main/java/com/aryston/arkea/api/config/ApplyMode.java`
+- Role: `ON_APPLY` keeps changes until Apply (default), `IMMEDIATE` writes and saves every change at once.
+
+#### SpecOptions
+- Path: `src/main/java/com/aryston/arkea/api/config/SpecOptions.java`
+- Role: Turns a `ModConfigSpec.ConfigValue` into an option: switch, choice (`TranslatableEnum` names), slider or stepper by range, decimal slider, text for strings, longs, unbounded decimals and lists; names and descriptions from the translation key or comment.
+
+#### ModConfigScreens
+- Path: `src/main/java/com/aryston/arkea/api/config/ModConfigScreens.java`
+- Role: Builds an Arkea screen for every `ModConfigSpec` of a mod: one sidebar group per config type, a page per top level section, sections per nested group. Unloaded configs and server configs that cannot be edited show a notice.
+- Members: `forMod`, `factory`, `pages`, `hasEditableConfig`.
 
 ### `com.aryston.arkea.ui.screen`
 
@@ -568,6 +718,24 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### SidebarBrand
 - Path: `src/main/java/com/aryston/arkea/ui/screen/SidebarBrand.java`
 - Role: Icon, title and subtitle at the top of the sidebar.
+
+### `com.aryston.arkea.screen.config`
+
+#### ArkConfigScreen
+- Path: `src/main/java/com/aryston/arkea/screen/config/ArkConfigScreen.java`
+- Role: The window built from an `ArkeaConfigScreen.Definition`: sidebar pages with an unsaved marker, search across every page, preset tiles, collapsible sections, rows with reset and preview buttons, restart and page notices, right-click menu (reset, copy, paste, preview), sidebar meter, Reset to Defaults, Discard and Apply, and the unsaved changes dialog on leaving. Each page is its own screen sharing one `ConfigSession`, so pages switch with the content animation.
+
+#### ConfigSession
+- Path: `src/main/java/com/aryston/arkea/screen/config/ConfigSession.java`
+- Role: State shared by the pages of one config window: current page, values not applied yet, expanded sections and text field states; applies, discards, resets and applies presets.
+
+#### ConfigControls
+- Path: `src/main/java/com/aryston/arkea/screen/config/ConfigControls.java`
+- Role: Picks the widget of an option: switch, cycle, dropdown or segmented, slider or stepper, text field, color button or action button.
+
+#### ConfigClipboard
+- Path: `src/main/java/com/aryston/arkea/screen/config/ConfigClipboard.java`
+- Role: Copies an option value as text and parses pasted text back for every kind.
 
 ### `com.aryston.arkea.screen.title`
 
@@ -855,6 +1023,16 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Path: `src/main/java/com/aryston/arkea/screen/options/control/OptionText.java`
 - Role: Turns vanilla "Caption: value" labels into the value alone, reads the vanilla tooltip of the current value, and finds the short Arkea description (`arkea.option.*`) and name overrides (`.name`).
 
+### `com.aryston.arkea.screen.gallery`
+
+#### ArkGalleryScreen
+- Path: `src/main/java/com/aryston/arkea/screen/gallery/ArkGalleryScreen.java`
+- Role: Component gallery for mod developers, opened from the Arkea page: every input, feedback part and overlay of the design, live.
+
+#### PaintRow
+- Path: `src/main/java/com/aryston/arkea/screen/gallery/PaintRow.java`
+- Role: Gallery row that runs a painter inside a row frame.
+
 ### `com.aryston.arkea.mixin`
 
 #### SplashRendererAccessor
@@ -898,6 +1076,10 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Path: `src/main/java/com/aryston/arkea/mixin/ConnectScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/LevelLoadingScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/ProgressScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/DisconnectedScreenAccessor.java`
 - Role: Read the status, load tracker and reason, header, stage and progress, and disconnection details that `LoadingViews` shows; none of these screens exposes them.
 
+#### ConfigurationScreenAccessor
+- Path: `src/main/java/com/aryston/arkea/mixin/ConfigurationScreenAccessor.java`
+- Role: Reads the mod of a NeoForge `ConfigurationScreen` so `ClientEvents` can open the Arkea screen of the same mod. No event or getter exposes it.
+
 ### `com.aryston.arkea.screen.palette`
 
 #### CommandPaletteScreen
@@ -930,11 +1112,11 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### UiCheck
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheck.java`
-- Role: Developer check (`-Define arkea.uiCheck=all` or a comma list of groups: title, options, worlds, create, servers, mods, loading, toasts). Opens screens, presses widgets by key, sends keys, saves a screenshot after every step as `screenshots/arkea_<step>.png` and closes the game. Does nothing in production.
+- Role: Developer check (`-Define arkea.uiCheck=all` or a comma list of groups: title, options, worlds, create, servers, mods, loading, toasts, gallery, config, helion). Opens screens, presses widgets by key, sends keys, saves a screenshot after every step as `screenshots/arkea_<step>.png` and closes the game. Does nothing in production.
 
-#### UiCheckToasts, UiCheckLoading, UiCheckServers
-- Path: `src/main/java/com/aryston/arkea/debug/UiCheckToasts.java`, `src/main/java/com/aryston/arkea/debug/UiCheckLoading.java`, `src/main/java/com/aryston/arkea/debug/UiCheckServers.java`
-- Role: Check helpers: sample toasts, a progress screen and a connection to an unroutable address (cancelled again), and temporary sample servers that are removed at the end.
+#### UiCheckToasts, UiCheckLoading, UiCheckServers, UiCheckConfig
+- Path: `src/main/java/com/aryston/arkea/debug/UiCheckToasts.java`, `src/main/java/com/aryston/arkea/debug/UiCheckLoading.java`, `src/main/java/com/aryston/arkea/debug/UiCheckServers.java`, `src/main/java/com/aryston/arkea/debug/UiCheckConfig.java`
+- Role: Check helpers: sample toasts, a progress screen and a connection to an unroutable address (cancelled again), temporary sample servers that are removed at the end, and the config screen of Helion when it is installed.
 
 ## Tests
 
@@ -973,7 +1155,7 @@ Plain JUnit 5 tests without a running game, run by `./gradlew build` and the CI.
 | Folder | Contents |
 |---|---|
 | `src/main/resources/assets/arkea/lang/` | `en_us.json` and `tr_tr.json`: config, title screen, window and options texts, short option descriptions (`arkea.option.*`). Menu labels reuse vanilla keys so every game language shows them. |
-| `src/main/resources/assets/arkea/textures/gui/` | `arkea_logo.png` and `helion_logo.png`: 48 x 48 logos (scaled from the 128 pixel design handoff logos) for the sidebar, the "UI by Arkea" footer and the Helion banner, with `.png.mcmeta` files that turn on linear filtering. `helion_preview.png`: preview of the Helion banner. |
+| `src/main/resources/assets/arkea/textures/gui/` | `gallery_before.png` and `gallery_after.png`: sample images of the before and after preview in the gallery. `arkea_logo.png` and `helion_logo.png`: 48 x 48 logos (scaled from the 128 pixel design handoff logos) for the sidebar, the "UI by Arkea" footer and the Helion banner, with `.png.mcmeta` files that turn on linear filtering. `helion_preview.png`: preview of the Helion banner. |
 
 ## Build Files
 

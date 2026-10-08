@@ -21,6 +21,14 @@ public final class ArkeaConfig {
         .translation("arkea.configuration.menuScreens")
         .define("menuScreens", true);
 
+    public static final ModConfigSpec.BooleanValue IN_GAME_SCREENS = BUILDER
+        .translation("arkea.configuration.inGameScreens")
+        .define("inGameScreens", true);
+
+    public static final ModConfigSpec.BooleanValue MOD_CONFIG_SCREENS = BUILDER
+        .translation("arkea.configuration.modConfigScreens")
+        .define("modConfigScreens", true);
+
     public static final ModConfigSpec.BooleanValue GAME_TOASTS = BUILDER
         .translation("arkea.configuration.gameToasts")
         .define("gameToasts", true);
@@ -44,6 +52,10 @@ public final class ArkeaConfig {
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     private ArkeaConfig() {
+    }
+
+    public static Accent accent() {
+        return SPEC.isLoaded() ? ACCENT.get() : Accent.GREEN;
     }
 
     public static <T> void set(ModConfigSpec.ConfigValue<T> value, T newValue) {

@@ -1,8 +1,10 @@
 package com.aryston.arkea.integration;
 
 import com.aryston.arkea.background.MenuBackground;
+import com.aryston.arkea.api.config.ModConfigScreens;
 import com.aryston.arkea.config.ArkeaConfig;
 import com.aryston.arkea.debug.UiCheck;
+import com.aryston.arkea.mixin.ConfigurationScreenAccessor;
 import com.aryston.arkea.mixin.JoinMultiplayerScreenAccessor;
 import com.aryston.arkea.mixin.ModListScreenAccessor;
 import com.aryston.arkea.mixin.OptionsSubScreenAccessor;
@@ -45,6 +47,7 @@ import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.modlist.ModListScreen;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -112,6 +115,9 @@ public final class ClientEvents {
             event.setNewScreen(new ArkCreateWorldScreen((CreateWorldScreen) screen));
         } else if (screen.getClass() == ModListScreen.class && ArkeaConfig.MENU_SCREENS.get()) {
             event.setNewScreen(new ArkModsScreen(((ModListScreenAccessor) screen).arkea$lastScreen()));
+        } else if (screen.getClass() == ConfigurationScreen.class && ArkeaConfig.MOD_CONFIG_SCREENS.get()) {
+            Screen parent = ((OptionsSubScreenAccessor) screen).arkea$lastScreen();
+            event.setNewScreen(ModConfigScreens.forMod(((ConfigurationScreenAccessor) screen).arkea$mod(), parent));
         } else if (screen instanceof OptionsSubScreen subScreen && ArkeaConfig.OPTIONS_SCREEN.get()) {
             Screen replacement = optionsPage(subScreen.getClass(), ((OptionsSubScreenAccessor) subScreen).arkea$lastScreen());
             if (replacement != null) {

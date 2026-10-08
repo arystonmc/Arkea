@@ -22,6 +22,7 @@ public class ArkSlider extends ArkWidget {
     private static final float VALUE_GAP = 10.0F;
     private static final float TRACK_HEIGHT = 2.0F;
     private static final float HANDLE_WIDTH = 6.0F;
+    private static final float TICK_HEIGHT = 8.0F;
     private static final float GLOW_BLUR = 8.0F;
     private static final float HANDLE_SHADOW_BLUR = 6.0F;
     private static final float HANDLE_SHADOW_OFFSET = 2.0F;
@@ -59,12 +60,26 @@ public class ArkSlider extends ArkWidget {
         graphics.fill(track.x(), trackY, track.width(), TRACK_HEIGHT, ArkColors.TRACK);
         graphics.shadow(new Box(track.x(), trackY, filled, TRACK_HEIGHT), GLOW_BLUR, 0.0F, Theme.accent().glow());
         graphics.fill(track.x(), trackY, filled, TRACK_HEIGHT, Theme.accent().base());
+        this.renderTicks(graphics, track, box.centerY(), fraction);
         Box handle = new Box(track.x() + filled - HANDLE_WIDTH * 0.5F, box.centerY() - HEIGHT * 0.5F, HANDLE_WIDTH, HEIGHT);
         graphics.shadow(handle, HANDLE_SHADOW_BLUR, HANDLE_SHADOW_OFFSET, HANDLE_SHADOW);
         graphics.fill(handle, ArkColors.brighten(HANDLE, 1.0F + HANDLE_HOVER_BRIGHTNESS * this.hoverProgress()));
         String text = this.model.label().getString();
         float textX = box.right() - graphics.metrics().width(text, VALUE);
         graphics.text(text, textX, box.centerY() - graphics.metrics().capHeight(VALUE) * 0.5F, VALUE, ArkColors.TEXT_PRIMARY);
+    }
+
+    private void renderTicks(UiGraphics graphics, Box track, float centerY, float fraction) {
+        int ticks = this.model.ticks();
+        if (ticks < 2) {
+            return;
+        }
+        float line = graphics.scale().snapThickness(1.0F);
+        for (int index = 0; index < ticks; index++) {
+            float position = index / (float) (ticks - 1);
+            int color = position <= fraction ? Theme.accent().light() : ArkColors.TRACK;
+            graphics.fill(track.x() + track.width() * position - line * 0.5F, centerY - TICK_HEIGHT * 0.5F, line, TICK_HEIGHT, color);
+        }
     }
 
     private Box trackBox(TextMetrics metrics) {

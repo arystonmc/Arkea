@@ -9,6 +9,10 @@ import org.jspecify.annotations.Nullable;
 public interface PanelRow {
     float height();
 
+    default float height(float width) {
+        return this.height();
+    }
+
     void place(Box bounds);
 
     Box bounds();

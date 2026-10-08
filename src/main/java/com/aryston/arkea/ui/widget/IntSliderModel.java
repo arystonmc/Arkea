@@ -7,6 +7,7 @@ import net.minecraft.network.chat.Component;
 
 public final class IntSliderModel implements SliderModel {
     private static final int LARGE_STEP = 10;
+    private static final int MAX_TICKS = 5;
 
     private final SliderRange range;
     private final IntSupplier getter;
@@ -44,5 +45,11 @@ public final class IntSliderModel implements SliderModel {
     @Override
     public Component labelAt(float fraction) {
         return this.label.apply(this.range.valueAt(fraction));
+    }
+
+    @Override
+    public int ticks() {
+        int steps = (this.range.max() - this.range.min()) / this.range.step() + 1;
+        return steps <= MAX_TICKS ? steps : 0;
     }
 }

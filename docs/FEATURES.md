@@ -4,7 +4,7 @@ What the latest version of Arkea can do. Written for players and ready to reuse 
 
 ## Summary
 
-Arkea is a client-side interface library for Minecraft mods. It gives settings screens one consistent, animated look with switches, sliders, dropdowns, presets, search and previews, so players configure every Aryston mod the same way.
+Arkea is a client-side interface library for Minecraft mods. It gives settings screens one consistent, animated look with switches, sliders, dropdowns, presets, search and previews, so players configure every mod the same way, and other mods can build their own screens with it.
 
 ## At a Glance
 
@@ -63,7 +63,7 @@ Arkea has its own page in the options window, no need to go through the mod list
 
 - Menu background gallery and import
 - Accent color for every Arkea screen: green, emerald, gold or stone
-- Switches for the Arkea title screen, options window and menu screens
+- Switches for the Arkea title screen, options window, menu screens, in-game screens and mod settings
 - Since: 0.1
 
 ### Singleplayer
@@ -119,6 +119,25 @@ Short messages at the bottom of every Arkea screen.
 - Long tasks such as backups show a moving bar and finish with the result
 - Some notifications offer an action, such as showing the new backup
 - Advancement, recipe, tutorial and system notifications in the top right corner use the same look (turn it off on the Arkea page)
+- Since: 0.1
+
+### Settings for Every Mod
+Every mod with settings opens them in the same Arkea window.
+
+- Mods that use the standard NeoForge config get an Arkea window automatically: pages in the sidebar, the right control for every setting, search, a reset button per setting and Apply
+- Changes wait for Apply; leaving with unapplied changes asks first, and pages with unapplied changes are marked
+- Right-click a setting to reset it, copy its value or paste one
+- Mods can design their own window with presets, previews, badges and a cost meter, like Helion
+- Turn it off on the Arkea page of the options to get the classic NeoForge screens back
+- Since: 0.1
+
+### Interface Library for Mod Developers
+Arkea is a library: other mods build their screens with the same components.
+
+- Buttons, switches, checkboxes, radio buttons, cycle selectors, dropdowns, segmented controls, sliders with ticks, range sliders, steppers, text fields, color pickers, chips, tabs, pagination, preset tiles and setting rows
+- Dialogs, side sheets, context menus, before and after previews, tooltips, notifications, banners, meters and item slots
+- A Component Gallery on the Arkea page shows every component live
+- Developer guide: `docs/API.md`
 - Since: 0.1
 
 ### Command Palette

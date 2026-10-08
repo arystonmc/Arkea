@@ -2,12 +2,13 @@ package com.aryston.arkea;
 
 import com.aryston.arkea.config.ArkeaConfig;
 import com.aryston.arkea.integration.ClientEvents;
+import com.aryston.arkea.screen.options.arkea.ArkArkeaScreen;
+import com.aryston.arkea.ui.theme.Theme;
 import com.mojang.logging.LogUtils;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import org.slf4j.Logger;
 
@@ -18,7 +19,8 @@ public final class Arkea {
 
     public Arkea(ModContainer container) {
         container.registerConfig(ModConfig.Type.CLIENT, ArkeaConfig.SPEC);
-        container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+        container.registerExtensionPoint(IConfigScreenFactory.class, (mod, parent) -> new ArkArkeaScreen(parent));
+        Theme.setAccentSource(ArkeaConfig::accent);
         ClientEvents.register();
         LOGGER.info("Arkea initialized");
     }

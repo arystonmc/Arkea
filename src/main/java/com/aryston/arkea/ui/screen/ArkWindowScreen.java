@@ -81,6 +81,7 @@ public abstract class ArkWindowScreen extends ArkScreen {
     private static final int SEARCH_LENGTH = 64;
     private static final float SEARCH_GAP = 14.0F;
     private static final String SEARCH_KEY = "search";
+    private static final String NAV_KEY_PREFIX = "nav:";
     private static boolean continueWindow;
     private static final int WINDOW_FILL = ArkColors.rgba(20, 20, 22, 0.86F);
     private static final int DIM = ArkColors.rgba(8, 8, 9, 0.55F);
@@ -210,6 +211,7 @@ public abstract class ArkWindowScreen extends ArkScreen {
             y += GROUP_LABEL_HEIGHT + GROUP_LABEL_MARGIN;
             for (NavEntry entry : group.entries()) {
                 ArkNavItem item = this.add(new ArkNavItem(this, entry, entry.id().equals(current), () -> this.openNav(entry)));
+                item.key(NAV_KEY_PREFIX + entry.id());
                 item.setBounds(new Box(x, y, width, ArkNavItem.HEIGHT));
                 this.chrome.add(item);
                 y += ArkNavItem.HEIGHT + NAV_GAP;
@@ -352,14 +354,22 @@ public abstract class ArkWindowScreen extends ArkScreen {
             float y = label.y() + (GROUP_LABEL_HEIGHT - metrics.capHeight(GROUP_LABEL)) * 0.5F;
             graphics.text(label.text().getString(), label.x(), y, GROUP_LABEL, ArkColors.TEXT_LABEL);
         }
+        this.renderSidebarFooter(graphics, new Box(area.x() + SIDEBAR_INSET, area.y(), area.width() - SIDEBAR_INSET * 2.0F, area.height() - SIDEBAR_INSET));
+    }
+
+    protected void renderSidebarFooter(UiGraphics graphics, Box area) {
     }
 
     private void renderBrand(UiGraphics graphics, Box area, SidebarBrand brand) {
         Box box = new Box(area.x() + SIDEBAR_INSET + BRAND_INSET, area.y() + SIDEBAR_TOP, BRAND_BOX, BRAND_BOX);
-        graphics.fill(box, BRAND_FILL);
-        graphics.border(box, 1.0F, ArkColors.BORDER_STRONG);
-        float iconOffset = (BRAND_BOX - BRAND_ICON) * 0.5F;
-        graphics.icon(brand.icon(), box.x() + iconOffset, box.y() + iconOffset, BRAND_ICON, BRAND_ICON, ArkColors.TEXT_SOFT);
+        if (brand.logo() != null) {
+            graphics.image(brand.logo(), box, 0.0F, 0.0F, 1.0F, 1.0F, ArkColors.TEXT_PRIMARY);
+        } else {
+            graphics.fill(box, BRAND_FILL);
+            graphics.border(box, 1.0F, ArkColors.BORDER_STRONG);
+            float iconOffset = (BRAND_BOX - BRAND_ICON) * 0.5F;
+            graphics.icon(brand.icon(), box.x() + iconOffset, box.y() + iconOffset, BRAND_ICON, BRAND_ICON, ArkColors.TEXT_SOFT);
+        }
         TextMetrics metrics = graphics.metrics();
         float blockHeight = metrics.capHeight(BRAND_TITLE) + BRAND_LINE_GAP + metrics.capHeight(BRAND_SUBTITLE);
         float textX = box.right() + BRAND_GAP;
@@ -473,7 +483,7 @@ public abstract class ArkWindowScreen extends ArkScreen {
         this.navigate(() -> this.lastScreen);
     }
 
-    private void closeAll() {
+    protected void closeAll() {
         if (this.minecraft.level != null) {
             this.leave(() -> this.minecraft.gui.setScreen(null));
             return;

@@ -1,6 +1,8 @@
 package com.aryston.arkea.debug;
 
 import com.aryston.arkea.Arkea;
+import com.aryston.arkea.api.config.ModConfigScreens;
+import com.aryston.arkea.screen.gallery.ArkGalleryScreen;
 import com.aryston.arkea.screen.palette.CommandPaletteScreen;
 import com.aryston.arkea.ui.screen.ArkScreen;
 import com.aryston.arkea.ui.widget.ArkWidget;
@@ -25,6 +27,7 @@ import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.gui.modlist.ModListScreen;
 
@@ -141,7 +144,28 @@ public final class UiCheck {
             Step.press("servers", "servers_add", "add"),
             Step.key("servers", "servers_after_add", InputConstants.KEY_ESCAPE),
             Step.press("servers", "servers_lan", "tab:LAN"),
-            new Step("servers", "servers_cleanup", false, UiCheckServers::remove)
+            new Step("servers", "servers_cleanup", false, UiCheckServers::remove),
+            Step.screen("gallery", "gallery", ArkGalleryScreen::new),
+            Step.press("gallery", "gallery_whatsnew", "gallery:whatsnew"),
+            Step.key("gallery", "gallery_after_whatsnew", InputConstants.KEY_ESCAPE),
+            Step.press("gallery", "gallery_preview", "gallery:preview"),
+            Step.key("gallery", "gallery_after_preview", InputConstants.KEY_ESCAPE),
+            Step.press("gallery", "gallery_sheet", "gallery:sheet"),
+            Step.key("gallery", "gallery_after_sheet", InputConstants.KEY_ESCAPE),
+            Step.press("gallery", "gallery_progress", "gallery:progress"),
+            Step.key("gallery", "gallery_after_progress", InputConstants.KEY_ESCAPE),
+            Step.screen("config", "config_neoforge", parent -> ModConfigScreens.forMod(ModList.get().getModContainerById("neoforge").orElseThrow(), parent)),
+            Step.screen("helion", "helion_general", parent -> UiCheckConfig.helion(parent)),
+            Step.press("helion", "helion_rendering", "nav:rendering"),
+            Step.press("helion", "helion_lighting", "nav:lighting"),
+            Step.press("helion", "helion_effects", "nav:effects"),
+            Step.press("helion", "helion_performance", "nav:performance"),
+            Step.press("helion", "helion_advanced", "nav:advanced"),
+            Step.press("helion", "helion_back_general", "nav:general"),
+            Step.press("helion", "helion_preset_quality", "preset:2"),
+            Step.press("helion", "helion_applied", "apply"),
+            Step.press("helion", "helion_preset_balanced", "preset:1"),
+            Step.press("helion", "helion_restored", "apply")
         );
 
         private UiCheckSteps() {

@@ -89,11 +89,11 @@ public final class SettingsPanel {
         for (int start = 0; start < rows.size(); start += columns) {
             float lineHeight = 0.0F;
             for (int index = start; index < Math.min(rows.size(), start + columns); index++) {
-                lineHeight = Math.max(lineHeight, rows.get(index).height());
+                lineHeight = Math.max(lineHeight, rows.get(index).height(cellWidth));
             }
             for (int index = start; index < Math.min(rows.size(), start + columns); index++) {
                 PanelRow row = rows.get(index);
-                row.place(new Box(x + (index - start) * (cellWidth + gap), lineY, cellWidth, row.height()));
+                row.place(new Box(x + (index - start) * (cellWidth + gap), lineY, cellWidth, row.height(cellWidth)));
             }
             lineY += lineHeight + ROW_GAP;
         }

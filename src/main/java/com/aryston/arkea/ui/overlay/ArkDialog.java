@@ -17,7 +17,7 @@ import java.util.List;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
-public final class ArkDialog {
+public final class ArkDialog implements Overlay {
     public static final float WIDTH_SMALL = 360.0F;
     public static final float WIDTH_MEDIUM = 520.0F;
     public static final float WIDTH_LARGE = 736.0F;
@@ -96,40 +96,49 @@ public final class ArkDialog {
         return this;
     }
 
+    @Override
     public void open(long now) {
         this.scrim.show(now);
         this.box.show(now);
     }
 
+    @Override
     public void close(long now) {
         this.scrim.hide(now);
         this.box.hide(now);
     }
 
+    @Override
     public void cancel() {
         this.cancelAction.run();
     }
 
+    @Override
     public boolean isOpen() {
         return this.box.isShown();
     }
 
+    @Override
     public boolean isGone(long now) {
         return this.scrim.isGone(now) && this.box.isGone(now);
     }
 
+    @Override
     public boolean dismissesOnScrimClick() {
         return this.dismissOnScrimClick;
     }
 
+    @Override
     public Component title() {
         return this.title;
     }
 
+    @Override
     public Component body() {
         return this.body;
     }
 
+    @Override
     public List<? extends ArkWidget> widgets() {
         List<ArkWidget> widgets = new ArrayList<>();
         if (this.content != null) {
@@ -139,10 +148,12 @@ public final class ArkDialog {
         return widgets;
     }
 
+    @Override
     public boolean contains(float x, float y) {
         return this.frame.contains(x, y);
     }
 
+    @Override
     public void layout(UiScale scale) {
         TextMetrics metrics = this.host.metrics();
         float contentWidth = this.width - PADDING * 2.0F;
@@ -176,6 +187,7 @@ public final class ArkDialog {
         }
     }
 
+    @Override
     public void render(UiGraphics graphics, float mouseX, float mouseY) {
         long now = graphics.now();
         UiScale scale = graphics.scale();

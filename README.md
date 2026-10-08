@@ -19,6 +19,20 @@
 
 See [docs/FEATURES.md](docs/FEATURES.md).
 
+## For Mod Developers
+
+Arkea is a library. Mods that use the NeoForge config get an Arkea settings window without any code, and mods can design their own windows or screens with the Arkea components. See [docs/API.md](docs/API.md).
+
+```groovy
+repositories {
+    maven { url = uri("https://raw.githubusercontent.com/lureidcom/Arkea/maven") }
+}
+
+dependencies {
+    implementation "com.aryston.arkea:arkea-neoforge-26.3:0.1"
+}
+```
+
 ## Changelog
 
 See [docs/CHANGELOG.md](docs/CHANGELOG.md).

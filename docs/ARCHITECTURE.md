@@ -12,11 +12,12 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 | Render | `ui.render` | `GuiGraphicsExtractor`, GUI render states |
 | Widgets and overlays | `ui.widget`, `ui.overlay` | Render, motion, vanilla input and narration interfaces |
 | Screen base | `ui.screen` | Everything above, vanilla `Screen` |
+| Library API | `api.config` | The design system; builds config windows for other mods |
 | Screens | `screen.*` | The design system and vanilla data and screens |
 | Menu backgrounds | `background` | Files, JCodec, STB, textures; no widgets |
 | Wiring | `integration`, `config`, `mixin` | NeoForge events and config |
 
-`ui` never imports from `screen`. A new screen only needs `ArkScreen`, widgets and `UiGraphics`.
+`ui` never imports from `screen` or `config`; the accent reaches it through `Theme.setAccentSource`. A new screen only needs `ArkScreen`, widgets and `UiGraphics`. `api` is the stable surface for other mods; `ui` is public too (see `docs/API.md`).
 
 ## Coordinates
 
@@ -60,6 +61,14 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 - Loading screens are never replaced, because game code depends on their classes (`instanceof LevelLoadingScreen` in the HUD, portals, music and packet handling) and `ConnectScreen` runs the connection. `ScreenEvent.Render.Pre` is cancelled for them and `LoadingSkin` draws the design from the screen state (accessors). The vanilla buttons stay the input targets: every frame they are moved to the boxes the design draws and painted with `ButtonPainter`.
 - Slow world operations (backup, delete, rename, measuring sizes) run on the IO pool and report with menu toasts; dialogs carry custom content through `DialogForm`, and the delete dialog shows the world image as a hero.
 - Menu toasts (`ArkToasts`) live outside any screen, so a toast started on one screen finishes on the next; every `ArkScreen` draws them above its content and below dialogs, and a click on a toast is handled before the content.
+
+## Config Windows
+
+- `ArkeaConfigScreen.Builder` collects groups, pages, sections and options into a `Definition`. `ArkConfigScreen.open` creates a `ConfigSession` and the screen of the first page that has options. Every page is its own `ArkConfigScreen` sharing the session, so switching pages plays the content animation of `switchTo` and keeps unapplied values, expanded sections and text field states.
+- Controls never write to a config directly: they read `session.value(option)` (unapplied value first, then the binding) and call `session.stage`. `apply` writes all staged values, saves each binding once (a `ModConfigSpec` save fires the NeoForge reloading event) and runs the apply listeners. `ApplyMode.IMMEDIATE` writes and saves at once.
+- Requirements are evaluated every frame (`setActive` on the control), so turning a switch off disables the rows that need it without a rebuild. Presets, reset, paste and collapsing rebuild the page.
+- `ClientEvents` replaces the exact NeoForge `ConfigurationScreen` class with `ModConfigScreens.forMod` (reads the mod through `ConfigurationScreenAccessor`). `ModConfigScreens` walks `ModConfigSpec.getValues()` and `getSpec()`: top level values form a General page, every top level section a page, nested sections become sections. Unloaded configs and synced configs on a remote or LAN server show a notice instead of controls, like NeoForge.
+- The context menu and popups (dropdowns, the color picker) live in `ArkScreen`: right-click asks `contextMenu(x, y)`, and an open popup receives clicks, drags, releases, wheel, keys and typed characters first. Dialogs and side sheets share the `Overlay` interface.
 
 ## Menu Backgrounds
 
@@ -134,6 +143,8 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 5. Run `-Define arkea.uiCheck=all` and compare the screenshots with the design handoff. Run the client, open the title screen, hover, Tab through it, open and close the quit dialog, and compare with `screenshots/` of the design handoff.
 
 ## Testing Tools
+
+- `docs/API.md` is the developer guide; the Component Gallery (`ArkGalleryScreen`) shows every component and is part of the interface check (`gallery`).
 
 - Unit tests cover motion, scaling, the path parser, shadow profiles, dates, language files and background import (image, GIF and video conversion).
 - `-Define arkea.uiCheck=all` (or groups such as `worlds,servers,loading`) opens every Arkea screen and popup, saves `screenshots/arkea_<step>.png` and closes the game; run it in a 1366 x 768 window to compare with the design at one to one.

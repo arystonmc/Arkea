@@ -10,6 +10,9 @@ import com.aryston.arkea.ui.render.TextStyle;
 import com.aryston.arkea.ui.render.UiGraphics;
 import com.aryston.arkea.ui.theme.ArkColors;
 import com.aryston.arkea.ui.theme.Theme;
+import com.aryston.arkea.ui.render.Icons;
+import com.aryston.arkea.ui.render.Meter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -29,6 +32,9 @@ public final class SettingRow implements PanelRow {
     private static final float DISABLED_OPACITY = 0.4F;
     private static final int ICON_FILL = ArkColors.rgba(255, 255, 255, 0.04F);
     private static final int ICON_BORDER = ArkColors.rgba(255, 255, 255, 0.07F);
+    private static final float RESET_SIZE = 24.0F;
+    private static final float RESET_GAP = 8.0F;
+    private static final int COST_LEVELS = 3;
     private static final TextStyle NAME = TextStyle.of(13.0F);
     private static final TextStyle DESCRIPTION = TextStyle.of(10.0F);
 
@@ -45,6 +51,9 @@ public final class SettingRow implements PanelRow {
     private @Nullable ArkWidget control;
     private float controlWidth;
     private float controlHeight;
+    private List<Tag> tags = List.of();
+    private int cost;
+    private final List<Accessory> accessories = new ArrayList<>();
 
     public SettingRow(ItemContent content) {
         this.icon = content.icon();
@@ -71,6 +80,28 @@ public final class SettingRow implements PanelRow {
         return this;
     }
 
+    public SettingRow tags(List<Tag> values) {
+        this.tags = List.copyOf(values);
+        return this;
+    }
+
+    public SettingRow cost(int level) {
+        this.cost = Math.clamp(level, 0, COST_LEVELS);
+        return this;
+    }
+
+    public SettingRow resettable(UiHost host, BooleanSupplier isModified, Runnable resetAction) {
+        Component label = Component.translatable("arkea.row.reset", this.name);
+        ArkIconButton button = new ArkIconButton(host, Icons.UNDO, label, IconButtonStyle.QUIET, resetAction);
+        button.setTooltip(Component.translatable("arkea.row.reset.tooltip"));
+        return this.accessory(button, isModified);
+    }
+
+    public SettingRow accessory(ArkIconButton button, BooleanSupplier visible) {
+        this.accessories.add(new Accessory(button, visible));
+        return this;
+    }
+
     @Override
     public @Nullable Component tooltip() {
         return this.tooltip.get();
@@ -87,6 +118,25 @@ public final class SettingRow implements PanelRow {
         if (this.control != null) {
             this.control.setBounds(this.controlSlot(this.controlWidth, this.controlHeight));
         }
+        this.placeAccessories();
+    }
+
+    private void placeAccessories() {
+        float x = this.bounds.right() - PADDING_RIGHT - this.controlWidth;
+        for (Accessory accessory : this.accessories) {
+            if (this.isShown(accessory)) {
+                x -= RESET_GAP + RESET_SIZE;
+                accessory.button().setBounds(new Box(x, this.bounds.centerY() - RESET_SIZE * 0.5F, RESET_SIZE, RESET_SIZE));
+            }
+        }
+    }
+
+    private boolean isShown(Accessory accessory) {
+        return (this.control == null || this.control.isActive()) && accessory.visible().getAsBoolean();
+    }
+
+    private int shownAccessories() {
+        return (int) this.accessories.stream().filter(this::isShown).count();
     }
 
     @Override
@@ -97,7 +147,14 @@ public final class SettingRow implements PanelRow {
 
     @Override
     public List<ArkWidget> widgets() {
-        return this.control == null ? List.of() : List.of(this.control);
+        List<ArkWidget> widgets = new ArrayList<>(1 + this.accessories.size());
+        if (this.control != null) {
+            widgets.add(this.control);
+        }
+        for (Accessory accessory : this.accessories) {
+            widgets.add(accessory.button());
+        }
+        return widgets;
     }
 
     public Icon icon() {
@@ -142,6 +199,39 @@ public final class SettingRow implements PanelRow {
             this.control.render(graphics, mouseX, mouseY);
             graphics.pop();
         }
+        this.renderAccessories(graphics, mouseX, mouseY);
+    }
+
+    private void renderAccessories(UiGraphics graphics, float mouseX, float mouseY) {
+        this.placeAccessories();
+        for (Accessory accessory : this.accessories) {
+            boolean shown = this.isShown(accessory);
+            accessory.button().setActive(shown);
+            if (shown) {
+                accessory.button().render(graphics, mouseX, mouseY);
+            } else {
+                accessory.button().hide();
+            }
+        }
+    }
+
+    private float extrasWidth(TextMetrics metrics) {
+        float width = 0.0F;
+        for (Tag tag : this.tags) {
+            width += tag.width(metrics) + Tag.GAP;
+        }
+        return this.cost > 0 ? width + Meter.pipsWidth(COST_LEVELS) + Tag.GAP : width;
+    }
+
+    private void renderExtras(UiGraphics graphics, float x, float centerY) {
+        float position = x;
+        for (Tag tag : this.tags) {
+            position = tag.draw(graphics, position, centerY) + Tag.GAP;
+        }
+        if (this.cost > 0) {
+            int color = this.cost >= COST_LEVELS ? ArkColors.WARNING : Theme.accent().light();
+            Meter.pips(graphics, position, centerY, this.cost, COST_LEVELS, color);
+        }
     }
 
     private void render(UiGraphics graphics, float mouseX, float mouseY, float contentOpacity) {
@@ -163,13 +253,23 @@ public final class SettingRow implements PanelRow {
         graphics.icon(this.icon, iconBox.x() + iconOffset, iconBox.y() + iconOffset, ICON_SIZE, ICON_SIZE, iconColor);
         TextMetrics metrics = graphics.metrics();
         float textX = iconBox.right() + GAP;
-        float textWidth = box.right() - PADDING_RIGHT - this.controlSpace - GAP - textX;
+        float resetSpace = this.shownAccessories() * (RESET_SIZE + RESET_GAP);
+        float textWidth = box.right() - PADDING_RIGHT - this.controlSpace - resetSpace - GAP - textX;
         float blockHeight = metrics.capHeight(NAME) + LINE_GAP + metrics.capHeight(DESCRIPTION);
         float nameY = box.centerY() - blockHeight * 0.5F;
-        graphics.text(metrics.ellipsize(this.name.getString(), NAME, textWidth), textX, nameY, NAME, ArkColors.TEXT_PRIMARY);
+        float extras = this.extrasWidth(metrics);
+        boolean extrasFit = metrics.width(this.name.getString(), NAME) + extras <= textWidth;
+        String name = metrics.ellipsize(this.name.getString(), NAME, textWidth);
+        graphics.text(name, textX, nameY, NAME, ArkColors.TEXT_PRIMARY);
+        if (extrasFit) {
+            this.renderExtras(graphics, textX + metrics.width(name, NAME) + Tag.GAP, nameY + metrics.capHeight(NAME) * 0.5F);
+        }
         float descriptionY = nameY + metrics.capHeight(NAME) + LINE_GAP;
         String description = metrics.ellipsize(this.description.getString(), DESCRIPTION, textWidth);
         graphics.text(description, textX, descriptionY, DESCRIPTION, ArkColors.TEXT_DESCRIPTION);
         graphics.pop();
+    }
+
+    private record Accessory(ArkIconButton button, BooleanSupplier visible) {
     }
 }

@@ -1,7 +1,9 @@
 package com.aryston.arkea.ui.screen;
 
 import com.aryston.arkea.ui.layout.UiScale;
-import com.aryston.arkea.ui.overlay.ArkDialog;
+import com.aryston.arkea.ui.overlay.ArkContextMenu;
+import com.aryston.arkea.ui.overlay.ContextMenuItem;
+import com.aryston.arkea.ui.overlay.Overlay;
 import com.aryston.arkea.ui.overlay.ArkToasts;
 import com.aryston.arkea.ui.overlay.ArkTooltip;
 import com.aryston.arkea.ui.overlay.Popup;
@@ -10,6 +12,7 @@ import com.aryston.arkea.ui.render.TextMetrics;
 import com.aryston.arkea.ui.render.UiGraphics;
 import com.aryston.arkea.ui.widget.ArkWidget;
 import com.aryston.arkea.ui.widget.UiHost;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +23,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
@@ -38,7 +42,7 @@ public abstract class ArkScreen extends Screen implements UiHost {
     private long leftAt;
     private @Nullable Runnable destination;
     private boolean navigating;
-    private @Nullable ArkDialog dialog;
+    private @Nullable Overlay dialog;
     private @Nullable Popup popup;
 
     protected ArkScreen(Component title) {
@@ -159,7 +163,7 @@ public abstract class ArkScreen extends Screen implements UiHost {
         this.clearFocus();
     }
 
-    protected void openDialog(ArkDialog newDialog) {
+    protected void openDialog(Overlay newDialog) {
         this.dialog = newDialog;
         newDialog.layout(this.scale);
         newDialog.open(this.now());
@@ -271,7 +275,12 @@ public abstract class ArkScreen extends Screen implements UiHost {
             return true;
         }
         if (this.dialog == null) {
-            if (ArkToasts.click(this.scale.toDesign(event.x()), this.scale.toDesign(event.y()))) {
+            float x = this.scale.toDesign(event.x());
+            float y = this.scale.toDesign(event.y());
+            if (ArkToasts.click(x, y)) {
+                return true;
+            }
+            if (event.button() == InputConstants.MOUSE_BUTTON_RIGHT && this.openContextMenu(x, y)) {
                 return true;
             }
             return super.mouseClicked(event, doubleClick);
@@ -285,6 +294,50 @@ public abstract class ArkScreen extends Screen implements UiHost {
             this.dialog.cancel();
         }
         return true;
+    }
+
+    protected List<ContextMenuItem> contextMenu(float x, float y) {
+        return List.of();
+    }
+
+    private boolean openContextMenu(float x, float y) {
+        List<ContextMenuItem> items = this.contextMenu(x, y);
+        if (items.isEmpty()) {
+            return false;
+        }
+        ArkContextMenu menu = new ArkContextMenu(this, x, y, items);
+        menu.open(this.now());
+        this.openPopup(menu);
+        return true;
+    }
+
+    @Override
+    public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+        Popup shownPopup = this.openPopup();
+        if (shownPopup != null) {
+            shownPopup.mouseDragged(this.scale.toDesign(event.x()), this.scale.toDesign(event.y()));
+            return true;
+        }
+        return super.mouseDragged(event, dragX, dragY);
+    }
+
+    @Override
+    public boolean mouseReleased(MouseButtonEvent event) {
+        Popup shownPopup = this.openPopup();
+        if (shownPopup != null) {
+            shownPopup.mouseReleased();
+            return true;
+        }
+        return super.mouseReleased(event);
+    }
+
+    @Override
+    public boolean charTyped(CharacterEvent event) {
+        Popup shownPopup = this.openPopup();
+        if (shownPopup != null) {
+            return shownPopup.charTyped(event);
+        }
+        return super.charTyped(event);
     }
 
     @Override

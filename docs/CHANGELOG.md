@@ -27,6 +27,13 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 - Show advancement, recipe, tutorial and system notifications in the Arkea style
 - Add a Reconnect button after losing a server connection
 - Show the player list when hovering a server
+- Add radio buttons, steppers, chips, range sliders, ticked sliders, a color picker, pagination and preset tiles
+- Add context menus, side sheets, before and after previews, what's new and progress dialogs
+- Add collapsible sections, item slots, meters, cost pips, step dots and dividers
+- Add a config screen library other mods can use to build Arkea settings windows
+- Show the settings of every mod in the Arkea style
+- Add a Component Gallery for mod developers
+- Add a reset button and badges to setting rows
 
 ### Fixed
 - Keep key bindings with Ctrl, Shift or Alt after a restart

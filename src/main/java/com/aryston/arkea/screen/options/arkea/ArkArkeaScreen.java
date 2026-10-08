@@ -7,6 +7,7 @@ import com.aryston.arkea.background.BackgroundThumbnails;
 import com.aryston.arkea.background.ImportJob;
 import com.aryston.arkea.config.ArkeaConfig;
 import com.aryston.arkea.integration.FileDialogs;
+import com.aryston.arkea.screen.gallery.ArkGalleryScreen;
 import com.aryston.arkea.screen.options.OptionsPage;
 import com.aryston.arkea.screen.options.OptionsPageScreen;
 import com.aryston.arkea.ui.overlay.ArkDialog;
@@ -97,6 +98,15 @@ public final class ArkArkeaScreen extends OptionsPageScreen {
             Component.translatable("arkea.settings.menus.description")), ArkeaConfig.MENU_SCREENS::get, value -> ArkeaConfig.set(ArkeaConfig.MENU_SCREENS, value), true);
         this.toggle(screens, new ItemContent(Icons.BELL, Component.translatable("arkea.configuration.gameToasts"),
             Component.translatable("arkea.settings.toasts.description")), ArkeaConfig.GAME_TOASTS::get, value -> ArkeaConfig.set(ArkeaConfig.GAME_TOASTS, value), true);
+        this.toggle(screens, new ItemContent(Icons.PLAY, Component.translatable("arkea.configuration.inGameScreens"),
+            Component.translatable("arkea.settings.inGame.description")), ArkeaConfig.IN_GAME_SCREENS::get,
+            value -> ArkeaConfig.set(ArkeaConfig.IN_GAME_SCREENS, value), true);
+        this.toggle(screens, new ItemContent(Icons.PACK, Component.translatable("arkea.configuration.modConfigScreens"),
+            Component.translatable("arkea.settings.modConfig.description")), ArkeaConfig.MOD_CONFIG_SCREENS::get,
+            value -> ArkeaConfig.set(ArkeaConfig.MOD_CONFIG_SCREENS, value), true);
+        SettingsSection developers = settings.section(this.section("developers"), true);
+        this.link(developers, new ItemContent(Icons.LAYERS, Component.translatable("arkea.gallery.title"), Component.translatable("arkea.gallery.link")),
+            Component.translatable("arkea.gallery.open"), () -> this.switchTo(() -> new ArkGalleryScreen(this)));
         this.addReset(() -> {
             this.library.select(null);
             ArkeaConfig.set(ArkeaConfig.ACCENT, Accent.GREEN);

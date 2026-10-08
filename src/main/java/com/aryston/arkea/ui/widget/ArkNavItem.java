@@ -1,6 +1,7 @@
 package com.aryston.arkea.ui.widget;
 
 import com.aryston.arkea.ui.anim.Easing;
+import com.aryston.arkea.ui.anim.Oscillation;
 import com.aryston.arkea.ui.layout.Box;
 import com.aryston.arkea.ui.render.Icon;
 import com.aryston.arkea.ui.render.Icons;
@@ -9,6 +10,7 @@ import com.aryston.arkea.ui.render.UiGraphics;
 import com.aryston.arkea.ui.theme.Accent;
 import com.aryston.arkea.ui.theme.ArkColors;
 import com.aryston.arkea.ui.theme.Theme;
+import java.util.function.BooleanSupplier;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
@@ -23,6 +25,9 @@ public class ArkNavItem extends ArkWidget {
     private static final float GLOW_BLUR = 14.0F;
     private static final float GLOW_OFFSET = 4.0F;
     private static final float MARKER_WIDTH = 2.0F;
+    private static final float DOT = 6.0F;
+    private static final float MARKER_MIN_ALPHA = 0.45F;
+    private static final int MARKER_PULSE = 1400;
     private static final int HOVER_FILL = ArkColors.rgba(255, 255, 255, 0.05F);
     private static final TextStyle LABEL = TextStyle.of(13.0F);
 
@@ -32,6 +37,7 @@ public class ArkNavItem extends ArkWidget {
     private final boolean selected;
     private final boolean external;
     private final Runnable action;
+    private final @Nullable BooleanSupplier marker;
 
     public ArkNavItem(UiHost host, NavEntry entry, boolean selected, Runnable action) {
         super(host, TRANSITION, Easing.EASE);
@@ -41,6 +47,7 @@ public class ArkNavItem extends ArkWidget {
         this.external = entry.external();
         this.selected = selected;
         this.action = action;
+        this.marker = entry.marker();
     }
 
     @Override
@@ -69,6 +76,11 @@ public class ArkNavItem extends ArkWidget {
         float textWidth = box.right() - PADDING_X - textX - (this.external ? EXTERNAL_SIZE + GAP : 0.0F);
         String text = graphics.metrics().ellipsize(this.label.getString(), LABEL, textWidth);
         graphics.text(text, textX, box.centerY() - graphics.metrics().capHeight(LABEL) * 0.5F, LABEL, color);
+        if (this.marker != null && this.marker.getAsBoolean()) {
+            float pulse = MARKER_MIN_ALPHA + (1.0F - MARKER_MIN_ALPHA) * Oscillation.wave(graphics.now(), MARKER_PULSE);
+            int dotColor = this.selected ? ArkColors.TEXT_PRIMARY : Theme.accent().light();
+            graphics.fill(box.right() - PADDING_X - DOT, box.centerY() - DOT * 0.5F, DOT, DOT, ArkColors.multiplyAlpha(dotColor, pulse));
+        }
         if (this.external) {
             float externalX = box.right() - PADDING_X - EXTERNAL_SIZE;
             graphics.icon(Icons.EXTERNAL, externalX, box.centerY() - EXTERNAL_SIZE * 0.5F, EXTERNAL_SIZE, EXTERNAL_SIZE, color);

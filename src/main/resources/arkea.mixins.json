@@ -4,6 +4,7 @@
   "package": "com.aryston.arkea.mixin",
   "client": [
     "AdvancementToastMixin",
+    "ConfigurationScreenAccessor",
     "ConnectScreenAccessor",
     "CreateWorldScreenInvoker",
     "DisconnectedScreenAccessor",

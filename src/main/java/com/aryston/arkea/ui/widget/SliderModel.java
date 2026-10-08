@@ -15,4 +15,8 @@ public interface SliderModel {
     Component label();
 
     Component labelAt(float fraction);
+
+    default int ticks() {
+        return 0;
+    }
 }
