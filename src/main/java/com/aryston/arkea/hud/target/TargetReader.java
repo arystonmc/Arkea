@@ -38,6 +38,7 @@ final class TargetReader {
     private static final String MINECRAFT = "minecraft";
     private static final String MINECRAFT_NAME = "Minecraft";
     private static final float PERCENT = 100.0F;
+    private static final float BARE_HAND_SPEED = 1.0F;
     private static final double SPEED_TO_BLOCKS = 42.16;
     private static final double JUMP_CUBIC = -0.1817584952;
     private static final double JUMP_SQUARE = 3.689713992;
@@ -67,6 +68,10 @@ final class TargetReader {
 
     static int modColor() {
         return MOD_COLOR;
+    }
+
+    static int goodColor() {
+        return GOOD;
     }
 
     private static @Nullable TargetInfo block(Minecraft minecraft, ClientLevel level, Player player, BlockPos pos) {
@@ -138,12 +143,17 @@ final class TargetReader {
             return;
         }
         if (!needsTool) {
-            lines.add(new TargetInfo.Line(Component.translatable("arkea.target.bestTool"), ArkColors.TEXT_SOFT, tool));
+            boolean inHand = player.getMainHandItem().getDestroySpeed(state) > BARE_HAND_SPEED;
+            lines.add(new TargetInfo.Line(Component.translatable("arkea.target.bestTool"), ArkColors.TEXT_SOFT, tool, mark(inHand)));
             return;
         }
         boolean harvestable = player.hasCorrectToolForDrops(state, level, pos);
         lines.add(new TargetInfo.Line(Component.translatable(harvestable ? "arkea.target.harvestable" : "arkea.target.needsTool"), harvestable ? GOOD : BAD,
-            tool));
+            tool, mark(harvestable)));
+    }
+
+    private static TargetInfo.Mark mark(boolean good) {
+        return good ? TargetInfo.Mark.YES : TargetInfo.Mark.NO;
     }
 
     private static ItemStack tool(BlockState state) {

@@ -44,17 +44,18 @@ public final class HudPainter {
     private static final float PULSE_MIN = 0.25F;
     private static final float PULSE_RANGE = 0.55F;
     private static final int SLOTS = 9;
-    private static final float SLOT = 40.0F;
-    private static final float SLOT_GAP = 3.0F;
-    private static final float HOTBAR_PAD = 4.0F;
-    private static final float HOTBAR_BOTTOM = 16.0F;
-    private static final float SIDE_GAP = 8.0F;
-    private static final float ATTACK_WIDTH = 8.0F;
-    private static final float ITEM = 28.0F;
+    private static final float HOTBAR_SIZE = 0.75F;
+    private static final float SLOT = 40.0F * HOTBAR_SIZE;
+    private static final float SLOT_GAP = 3.0F * HOTBAR_SIZE;
+    private static final float HOTBAR_PAD = 4.0F * HOTBAR_SIZE;
+    private static final float HOTBAR_BOTTOM = 16.0F * HOTBAR_SIZE;
+    private static final float SIDE_GAP = 8.0F * HOTBAR_SIZE;
+    private static final float ATTACK_WIDTH = 8.0F * HOTBAR_SIZE;
+    private static final float ITEM = 28.0F * HOTBAR_SIZE;
     private static final float ITEM_NATIVE = 16.0F;
-    private static final float GLOW_BLUR = 10.0F;
-    private static final float COUNT_INSET = 3.0F;
-    private static final float ROLL_DISTANCE = 9.0F;
+    private static final float GLOW_BLUR = 10.0F * HOTBAR_SIZE;
+    private static final float COUNT_INSET = 3.0F * HOTBAR_SIZE;
+    private static final float ROLL_DISTANCE = 9.0F * HOTBAR_SIZE;
     private static final float NAME_RISE = 6.0F;
     private static final float LEVEL_FLASH = 0.6F;
     private static final float ARMOR_ICON = 16.0F;
@@ -113,7 +114,7 @@ public final class HudPainter {
     private static final int TEXT_SHADOW = ArkColors.rgba(0, 0, 0, 0.55F);
     private static final TextStyle VALUE = TextStyle.of(10.0F).shadow(TEXT_SHADOW, 1.0F);
     private static final TextStyle NAME = TextStyle.of(10.0F);
-    private static final TextStyle COUNT = TextStyle.of(11.0F).shadow(TEXT_SHADOW, 1.0F);
+    private static final TextStyle COUNT = TextStyle.of(11.0F * HOTBAR_SIZE).shadow(TEXT_SHADOW, 1.0F);
     private static final Identifier HEART_ICON = Identifier.withDefaultNamespace("hud/heart/full");
     private static final Identifier ARMOR_FULL = Identifier.withDefaultNamespace("hud/armor_full");
     private static final Identifier ARMOR_HALF = Identifier.withDefaultNamespace("hud/armor_half");
@@ -196,23 +197,33 @@ public final class HudPainter {
         if (!hud.experience()) {
             return;
         }
-        Box bar = hotbarBox(screen);
+        Box line = experienceBar(screen);
         long now = graphics.now();
-        float y = bar.y() - XP_GAP - XP_HEIGHT;
         float progress = this.motion.progress(Math.clamp(hud.progress(), 0.0F, 1.0F), now);
-        graphics.fill(bar.x(), y, bar.width(), XP_HEIGHT, XP_TRACK);
-        graphics.fill(bar.x(), y, bar.width() * progress, XP_HEIGHT, XP_FILL);
+        graphics.fill(line, XP_TRACK);
+        graphics.fill(line.x(), line.y(), line.width() * progress, line.height(), XP_FILL);
         float pop = this.motion.levelScale(hud.level(), now);
         if (hud.level() > 0) {
-            TextMetrics metrics = graphics.metrics();
             String level = String.valueOf(hud.level());
-            float textY = y - LEVEL_GAP - metrics.capHeight(VALUE);
+            Box text = levelText(graphics.metrics(), screen, hud.level());
             graphics.push();
-            graphics.scaleAround(pop, bar.centerX(), textY + metrics.capHeight(VALUE) * HALF);
+            graphics.scaleAround(pop, text.centerX(), text.centerY());
             int color = ArkColors.brighten(ArkColors.XP, 1.0F + (pop - 1.0F) * LEVEL_FLASH);
-            graphics.text(level, bar.centerX() - metrics.width(level, VALUE) * HALF, textY, VALUE, color);
+            graphics.text(level, text.x(), text.y(), VALUE, color);
             graphics.pop();
         }
+    }
+
+    public static Box experienceBar(Box screen) {
+        Box bar = hotbarBox(screen);
+        return new Box(bar.x(), bar.y() - XP_GAP - XP_HEIGHT, bar.width(), XP_HEIGHT);
+    }
+
+    public static Box levelText(TextMetrics metrics, Box screen, int level) {
+        Box line = experienceBar(screen);
+        float width = metrics.width(String.valueOf(level), VALUE);
+        float height = metrics.capHeight(VALUE);
+        return new Box(line.centerX() - width * HALF, line.y() - LEVEL_GAP - height, width, height);
     }
 
     public void drawItemName(UiGraphics graphics, Box screen, HudSnapshot hud, HudSettings settings) {

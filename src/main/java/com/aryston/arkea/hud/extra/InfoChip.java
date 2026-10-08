@@ -45,7 +45,6 @@ public final class InfoChip {
     private static final long DEATH_POINT_LIFE = 600000L;
     private static final double REACHED = 4.0;
     private static final TextStyle TEXT = TextStyle.of(10.0F);
-    private static float stackBottom;
 
     private InfoChip() {
     }
@@ -58,7 +57,6 @@ public final class InfoChip {
         }
         int plate = ArkColors.withAlpha(HudPainter.plate(settings), Math.max(settings.opacity(), MIN_OPACITY));
         float y = screen.y() + MARGIN;
-        stackBottom = y;
         if (minecraft.debugEntries.isOverlayVisible()) {
             return;
         }
@@ -73,15 +71,10 @@ public final class InfoChip {
             parts.add(clock(level.getOverworldClockTime()));
             String text = String.join(DOT, parts);
             y = chip(graphics, screen.x() + MARGIN, y, text, plate, false, 0.0F) + GAP;
-            stackBottom = y;
         }
         if (ArkeaConfig.on(ArkeaConfig.DEATH_POINT)) {
             deathPoint(graphics, screen, minecraft, player, plate, y);
         }
-    }
-
-    public static float stackBottom() {
-        return stackBottom;
     }
 
     private static void deathPoint(UiGraphics graphics, Box screen, Minecraft minecraft, LocalPlayer player, int plate, float y) {
@@ -100,7 +93,7 @@ public final class InfoChip {
         }
         float bearing = (float) (Mth.atan2(dz, dx) * Mth.RAD_TO_DEG) - player.getYRot() - FRONT;
         String text = Component.translatable("arkea.info.death", Math.round(distance)).getString();
-        stackBottom = chip(graphics, screen.x() + MARGIN, y, text, plate, true, bearing * Mth.DEG_TO_RAD) + GAP;
+        chip(graphics, screen.x() + MARGIN, y, text, plate, true, bearing * Mth.DEG_TO_RAD);
     }
 
     private static float chip(UiGraphics graphics, float x, float y, String text, int plate, boolean arrow, float angle) {

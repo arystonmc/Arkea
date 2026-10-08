@@ -7,7 +7,9 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.multiplayer.chat.GuiMessage;
 import net.minecraft.util.FormattedCharSequence;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -37,9 +39,27 @@ public abstract class ChatComponentMixin {
         ArkChat.end();
     }
 
+    @Shadow
+    private int chatScrollbarPos;
+
     @ModifyVariable(method = EXTRACT, at = @At("HEAD"), argsOnly = true)
     private ChatComponent.ChatGraphicsAccess arkea$style(ChatComponent.ChatGraphicsAccess graphics) {
-        return ArkChat.wrap(graphics);
+        return ArkChat.wrap(graphics, this.chatScrollbarPos);
+    }
+
+    @Redirect(method = "forEachLine", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;getLinesPerPage()I"))
+    private int arkea$lineCount(ChatComponent chat) {
+        return ArkChat.lineCount(chat.getLinesPerPage());
+    }
+
+    @Redirect(method = "forEachLine", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/ChatComponent;chatScrollbarPos:I", opcode = Opcodes.GETFIELD))
+    private int arkea$firstLine(ChatComponent chat) {
+        return ArkChat.firstLine(this.chatScrollbarPos);
+    }
+
+    @Inject(method = "resetChatScroll", at = @At("HEAD"))
+    private void arkea$resetScroll(CallbackInfo info) {
+        ArkChat.resetScroll();
     }
 
     @ModifyConstant(method = EXTRACT, constant = @Constant(intValue = 40))

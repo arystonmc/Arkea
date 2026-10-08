@@ -18,9 +18,6 @@ final class ClientFoodTooltip implements ClientTooltipComponent {
     private static final int TEXT_GAP = 2;
     private static final int HEIGHT = 12;
     private static final int SATURATION_TINT = 0xFFFFD34D;
-    private static final int[] GEM = {0, 1, 2, 3, 2, 1, 0};
-    private static final int GEM_CENTER = 4;
-    private static final int GEM_TOP = 1;
     private static final int SATURATION_FADED = 0x59FFD34D;
     private static final int TEXT = 0xFFC8C8CA;
     private static final int TEXT_Y = 1;
@@ -77,19 +74,11 @@ final class ClientFoodTooltip implements ClientTooltipComponent {
     }
 
     private static void icon(GuiGraphicsExtractor graphics, int x, int y, boolean half, boolean saturation) {
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, EMPTY, x, y, ICON, ICON);
         if (saturation) {
-            for (int row = 0; row < GEM.length; row++) {
-                int left = x + GEM_CENTER - GEM[row];
-                int right = x + GEM_CENTER + GEM[row] + 1;
-                int middle = x + GEM_CENTER + 1;
-                graphics.fill(left, y + GEM_TOP + row, half ? middle : right, y + GEM_TOP + row + 1, SATURATION_TINT);
-                if (half && right > middle) {
-                    graphics.fill(middle, y + GEM_TOP + row, right, y + GEM_TOP + row + 1, SATURATION_FADED);
-                }
-            }
+            FoodOutline.draw(graphics, x, y, ICON, half, SATURATION_TINT, SATURATION_FADED);
             return;
         }
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, EMPTY, x, y, ICON, ICON);
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, half ? HALF : FULL, x, y, ICON, ICON);
     }
 }

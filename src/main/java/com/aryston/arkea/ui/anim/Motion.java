@@ -25,6 +25,8 @@ public final class Motion {
     public static final int HUD_FADE = 400;
     public static final int HUD_PULSE = 900;
     public static final int CHAT_ENTRY = 260;
+    public static final int CHAT_OPEN = 180;
+    public static final int CHAT_SCROLL = 180;
 
     private Motion() {
     }

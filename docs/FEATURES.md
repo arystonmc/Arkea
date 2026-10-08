@@ -168,9 +168,9 @@ Players pick how health, hunger and the hotbar look while playing.
 ### HUD Features
 Useful information on screen, in every HUD style (Vanilla included), each with its own switch on the HUD page.
 
-- Target card in the spirit of Jade, in the top left under the location chip so boss bars never move it: what you look at with its icon, name and mod; the right tool and whether you can harvest it; crop growth; redstone power; breaking progress; hearts or a health bar, armor, baby, villager profession and level, horse speed and jump height
+- Target card in the spirit of Jade, at the top center and right under any boss bars: what you look at with its icon, name and mod; the right tool with a green check when the item in your hand is that tool (or can harvest the block) and a red cross when it is not; crop growth; redstone power; breaking progress; hearts or a health bar, armor, baby, villager profession and level, horse speed and jump height
 - Pickup feed: "+5 Iron Ingot" rows with icons on the right, merging repeats, plus experience
-- Inventory total of the held stack above the selected slot, and an ammo counter next to the hotbar with a bow or crossbow
+- Inventory total of the held stack above the selected slot, clear of the experience bar and level, and an ammo counter next to the hotbar with a bow or crossbow
 - Low durability warning: one notice and a pulsing slot when a tool or armor piece drops under ten percent
 - Worn armor with durability bars above the health bar (Arkea styles)
 - Food preview in the spirit of AppleSkin: while holding food, the hunger and saturation it would restore pulse in the hunger bar (Arkea styles)
@@ -186,7 +186,7 @@ Useful information on screen, in every HUD style (Vanilla included), each with i
 Item tooltips show more and look like Arkea.
 
 - Tooltips are Arkea cards with an accent line; tooltips with their own item style keep it
-- Food shows its hunger shanks and golden saturation gems
+- Food shows its hunger shanks and, in the spirit of AppleSkin, its saturation as food icons with a golden outline
 - Damaged tools and armor show a durability bar with remaining and maximum uses
 - Shulker boxes and other containers show their items as a grid instead of a text list
 - Since: 0.1
@@ -198,6 +198,8 @@ A chat in the spirit of Chat Heads, where you see at a glance who wrote what.
 - Server chat formatted by plugins gets the head too when the sender's name is in front of the message
 - New messages slide in from the left and fade in while the older ones move up smoothly
 - Dark Arkea plates with a line in the sender's color and a thin divider between messages; crisp text at about 85 percent of the vanilla size, at most 42 percent of the screen wide, above the HUD
+- The chat input sits right under the messages, as wide as the chat, instead of across the whole bottom of the screen; the chat moves up a little to make room while it is open
+- Scrolling the chat glides line by line instead of jumping
 - Links, hover and clicks work as in vanilla; the chat input, command help and command suggestions are Arkea panels with Arkea Style Everywhere on
 - Turn it off on the HUD page of the options (Arkea Chat)
 - Since: 0.1
@@ -206,6 +208,7 @@ A chat in the spirit of Chat Heads, where you see at a glance who wrote what.
 F3 matches Arkea.
 
 - F3 information grouped in compact cards with an accent edge, sized for the window so it stays small and readable on a 1920 x 1080 screen
+- Written in Inter, a modern font that is easier to read than the pixel font, kept sharp at every window size
 - The location chip and the target card step aside while F3 is open
 - Charts, the profiler and the chunk map stay vanilla
 - Turn the debug cards off on the Arkea page of the options (Arkea Debug Screen)

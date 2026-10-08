@@ -28,11 +28,12 @@ public final class HotbarExtras {
     private static final float BADGE_HEIGHT = 13.0F;
     private static final float BADGE_PAD = 5.0F;
     private static final float BADGE_GAP = 3.0F;
+    private static final float LEVEL_CLEARANCE = 4.0F;
     private static final float AMMO_GAP = 8.0F;
     private static final float AMMO_PAD = 6.0F;
     private static final float AMMO_ICON = 16.0F;
     private static final int ITEM_PIXELS = 16;
-    private static final float OFFHAND_WIDTH = 56.0F;
+    private static final float OFFHAND_WIDTH = 42.0F;
     private static final float MIN_OPACITY = 0.6F;
     private static final int BUMP = 280;
     private static final float BUMP_SCALE = 0.22F;
@@ -46,7 +47,8 @@ public final class HotbarExtras {
     private HotbarExtras() {
     }
 
-    public static void draw(UiGraphics graphics, Box screen, Box hotbar, Box selected, HudSettings settings, Minecraft minecraft, Player player) {
+    public static void draw(UiGraphics graphics, HotbarLayout layout, HudSettings settings, Minecraft minecraft, Player player) {
+        Box hotbar = layout.hotbar();
         int plate = ArkColors.withAlpha(HudPainter.plate(settings), Math.max(settings.opacity(), MIN_OPACITY));
         TextMetrics metrics = graphics.metrics();
         ItemStack held = player.getInventory().getSelectedItem();
@@ -59,7 +61,7 @@ public final class HotbarExtras {
             if (total > held.getCount()) {
                 String text = Component.translatable("arkea.hud.total", total).getString();
                 float width = metrics.width(text, BADGE) + BADGE_PAD * 2.0F;
-                Box badge = new Box(selected.centerX() - width * HALF, selected.y() - BADGE_GAP - BADGE_HEIGHT, width, BADGE_HEIGHT);
+                Box badge = badge(layout, width);
                 float bump = bump(graphics.now() - totalAt);
                 graphics.push();
                 graphics.scaleAround(1.0F + BUMP_SCALE * bump, badge.centerX(), badge.centerY());
@@ -89,6 +91,16 @@ public final class HotbarExtras {
                 graphics.text(text, chip.x() + AMMO_PAD * 2.0F + AMMO_ICON, chip.centerY() - metrics.capHeight(AMMO) * HALF, AMMO, color);
             }
         }
+    }
+
+    private static Box badge(HotbarLayout layout, float width) {
+        float x = layout.selected().centerX() - width * HALF;
+        float bottom = layout.experience().y() - BADGE_GAP;
+        Box level = layout.level();
+        if (level != null && x < level.right() + LEVEL_CLEARANCE && x + width > level.x() - LEVEL_CLEARANCE) {
+            bottom = Math.min(bottom, level.y() - BADGE_GAP);
+        }
+        return new Box(x, bottom - BADGE_HEIGHT, width, BADGE_HEIGHT);
     }
 
     private static int count(Inventory inventory, ItemStack match, boolean sameComponents) {

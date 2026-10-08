@@ -2,6 +2,7 @@ package com.aryston.arkea.debug;
 
 import java.util.List;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.PauseScreen;
@@ -15,6 +16,9 @@ final class UiCheckGame {
         "This one is long on purpose, so it wraps onto a second line and shows how the text lines up next to the head.");
     private static final String SAMPLE_LATE_MESSAGE = "gg";
     private static final String SAMPLE_COMMAND_START = "t";
+    private static final String HISTORY_LINE = "History line ";
+    private static final int HISTORY_LINES = 30;
+    private static final double SCROLL_UP = 1.0;
 
     private UiCheckGame() {
     }
@@ -53,6 +57,21 @@ final class UiCheckGame {
 
     static void typeSuggestion(ChatScreen screen) {
         screen.insertText(SAMPLE_COMMAND_START, false);
+    }
+
+    static void history(ChatScreen screen) {
+        screen.insertText("", true);
+        ChatComponent chat = Minecraft.getInstance().gui.hud.getChat();
+        for (int line = 1; line <= HISTORY_LINES; line++) {
+            chat.addClientSystemMessage(Component.literal(HISTORY_LINE + line));
+        }
+    }
+
+    static void scroll(Minecraft minecraft) {
+        UiCheckHud.slowClock();
+        if (minecraft.gui.screen() instanceof ChatScreen screen) {
+            screen.mouseScrolled(0.0, 0.0, 0.0, SCROLL_UP);
+        }
     }
 
     static void chat(Minecraft minecraft) {

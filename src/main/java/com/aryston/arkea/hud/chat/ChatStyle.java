@@ -4,7 +4,6 @@ import com.aryston.arkea.hud.HudClock;
 import com.aryston.arkea.ui.theme.ArkColors;
 import com.aryston.arkea.ui.theme.Theme;
 import java.util.function.Consumer;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.multiplayer.chat.GuiMessage;
@@ -17,7 +16,6 @@ import org.jspecify.annotations.Nullable;
 final class ChatStyle implements ChatComponent.ChatGraphicsAccess {
     static final int INDENT = 11;
     private static final int HEAD = 8;
-    private static final int MESSAGE_HEIGHT = 9;
     private static final float INSET = 4.0F;
     private static final float SLIDE = 14.0F;
     private static final int PLATE_RGB = 0x0C0C0E;
@@ -36,8 +34,7 @@ final class ChatStyle implements ChatComponent.ChatGraphicsAccess {
         this.graphics = graphics;
         this.drawing = drawing;
         this.now = HudClock.now();
-        int entryHeight = (int) (MESSAGE_HEIGHT * (Minecraft.getInstance().options.chatLineSpacing().get() + 1.0));
-        this.rise = ChatEntries.risingLines(this.now) * entryHeight;
+        this.rise = ChatEntries.risingLines(this.now) * ArkChat.entryHeight() + ArkChat.scrollShift();
     }
 
     @Override

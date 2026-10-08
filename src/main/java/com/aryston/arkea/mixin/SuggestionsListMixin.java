@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -18,6 +19,7 @@ public abstract class SuggestionsListMixin {
     private static final int ROW_HEIGHT = 12;
     private static final int MORE_MARKER = -1;
     private static final int SELECTED_TEXT = -256;
+    private static final int TEXT_SHIFT = 3;
 
     @Shadow
     @Final
@@ -46,6 +48,15 @@ public abstract class SuggestionsListMixin {
 
     @Redirect(method = RENDER, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Ljava/lang/String;III)V"))
     private void arkea$paintText(GuiGraphicsExtractor graphics, Font font, String text, int x, int y, int color) {
-        graphics.text(font, text, x, y, VanillaTheme.active() ? VanillaTheme.suggestionText(color == SELECTED_TEXT) : color);
+        if (!VanillaTheme.active()) {
+            graphics.text(font, text, x, y, color);
+            return;
+        }
+        graphics.text(font, text, x + TEXT_SHIFT, y, VanillaTheme.suggestionText(color == SELECTED_TEXT));
+    }
+
+    @ModifyArg(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/Rect2i;<init>(IIII)V"), index = 2)
+    private int arkea$widenForShift(int width) {
+        return VanillaTheme.active() ? width + TEXT_SHIFT : width;
     }
 }

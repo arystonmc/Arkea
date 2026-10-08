@@ -51,6 +51,16 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 
 ### Changed
 - Adopt the Aryston Source-Available License
+- Write the F3 cards in the Inter font so they are easier to read
+- Make the Arkea hotbar a quarter smaller
+- Move the inventory total above the experience bar so they no longer overlap
+- Attach the chat input to the bottom of the chat, as wide as the chat
+- Scroll the chat smoothly
+- Show saturation in food tooltips as gold outlined food icons, like AppleSkin
+- Move the slim boss bars a little lower so their names no longer touch the top of the screen
+- Move the target card back to the top center, below any boss bars
+- Show on the target card whether the item in hand is the right tool
+- Give command suggestions more room next to the accent line
 
 ### Fixed
 - Keep the target card in the top left so boss bars no longer push it down

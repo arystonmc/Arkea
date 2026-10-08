@@ -9,6 +9,7 @@ import net.minecraft.world.BossEvent;
 
 public final class HudBossBar {
     private static final float WIDTH = 320.0F;
+    private static final float DROP = 8.0F;
     private static final float HEIGHT = 4.0F;
     private static final float NAME_GAP = 5.0F;
     private static final float NOTCH = 1.0F;
@@ -25,7 +26,8 @@ public final class HudBossBar {
     private HudBossBar() {
     }
 
-    public static void draw(UiGraphics graphics, float centerX, float barY, BossEvent event) {
+    public static float draw(UiGraphics graphics, float centerX, float vanillaY, BossEvent event) {
+        float barY = vanillaY + DROP;
         TextMetrics metrics = graphics.metrics();
         Component name = event.getName();
         float nameWidth = metrics.width(name.getString(), NAME);
@@ -40,6 +42,7 @@ public final class HudBossBar {
         for (int index = 1; index < notches; index++) {
             graphics.fill(x + WIDTH * index / notches - NOTCH * HALF, barY, NOTCH, HEIGHT, NOTCH_COLOR);
         }
+        return barY + HEIGHT;
     }
 
     private static int color(BossEvent.BossBarColor color) {

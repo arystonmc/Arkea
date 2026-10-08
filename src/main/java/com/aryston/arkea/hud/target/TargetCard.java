@@ -6,6 +6,7 @@ import com.aryston.arkea.ui.anim.Easing;
 import com.aryston.arkea.ui.anim.Transition;
 import com.aryston.arkea.ui.layout.Box;
 import com.aryston.arkea.ui.render.TextMetrics;
+import com.aryston.arkea.ui.render.Icons;
 import com.aryston.arkea.ui.render.TextStyle;
 import com.aryston.arkea.ui.render.UiGraphics;
 import com.aryston.arkea.ui.theme.ArkColors;
@@ -20,13 +21,17 @@ import org.jspecify.annotations.Nullable;
 
 public final class TargetCard {
     private static final int FADE = 150;
-    private static final float LEFT = 16.0F;
+    private static final float TOP = 8.0F;
+    private static final float BOSS_GAP = 6.0F;
     private static final float PAD = 8.0F;
     private static final float ICON_BOX = 24.0F;
     private static final float ICON_GAP = 9.0F;
     private static final float LINE_GAP = 4.0F;
     private static final float LINE_ICON = 10.0F;
     private static final float LINE_ICON_GAP = 4.0F;
+    private static final float MARK = 7.0F;
+    private static final float MARK_GAP = 5.0F;
+    private static final float CHECK_HEIGHT = 5.0F;
     private static final float HEART = 9.0F;
     private static final float HEART_STEP = 8.0F;
     private static final int HEART_PIXELS = 9;
@@ -53,7 +58,7 @@ public final class TargetCard {
     private final Transition presence = new Transition(0.0F, FADE, Easing.EASE_OUT);
     private @Nullable TargetInfo shown;
 
-    public void draw(UiGraphics graphics, Box screen, Minecraft minecraft, HudSettings settings, float top) {
+    public void draw(UiGraphics graphics, Box screen, Minecraft minecraft, HudSettings settings, float bossBarsBottom) {
         long now = graphics.now();
         TargetInfo info = TargetReader.read(minecraft);
         if (info != null) {
@@ -77,7 +82,8 @@ public final class TargetCard {
         TextMetrics metrics = graphics.metrics();
         float textWidth = Math.max(metrics.width(card.name().getString(), NAME), metrics.width(card.mod().getString(), MOD));
         for (TargetInfo.Line line : card.lines()) {
-            textWidth = Math.max(textWidth, (line.icon().isEmpty() ? 0.0F : LINE_ICON + LINE_ICON_GAP) + metrics.width(line.text().getString(), TEXT));
+            textWidth = Math.max(textWidth, (line.icon().isEmpty() ? 0.0F : LINE_ICON + LINE_ICON_GAP) + metrics.width(line.text().getString(), TEXT)
+                + (line.mark() == TargetInfo.Mark.NONE ? 0.0F : MARK_GAP + MARK));
         }
         if (card.living()) {
             textWidth = Math.max(textWidth, this.healthWidth(metrics, card));
@@ -87,7 +93,8 @@ public final class TargetCard {
         float textHeight = metrics.capHeight(NAME) + LINE_GAP + metrics.capHeight(MOD)
             + card.lines().size() * (metrics.capHeight(TEXT) + LINE_GAP) + (card.living() ? this.healthHeight(card) + LINE_GAP : 0.0F);
         float height = PAD * 2.0F + Math.max(icon ? ICON_BOX : 0.0F, textHeight);
-        Box box = new Box(screen.x() + LEFT - (1.0F - alpha) * SLIDE, top, cardWidth, height);
+        float top = Math.max(screen.y() + TOP, bossBarsBottom + BOSS_GAP);
+        Box box = new Box(screen.centerX() - cardWidth * HALF, top - (1.0F - alpha) * SLIDE, cardWidth, height);
         graphics.push();
         graphics.fade(alpha);
         graphics.fill(box, ArkColors.withAlpha(HudPainter.plate(settings), Math.max(settings.opacity(), MIN_OPACITY)));
@@ -115,6 +122,7 @@ public final class TargetCard {
                 lineX += LINE_ICON + LINE_ICON_GAP;
             }
             graphics.richText(line.text(), lineX, y, box.right() - PAD - lineX, TEXT, line.color());
+            mark(graphics, line.mark(), lineX + metrics.width(line.text().getString(), TEXT) + MARK_GAP, y + metrics.capHeight(TEXT) * HALF);
             y += metrics.capHeight(TEXT) + LINE_GAP;
         }
         graphics.richText(card.mod(), x, y, room, MOD, TargetReader.modColor());
@@ -123,6 +131,14 @@ public final class TargetCard {
         }
         graphics.endClip();
         graphics.pop();
+    }
+
+    private static void mark(UiGraphics graphics, TargetInfo.Mark mark, float x, float centerY) {
+        if (mark == TargetInfo.Mark.YES) {
+            graphics.icon(Icons.CHECK, x, centerY - CHECK_HEIGHT * HALF, MARK, CHECK_HEIGHT, TargetReader.goodColor());
+        } else if (mark == TargetInfo.Mark.NO) {
+            graphics.icon(Icons.CLOSE, x, centerY - MARK * HALF, MARK, MARK, ArkColors.ERROR);
+        }
     }
 
     private boolean hearts(TargetInfo card) {

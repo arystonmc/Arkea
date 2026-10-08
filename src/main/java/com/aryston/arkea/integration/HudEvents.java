@@ -5,11 +5,13 @@ import com.aryston.arkea.config.ArkeaConfig;
 import com.aryston.arkea.hud.extra.DamageIndicator;
 import com.aryston.arkea.hud.extra.HitMarker;
 import com.aryston.arkea.hud.extra.HotbarExtras;
+import com.aryston.arkea.hud.extra.HotbarLayout;
 import com.aryston.arkea.hud.extra.HudTracker;
 import com.aryston.arkea.hud.extra.InfoChip;
 import com.aryston.arkea.hud.extra.PickupFeed;
 import com.aryston.arkea.hud.extra.SoundRadar;
 import com.aryston.arkea.hud.target.TargetCard;
+import com.aryston.arkea.hud.BossBarStack;
 import com.aryston.arkea.hud.HudBossBar;
 import com.aryston.arkea.hud.HudClock;
 import com.aryston.arkea.hud.HudEffects;
@@ -27,6 +29,7 @@ import java.util.function.BiConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
+import net.minecraft.client.gui.contextualbar.ContextualBar;
 import net.minecraft.client.gui.contextualbar.ExperienceBar;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
@@ -52,6 +55,9 @@ public final class HudEvents {
     private static final int VANILLA_HALF = 91;
     private static final int VANILLA_HEIGHT = 22;
     private static final int VANILLA_SLOT = 20;
+    private static final int VANILLA_LEVEL_TOP = 35;
+    private static final int VANILLA_BOSS_BAR_HEIGHT = 5;
+    private static final float HALF = 0.5F;
 
     private HudEvents() {
     }
@@ -90,11 +96,13 @@ public final class HudEvents {
                 paint(graphics, settings, (ui, screen) -> InfoChip.draw(ui, screen, settings, Minecraft.getInstance()));
             }
         });
+        event.registerBelow(VanillaGuiLayers.BOSS_OVERLAY, layer("boss_bar_reset"), (graphics, delta) -> BossBarStack.clear());
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, layer("target"), (graphics, delta) -> {
             Minecraft minecraft = Minecraft.getInstance();
             if (visible() && minecraft.gui.screen() == null && !minecraft.debugEntries.isOverlayVisible() && ArkeaConfig.on(ArkeaConfig.TARGET_CARD)) {
                 HudSettings settings = HudSettings.current();
-                paint(graphics, settings, (ui, screen) -> TARGET.draw(ui, screen, minecraft, settings, InfoChip.stackBottom()));
+                paint(graphics, settings, (ui, screen) -> TARGET.draw(ui, screen, minecraft, settings,
+                    BossBarStack.any() ? ui.scale().toDesign(BossBarStack.bottom()) : 0.0F));
             }
         });
         event.registerAbove(VanillaGuiLayers.SUBTITLE_OVERLAY, layer("sound_radar"), (graphics, delta) -> {
@@ -114,23 +122,31 @@ public final class HudEvents {
         }
         HudSettings settings = HudSettings.current();
         int selected = player.getInventory().getSelectedSlot();
+        int level = minecraft.gameMode.hasExperience() ? player.experienceLevel : 0;
         paint(graphics, settings, (ui, screen) -> {
-            Box hotbar;
-            Box slot;
-            if (settings.style().arkea()) {
-                hotbar = HudPainter.hotbarBox(screen);
-                slot = HudPainter.slot(screen, selected);
-            } else {
-                UiScale scale = ui.scale();
-                int center = minecraft.getWindow().getGuiScaledWidth() / 2;
-                int bottom = minecraft.getWindow().getGuiScaledHeight();
-                hotbar = new Box(scale.toDesign(center - VANILLA_HALF), scale.toDesign(bottom - VANILLA_HEIGHT), scale.toDesign(VANILLA_HALF * 2),
-                    scale.toDesign(VANILLA_HEIGHT));
-                slot = new Box(scale.toDesign(center - VANILLA_HALF + 1 + selected * VANILLA_SLOT), scale.toDesign(bottom - VANILLA_HEIGHT + 1),
-                    scale.toDesign(VANILLA_SLOT), scale.toDesign(VANILLA_SLOT));
-            }
-            HotbarExtras.draw(ui, screen, hotbar, slot, settings, minecraft, player);
+            HotbarLayout layout = settings.style().arkea() ? new HotbarLayout(HudPainter.hotbarBox(screen), HudPainter.slot(screen, selected),
+                HudPainter.experienceBar(screen), level > 0 ? HudPainter.levelText(ui.metrics(), screen, level) : null)
+                : vanillaHotbar(minecraft, ui.scale(), selected, level);
+            HotbarExtras.draw(ui, layout, settings, minecraft, player);
         });
+    }
+
+    private static HotbarLayout vanillaHotbar(Minecraft minecraft, UiScale scale, int selected, int level) {
+        int center = minecraft.getWindow().getGuiScaledWidth() / 2;
+        int bottom = minecraft.getWindow().getGuiScaledHeight();
+        Box hotbar = new Box(scale.toDesign(center - VANILLA_HALF), scale.toDesign(bottom - VANILLA_HEIGHT), scale.toDesign(VANILLA_HALF * 2),
+            scale.toDesign(VANILLA_HEIGHT));
+        Box slot = new Box(scale.toDesign(center - VANILLA_HALF + 1 + selected * VANILLA_SLOT), scale.toDesign(bottom - VANILLA_HEIGHT + 1),
+            scale.toDesign(VANILLA_SLOT), scale.toDesign(VANILLA_SLOT));
+        Box experience = new Box(hotbar.x(), scale.toDesign(bottom - ContextualBar.MARGIN_BOTTOM - ContextualBar.HEIGHT), hotbar.width(),
+            scale.toDesign(ContextualBar.HEIGHT));
+        if (level <= 0) {
+            return new HotbarLayout(hotbar, slot, experience, null);
+        }
+        int width = minecraft.font.width(String.valueOf(level));
+        Box text = new Box(scale.toDesign(center - width * HALF), scale.toDesign(bottom - VANILLA_LEVEL_TOP), scale.toDesign(width),
+            scale.toDesign(minecraft.font.lineHeight));
+        return new HotbarLayout(hotbar, slot, experience, text);
     }
 
     private static boolean visible() {
@@ -219,10 +235,12 @@ public final class HudEvents {
     private static void onBossBar(CustomizeGuiOverlayEvent.BossEventProgress event) {
         HudSettings settings = HudSettings.current();
         if (!settings.style().arkea() || !settings.bossBars()) {
+            BossBarStack.add(event.getY() + VANILLA_BOSS_BAR_HEIGHT);
             return;
         }
         event.setCanceled(true);
-        paint(event.getGuiGraphics(), settings, (ui, screen) -> HudBossBar.draw(ui, screen.centerX(), ui.scale().toDesign(event.getY()), event.getBossEvent()));
+        paint(event.getGuiGraphics(), settings, (ui, screen) -> BossBarStack.add(
+            ui.scale().toGui(HudBossBar.draw(ui, screen.centerX(), ui.scale().toDesign(event.getY()), event.getBossEvent()))));
     }
 
     private static void paint(GuiGraphicsExtractor graphics, HudSettings settings, BiConsumer<UiGraphics, Box> painter) {

@@ -264,6 +264,22 @@ public final class UiGraphics {
         this.pose.popMatrix();
     }
 
+    public void trueTypeLine(FormattedCharSequence line, float x, float y, TextStyle style, int color) {
+        int tinted = this.applyAlpha(color);
+        if (ArkColors.alpha(tinted) <= 0.0F) {
+            return;
+        }
+        float fontScale = this.metrics.fontScale(style);
+        float pixels = fontScale * this.scale.scale();
+        float baseline = TextStyle.BASELINE * pixels;
+        this.pose.pushMatrix();
+        this.translateSnapped(x, y);
+        this.pose.scale(fontScale);
+        this.pose.translate(0.0F, ((float) Math.ceil(baseline) - baseline) / pixels);
+        this.graphics.text(this.font, line, 0, 0, tinted, false);
+        this.pose.popMatrix();
+    }
+
     public void vanilla(Box box, float nativeSize, Consumer<GuiGraphicsExtractor> draw) {
         this.pose.pushMatrix();
         this.pose.translate(box.x(), box.y());

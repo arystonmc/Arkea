@@ -11,6 +11,15 @@ record TargetInfo(String key, ItemStack icon, Component name, Component mod, Lis
         return this.maxHealth > 0.0F;
     }
 
-    record Line(Component text, int color, ItemStack icon) {
+    enum Mark {
+        NONE,
+        YES,
+        NO
+    }
+
+    record Line(Component text, int color, ItemStack icon, Mark mark) {
+        Line(Component text, int color, ItemStack icon) {
+            this(text, color, icon, Mark.NONE);
+        }
     }
 }
