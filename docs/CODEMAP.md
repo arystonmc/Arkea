@@ -52,6 +52,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 | Target card, pickup feed, inventory total, ammo, durability warnings, location chip, damage direction, death point, crosshair, sound radar | `TargetCard`, `PickupFeed`, `HotbarExtras`, `HudTracker`, `InfoChip`, `DamageIndicator`, `Crosshair`, `SoundRadar` |
 | Arkea tooltips with food, durability and container previews | `ArkTooltips`, `TooltipRenderUtilMixin` |
 | F3 debug cards, chat bar | `DebugCards`, `DebugScreenOverlayMixin`, `ChatScreenMixin`, `VanillaTheme.chatBar` |
+| Chat messages on Arkea plates (size, width, position) | `ArkChat`, `ChatComponentMixin` |
 | Jump back in card, splash text | `JumpBackInCard`, `SplashText`, `RecentWorld`, `LastPlayed` |
 | Texts | `src/main/resources/assets/arkea/lang/` |
 | Mod name, version, loader versions, license, authors | `gradle.properties` |
@@ -95,6 +96,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
   - `TOOLTIPS`, `TOOLTIP_FOOD`, `TOOLTIP_DURABILITY`, `TOOLTIP_CONTAINERS`: Arkea tooltip card and its food, durability and container parts.
   - `TARGET_CARD`, `PICKUP_FEED`, `STACK_TOTAL`, `AMMO_COUNTER`, `INFO_CHIP`, `DEATH_POINT`, `DURABILITY_WARNING`, `ARMOR_ICONS`, `FOOD_PREVIEW`, `DAMAGE_DIRECTION`, `SLEEP_REMINDER`, `HIT_MARKER`, `SOUND_RADAR`: the HUD features (location chip, sleep reminder, hit marker and sound radar off by default).
   - `CROSSHAIR`: crosshair shape (`CrosshairStyle`).
+  - `CHAT`: chat messages on Arkea plates (`ArkChat`), on by default.
   - `on`: reads a switch, false before the config loads.
   - `HUD_EFFECTS`, `HUD_BOSS_BARS`, `HUD_SCOREBOARD`, `HUD_TAB_LIST`: effect chips, slim boss bars, the scoreboard card and the player list card while an Arkea HUD style is on.
   - `set`: sets a value and saves the file at once (the Arkea settings page changes values live).
@@ -104,7 +106,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### TargetCard
 - Path: `src/main/java/com/aryston/arkea/hud/target/TargetCard.java`
-- Role: Card at the top center (below boss bars) about what the crosshair points at, in the spirit of Jade: item icon, name, hearts or a health bar with numbers and armor for living things, info lines and the mod name in blue italics; a breaking progress line while mining. Fades in and out; hidden while a screen is open.
+- Role: Card in the top left corner, right under the location chips (`InfoChip.stackBottom`), about what the crosshair points at, in the spirit of Jade: item icon, name, hearts or a health bar with numbers and armor for living things, info lines and the mod name in blue italics; a breaking progress line while mining. Fades in and out; hidden while a screen is open. Boss bars sit at the top center and never move it.
 
 #### TargetReader
 - Path: `src/main/java/com/aryston/arkea/hud/target/TargetReader.java`
@@ -138,7 +140,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### InfoChip
 - Path: `src/main/java/com/aryston/arkea/hud/extra/InfoChip.java`
-- Role: Top left chips: coordinates (hidden with reduced debug info), direction, biome and time of day; and for ten minutes after a death in the same dimension, the distance to the death point with an arrow toward it.
+- Role: Top left chips: coordinates (hidden with reduced debug info), direction, biome and time of day; and for ten minutes after a death in the same dimension, the distance to the death point with an arrow toward it. `stackBottom` gives the bottom of the drawn chips for the target card below them.
 
 #### Crosshair, HitMarker
 - Path: `src/main/java/com/aryston/arkea/hud/extra/Crosshair.java`, `src/main/java/com/aryston/arkea/hud/extra/HitMarker.java`
@@ -223,6 +225,10 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### HudTabList
 - Path: `src/main/java/com/aryston/arkea/hud/HudTabList.java`
 - Role: The Tab player list as a card at the top: header and footer from the server, players sorted and split into columns of 20 like vanilla, each slot with the player head (online mode), name with team formatting (spectators dimmed), score or hearts value of the list objective and four ping bars colored by latency. The local player's slot is highlighted with the accent.
+
+#### ArkChat
+- Path: `src/main/java/com/aryston/arkea/hud/ArkChat.java`
+- Role: Arkea chat while `CHAT` is on: 0.85 of the vanilla chat scale, at most 42 percent of the screen width (at least 180 GUI units, never wider than the vanilla setting), above the Arkea HUD strip, a small inset from the edge. The wrapped graphics turn the black message backgrounds into dark plates with a thin accent line on the left and the scroll bar into the accent; text, tags and links stay vanilla.
 
 #### HudMotion
 - Path: `src/main/java/com/aryston/arkea/hud/HudMotion.java`
@@ -1137,7 +1143,7 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### ArkHudScreen
 - Path: `src/main/java/com/aryston/arkea/screen/options/hud/ArkHudScreen.java`
-- Role: The HUD settings page: a large live preview of the chosen style, four style cards with their own previews, plate transparency and HUD size sliders, switches for effect chips, boss bars, the scoreboard card and the player list card, and the Information, Warnings, Crosshair (shape dropdown and hit marker), Tooltips and Accessibility sections of the HUD features.
+- Role: The HUD settings page: a large live preview of the chosen style, four style cards with their own previews, plate transparency and HUD size sliders, switches for effect chips, boss bars, the scoreboard card, the player list card and the Arkea chat (rescales the chat at once), and the Information, Warnings, Crosshair (shape dropdown and hit marker), Tooltips and Accessibility sections of the HUD features.
 - Depends on: `OptionsPageScreen`, `ArkeaConfig`, `HudSettings`.
 
 #### HudStyleCard
@@ -1289,7 +1295,7 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### HudAccessor
 - Path: `src/main/java/com/aryston/arkea/mixin/HudAccessor.java`
-- Role: Reads the selected item name timer and item, the current contextual bar, the boss overlay and the player list overlay of `Hud`, which have no getters.
+- Role: Reads the selected item name timer and item, the current contextual bar and the player list overlay of `Hud`, which have no getters.
 
 #### TooltipRenderUtilMixin
 - Path: `src/main/java/com/aryston/arkea/mixin/TooltipRenderUtilMixin.java`
@@ -1299,9 +1305,9 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 - Path: `src/main/java/com/aryston/arkea/mixin/HudCrosshairMixin.java`
 - Role: Swaps only the crosshair sprite in `Hud.extractCrosshair`, so the spectator, third person, 3D crosshair and attack indicator rules stay vanilla.
 
-#### MultiPlayerGameModeAccessor, BossHealthOverlayAccessor
-- Path: `src/main/java/com/aryston/arkea/mixin/MultiPlayerGameModeAccessor.java`, `src/main/java/com/aryston/arkea/mixin/BossHealthOverlayAccessor.java`
-- Role: Read the breaking progress and position, and the boss bars (so the target card moves below them).
+#### MultiPlayerGameModeAccessor
+- Path: `src/main/java/com/aryston/arkea/mixin/MultiPlayerGameModeAccessor.java`
+- Role: Reads the breaking progress and position.
 
 #### PlayerTabOverlayAccessor
 - Path: `src/main/java/com/aryston/arkea/mixin/PlayerTabOverlayAccessor.java`
@@ -1317,7 +1323,11 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### ChatScreenMixin
 - Path: `src/main/java/com/aryston/arkea/mixin/ChatScreenMixin.java`
-- Role: Replaces the black fill behind the chat input with `VanillaTheme.chatBar`. Suggestions, the command preview and chat messages stay vanilla.
+- Role: Replaces the black fill behind the chat input with `VanillaTheme.chatBar`. Suggestions and the command preview stay vanilla.
+
+#### ChatComponentMixin
+- Path: `src/main/java/com/aryston/arkea/mixin/ChatComponentMixin.java`
+- Role: Hooks `ChatComponent.extractRenderState`, the one path that both draws the chat and finds the message under the mouse: wraps its `ChatGraphicsAccess` with `ArkChat.wrap`, lifts the bottom offset through `ArkChat.bottom` and caps `getScale` and the private `getWidth` through `ArkChat`, so clicks and hover follow the drawn chat.
 
 ### `com.aryston.arkea.screen.palette`
 
@@ -1363,7 +1373,7 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### UiCheckFeatures, UiCheckTooltipScreen
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheckFeatures.java`, `src/main/java/com/aryston/arkea/debug/UiCheckTooltipScreen.java`
-- Role: Check helpers for the `features` group: a worn pickaxe, stacks, food, a bow with arrows and worn armor, an ore wall to look at, hunger, item and experience pickups, a hit from the left with a slowed clock, a horse, nightfall, a death with a respawn and a walk away; and a screen that shows one item tooltip (food, worn tool, filled shulker box). Switches the features it turned on back off at the end.
+- Role: Check helpers for the `features` group: a worn pickaxe, stacks, food, a bow with arrows and worn armor, an ore wall to look at, hunger, item and experience pickups, a hit from the left with a slowed clock, a horse, nightfall, a death with a respawn and a walk away, a boss bar with the target card, sample chat lines with the chat open and closed; and a screen that shows one item tooltip (food, worn tool, filled shulker box). Switches the features it turned on back off at the end.
 
 ## Tests
 

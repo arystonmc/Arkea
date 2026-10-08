@@ -10,7 +10,6 @@ import com.aryston.arkea.hud.extra.InfoChip;
 import com.aryston.arkea.hud.extra.PickupFeed;
 import com.aryston.arkea.hud.extra.SoundRadar;
 import com.aryston.arkea.hud.target.TargetCard;
-import com.aryston.arkea.mixin.BossHealthOverlayAccessor;
 import com.aryston.arkea.hud.HudBossBar;
 import com.aryston.arkea.hud.HudClock;
 import com.aryston.arkea.hud.HudEffects;
@@ -95,8 +94,7 @@ public final class HudEvents {
             Minecraft minecraft = Minecraft.getInstance();
             if (visible() && minecraft.gui.screen() == null && ArkeaConfig.on(ArkeaConfig.TARGET_CARD)) {
                 HudSettings settings = HudSettings.current();
-                int bossBars = ((BossHealthOverlayAccessor) ((HudAccessor) minecraft.gui.hud).arkea$bossOverlay()).arkea$events().size();
-                paint(graphics, settings, (ui, screen) -> TARGET.draw(ui, screen, minecraft, settings, bossBars));
+                paint(graphics, settings, (ui, screen) -> TARGET.draw(ui, screen, minecraft, settings, InfoChip.stackBottom()));
             }
         });
         event.registerAbove(VanillaGuiLayers.SUBTITLE_OVERLAY, layer("sound_radar"), (graphics, delta) -> {

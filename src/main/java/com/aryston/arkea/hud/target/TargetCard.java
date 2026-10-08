@@ -20,7 +20,7 @@ import org.jspecify.annotations.Nullable;
 
 public final class TargetCard {
     private static final int FADE = 150;
-    private static final float TOP = 8.0F;
+    private static final float LEFT = 16.0F;
     private static final float PAD = 8.0F;
     private static final float ICON_BOX = 24.0F;
     private static final float ICON_GAP = 9.0F;
@@ -39,12 +39,10 @@ public final class TargetCard {
     private static final float VALUE_GAP = 6.0F;
     private static final float MIN_WIDTH = 120.0F;
     private static final float BREAK_BAR = 2.0F;
-    private static final float SLIDE = 4.0F;
+    private static final float SLIDE = 10.0F;
     private static final float MIN_OPACITY = 0.7F;
     private static final float HALVES = 2.0F;
     private static final float HALF = 0.5F;
-    private static final int BOSS_TOP = 12;
-    private static final int BOSS_STEP = 19;
     private static final int HEALTH_COLOR = ArkColors.rgba(229, 83, 75, 0.95F);
     private static final int HEALTH_TRACK = ArkColors.rgba(255, 255, 255, 0.12F);
     private static final TextStyle NAME = TextStyle.of(11.0F);
@@ -55,7 +53,7 @@ public final class TargetCard {
     private final Transition presence = new Transition(0.0F, FADE, Easing.EASE_OUT);
     private @Nullable TargetInfo shown;
 
-    public void draw(UiGraphics graphics, Box screen, Minecraft minecraft, HudSettings settings, int bossBars) {
+    public void draw(UiGraphics graphics, Box screen, Minecraft minecraft, HudSettings settings, float top) {
         long now = graphics.now();
         TargetInfo info = TargetReader.read(minecraft);
         if (info != null) {
@@ -89,8 +87,7 @@ public final class TargetCard {
         float textHeight = metrics.capHeight(NAME) + LINE_GAP + metrics.capHeight(MOD)
             + card.lines().size() * (metrics.capHeight(TEXT) + LINE_GAP) + (card.living() ? this.healthHeight(card) + LINE_GAP : 0.0F);
         float height = PAD * 2.0F + Math.max(icon ? ICON_BOX : 0.0F, textHeight);
-        float top = screen.y() + TOP + (bossBars > 0 ? graphics.scale().toDesign(BOSS_TOP + bossBars * BOSS_STEP) : 0.0F);
-        Box box = new Box(screen.centerX() - cardWidth * HALF, top - (1.0F - alpha) * SLIDE, cardWidth, height);
+        Box box = new Box(screen.x() + LEFT - (1.0F - alpha) * SLIDE, top, cardWidth, height);
         graphics.push();
         graphics.fade(alpha);
         graphics.fill(box, ArkColors.withAlpha(HudPainter.plate(settings), Math.max(settings.opacity(), MIN_OPACITY)));

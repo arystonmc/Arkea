@@ -48,6 +48,11 @@ public final class ArkHudScreen extends OptionsPageScreen {
         this.part(parts, Icons.HOSTILE, "hudBossBars", ArkeaConfig.HUD_BOSS_BARS);
         this.part(parts, Icons.RULES, "hudScoreboard", ArkeaConfig.HUD_SCOREBOARD);
         this.part(parts, Icons.USER, "hudTabList", ArkeaConfig.HUD_TAB_LIST);
+        this.toggle(parts, new ItemContent(Icons.CHAT, Component.translatable("arkea.configuration.chat"), Component.translatable("arkea.settings.chat.description")),
+            ArkeaConfig.CHAT::get, value -> {
+                ArkeaConfig.set(ArkeaConfig.CHAT, value);
+                this.minecraft.gui.hud.getChat().rescaleChat();
+            }, ArkeaConfig.CHAT.getDefault());
         SettingsSection info = settings.section(this.section("hudInfo"), true);
         this.part(info, Icons.EYE, "targetCard", ArkeaConfig.TARGET_CARD);
         this.part(info, Icons.PLUS, "pickupFeed", ArkeaConfig.PICKUP_FEED);

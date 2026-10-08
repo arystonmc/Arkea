@@ -160,6 +160,7 @@ Players pick how health, hunger and the hotbar look while playing.
 - Minimal: like Compact, but the bars fade out while health, hunger and air are full
 - Smooth motion: the selection slides and pops like a click when you switch items, new items pop in, stack counts roll up or down with a bounce of the icon, bars ease to their value and leave a fading trace of lost health or food, the level pops on level up and the item name rises in
 - Low health pulses the health bar; poison, wither, frozen, absorption, saturation, the hunger effect, vehicle health and extra health rows are all shown
+- Chat on dark Arkea plates with an accent line, 85 percent of the vanilla size and at most 42 percent of the screen wide, above the HUD; links and hover still work (own switch)
 - Effect chips with time and level, slim boss bars, a transparent scoreboard card and a Tab player list card with heads, scores and ping bars, each with its own switch
 - Plate transparency (0 to 80 percent) and HUD size (75 to 150 percent) sliders; the HUD follows the GUI scale like vanilla
 - HUD parts added by other mods stay where they are; spectator mode, the locator bar and the jump bar stay vanilla
@@ -168,7 +169,7 @@ Players pick how health, hunger and the hotbar look while playing.
 ### HUD Features
 Useful information on screen, in every HUD style (Vanilla included), each with its own switch on the HUD page.
 
-- Target card in the spirit of Jade: what you look at with its icon, name and mod; the right tool and whether you can harvest it; crop growth; redstone power; breaking progress; hearts or a health bar, armor, baby, villager profession and level, horse speed and jump height
+- Target card in the spirit of Jade, in the top left under the location chip so boss bars never move it: what you look at with its icon, name and mod; the right tool and whether you can harvest it; crop growth; redstone power; breaking progress; hearts or a health bar, armor, baby, villager profession and level, horse speed and jump height
 - Pickup feed: "+5 Iron Ingot" rows with icons on the right, merging repeats, plus experience
 - Inventory total of the held stack above the selected slot, and an ammo counter next to the hotbar with a bow or crossbow
 - Low durability warning: one notice and a pulsing slot when a tool or armor piece drops under ten percent

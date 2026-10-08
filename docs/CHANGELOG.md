@@ -45,8 +45,10 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 - Add a food preview in the hunger bar, damage direction arcs, a death point, a location chip and a sleep reminder
 - Add crosshair shapes, a hit marker and a sound radar
 - Show tooltips as Arkea cards with food values, durability and container previews
+- Draw chat messages on Arkea plates, a little smaller, narrower and above the HUD
 
 ### Fixed
+- Keep the target card in the top left so boss bars no longer push it down
 - Keep key bindings with Ctrl, Shift or Alt after a restart
 - Import videos dropped into the backgrounds folder while the game is running, once they finish copying
 - Import videos about ten times faster, using every processor core

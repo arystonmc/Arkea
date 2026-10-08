@@ -777,5 +777,8 @@
   "arkea.warning.durability": "%s kırılmak üzere",
   "arkea.warning.durability.uses": "%s kullanım kaldı",
   "arkea.warning.sleep": "Gece oldu",
-  "arkea.warning.sleep.message": "Artık uyuyabilirsin"
+  "arkea.warning.sleep.message": "Artık uyuyabilirsin",
+  "arkea.configuration.chat": "Arkea Sohbet",
+  "arkea.configuration.chat.tooltip": "Sohbet mesajlarını Arkea plakalarında, biraz daha küçük ve Arkea HUD'ın üstünde çiz.",
+  "arkea.settings.chat.description": "Sohbet Arkea plakalarında, biraz daha küçük ve HUD'dan uzak."
 }

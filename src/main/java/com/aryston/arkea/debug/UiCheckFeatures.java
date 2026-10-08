@@ -6,6 +6,7 @@ import com.aryston.arkea.hud.HudClock;
 import com.aryston.arkea.hud.HudStyle;
 import java.util.List;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.component.DataComponents;
@@ -35,7 +36,13 @@ final class UiCheckFeatures {
         "item replace entity @a armor.head with iron_helmet",
         "give @a cobblestone 200",
         "give @a arrow 37",
-        "fill ^-2 ^ ^3 ^2 ^3 ^3 iron_ore");
+        "fill ^-2 ^ ^3 ^2 ^3 ^3 iron_ore",
+        "bossbar add arkea:features \"Wither\"",
+        "bossbar set arkea:features players @a",
+        "bossbar set arkea:features value 45",
+        "say Welcome to the Arkea test world",
+        "tellraw @a [\"\",{\"text\":\"<Alex> \",\"color\":\"green\"},\"found a village at \",{\"text\":\"[120, 64, -340]\",\"color\":\"aqua\",\"underlined\":true}]",
+        "tellraw @a {\"text\":\"<Deniz> who wants to trade some diamonds for a stack of emeralds tonight?\"}");
     private static final List<String> PICKUPS = List.of(
         "summon item ~ ~ ~ {Item:{id:\"minecraft:iron_ingot\",count:5}}",
         "summon item ~ ~ ~ {Item:{id:\"minecraft:oak_log\",count:12}}",
@@ -113,6 +120,10 @@ final class UiCheckFeatures {
 
     static void walkAway(Minecraft minecraft) {
         run(minecraft, AWAY);
+    }
+
+    static void openChat(Minecraft minecraft) {
+        minecraft.gui.setScreen(new ChatScreen("", false));
     }
 
     static void restore(Minecraft minecraft) {

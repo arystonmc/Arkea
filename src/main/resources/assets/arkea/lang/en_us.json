@@ -777,5 +777,8 @@
   "arkea.warning.durability": "%s is about to break",
   "arkea.warning.durability.uses": "%s uses left",
   "arkea.warning.sleep": "Night has fallen",
-  "arkea.warning.sleep.message": "You can sleep now"
+  "arkea.warning.sleep.message": "You can sleep now",
+  "arkea.configuration.chat": "Arkea Chat",
+  "arkea.configuration.chat.tooltip": "Draw chat messages on Arkea plates, a little smaller and above the Arkea HUD.",
+  "arkea.settings.chat.description": "Chat on Arkea plates, a little smaller and clear of the HUD."
 }

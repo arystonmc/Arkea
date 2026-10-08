@@ -72,6 +72,10 @@ public final class ArkeaConfig {
         .translation("arkea.configuration.hudTabList")
         .define("hudTabList", true);
 
+    public static final ModConfigSpec.BooleanValue CHAT = BUILDER
+        .translation("arkea.configuration.chat")
+        .define("chat", true);
+
     public static final ModConfigSpec.BooleanValue TOOLTIPS = BUILDER
         .translation("arkea.configuration.tooltips")
         .define("tooltips", true);

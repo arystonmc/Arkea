@@ -198,6 +198,8 @@ public final class UiCheck {
             Step.press("features", "features_start", "create"),
             Step.await("features", "features_loaded", minecraft -> minecraft.level != null && minecraft.player != null && minecraft.gui.screen() == null),
             new Step("features", "features_setup", false, UiCheckFeatures::setup),
+            new Step("features", "features_chat_open", true, UiCheckFeatures::openChat),
+            Step.key("features", "features_chat_closed", InputConstants.KEY_ESCAPE),
             new Step("features", "features_pickups", false, UiCheckFeatures::pickups),
             new Step("features", "features_bow", false, UiCheckFeatures::bow),
             Step.quick("features", "features_hurt", UiCheckFeatures.HURT_SETTLE, UiCheckFeatures::hurt),
