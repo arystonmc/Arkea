@@ -96,13 +96,13 @@ tasks.named('processResources', ProcessResources) {
         rename 'logo.png', "${mod_id}.png"
     }
     from('.') {
-        include 'COPYING', 'COPYING.LESSER', 'THIRD_PARTY_NOTICES.md'
+        include 'LICENSE.md', 'THIRD_PARTY_NOTICES.md'
     }
 }
 
 tasks.named('sourcesJar', Jar) {
     from('.') {
-        include 'COPYING', 'COPYING.LESSER'
+        include 'LICENSE.md', 'THIRD_PARTY_NOTICES.md'
     }
 }
 
@@ -117,8 +117,8 @@ publishing {
                 url = mod_url
                 licenses {
                     license {
-                        name = mod_license
-                        url = "https://www.gnu.org/licenses/lgpl-3.0.html"
+                        name = "Aryston Source-Available License"
+                        url = "https://raw.githubusercontent.com/arystonmc/Arkea/main/LICENSE.md"
                     }
                 }
                 scm {

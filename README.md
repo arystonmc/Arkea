@@ -25,7 +25,7 @@ Arkea is a library. Mods that use the NeoForge config get an Arkea settings wind
 
 ```groovy
 repositories {
-    maven { url = uri("https://raw.githubusercontent.com/lureidcom/Arkea/maven") }
+    maven { url = uri("https://raw.githubusercontent.com/arystonmc/Arkea/maven") }
 }
 
 dependencies {
@@ -53,4 +53,4 @@ Modrinth and CurseForge uploads run only when the repository has the secrets `MO
 
 ## License
 
-[LGPL-3.0-only](COPYING.LESSER)
+[Aryston Source-Available License](LICENSE.md)

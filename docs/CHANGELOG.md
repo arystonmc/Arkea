@@ -49,6 +49,9 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 - Show the sender's head and a colored name in front of every chat message, and slide new messages in
 - Draw command help and command suggestions as Arkea panels
 
+### Changed
+- Adopt the Aryston Source-Available License
+
 ### Fixed
 - Keep the target card in the top left so boss bars no longer push it down
 - Keep key bindings with Ctrl, Shift or Alt after a restart
