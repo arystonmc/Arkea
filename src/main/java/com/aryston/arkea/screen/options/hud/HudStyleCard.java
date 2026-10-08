@@ -37,6 +37,7 @@ final class HudStyleCard extends ArkWidget {
     private static final float GLOW_OFFSET = 4.0F;
     private static final int DESCRIPTION_LINES = 2;
     private static final float HALF = 0.5F;
+    private static final float PREVIEW_ASPECT = 2.4F;
     private static final TextStyle TITLE = TextStyle.of(13.0F);
     private static final TextStyle DESCRIPTION = TextStyle.of(10.0F);
 
@@ -56,7 +57,7 @@ final class HudStyleCard extends ArkWidget {
     }
 
     static float height(float width) {
-        return width / HudPreview.ASPECT + TEXT_AREA;
+        return width / PREVIEW_ASPECT + TEXT_AREA;
     }
 
     @Override

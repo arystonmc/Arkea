@@ -160,9 +160,8 @@ Players pick how health, hunger and the hotbar look while playing.
 - Minimal: like Compact, but the bars fade out while health, hunger and air are full
 - Smooth motion: the selection slides and pops like a click when you switch items, new items pop in, stack counts roll up or down with a bounce of the icon, bars ease to their value and leave a fading trace of lost health or food, the level pops on level up and the item name rises in
 - Low health pulses the health bar; poison, wither, frozen, absorption, saturation, the hunger effect, vehicle health and extra health rows are all shown
-- Chat on dark Arkea plates with an accent line, 85 percent of the vanilla size and at most 42 percent of the screen wide, above the HUD; links and hover still work (own switch)
 - Effect chips with time and level, slim boss bars, a transparent scoreboard card and a Tab player list card with heads, scores and ping bars, each with its own switch
-- Plate transparency (0 to 80 percent) and HUD size (75 to 150 percent) sliders; the HUD follows the GUI scale like vanilla
+- Plate transparency (0 to 80 percent) and HUD size (75 to 125 percent) sliders; the HUD is sized for the window, so it fits a 1920 x 1080 screen at any GUI scale and grows with larger screens
 - HUD parts added by other mods stay where they are; spectator mode, the locator bar and the jump bar stay vanilla
 - Since: 0.1
 
@@ -192,13 +191,24 @@ Item tooltips show more and look like Arkea.
 - Shulker boxes and other containers show their items as a grid instead of a text list
 - Since: 0.1
 
-### Debug Screen and Chat Bar
-F3 and the chat input match Arkea.
+### Arkea Chat
+A chat in the spirit of Chat Heads, where you see at a glance who wrote what.
 
-- F3 information grouped in compact cards with an accent edge, following the debug screen scale option
+- Every player message shows the 2D head of its sender and the name in its own color (your own name in the accent color, team colors are kept), set apart from the message by a "»"
+- Server chat formatted by plugins gets the head too when the sender's name is in front of the message
+- New messages slide in from the left and fade in while the older ones move up smoothly
+- Dark Arkea plates with a line in the sender's color and a thin divider between messages; crisp text at about 85 percent of the vanilla size, at most 42 percent of the screen wide, above the HUD
+- Links, hover and clicks work as in vanilla; the chat input, command help and command suggestions are Arkea panels with Arkea Style Everywhere on
+- Turn it off on the HUD page of the options (Arkea Chat)
+- Since: 0.1
+
+### Debug Screen
+F3 matches Arkea.
+
+- F3 information grouped in compact cards with an accent edge, sized for the window so it stays small and readable on a 1920 x 1080 screen
+- The location chip and the target card step aside while F3 is open
 - Charts, the profiler and the chunk map stay vanilla
-- The chat input bar is drawn as an Arkea field with an accent glow
-- Turn the debug cards off on the Arkea page of the options (Arkea Debug Screen); the chat bar follows Arkea Style Everywhere
+- Turn the debug cards off on the Arkea page of the options (Arkea Debug Screen)
 - Since: 0.1
 
 ### Arkea Style Everywhere

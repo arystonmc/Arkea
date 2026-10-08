@@ -34,6 +34,15 @@ class UiScaleTest {
     }
 
     @Test
+    void referenceScaleFollowsTheWindowNotTheGuiScale() {
+        assertEquals(1.5F, UiScale.reference(1920, 1080, 2, 1.5F).scale(), TOLERANCE);
+        assertEquals(1.5F, UiScale.reference(1920, 1080, 4, 1.5F).scale(), TOLERANCE);
+        assertEquals(2.0F, UiScale.reference(2560, 1440, 3, 1.5F).scale(), TOLERANCE);
+        assertEquals(1.5F, UiScale.reference(2560, 1080, 2, 1.5F).scale(), TOLERANCE);
+        assertEquals(0.5F, UiScale.reference(320, 240, 1, 1.5F).scale(), TOLERANCE);
+    }
+
+    @Test
     void guiAndDesignCoordinatesRoundTrip() {
         UiScale scale = UiScale.compute(1920, 1080, 3);
         assertEquals(500.0F, scale.toDesign(scale.toGui(500.0F)), TOLERANCE);

@@ -59,6 +59,9 @@ public final class InfoChip {
         int plate = ArkColors.withAlpha(HudPainter.plate(settings), Math.max(settings.opacity(), MIN_OPACITY));
         float y = screen.y() + MARGIN;
         stackBottom = y;
+        if (minecraft.debugEntries.isOverlayVisible()) {
+            return;
+        }
         if (ArkeaConfig.on(ArkeaConfig.INFO_CHIP)) {
             List<String> parts = new ArrayList<>();
             BlockPos pos = player.blockPosition();

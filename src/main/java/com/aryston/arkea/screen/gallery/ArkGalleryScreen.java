@@ -14,6 +14,7 @@ import com.aryston.arkea.ui.render.Icons;
 import com.aryston.arkea.ui.render.ItemSlot;
 import com.aryston.arkea.ui.render.Meter;
 import com.aryston.arkea.ui.render.PixelSpinner;
+import com.aryston.arkea.ui.render.SampleItems;
 import com.aryston.arkea.ui.render.TextStyle;
 import com.aryston.arkea.ui.render.UiGraphics;
 import com.aryston.arkea.ui.screen.ArkWindowScreen;
@@ -239,7 +240,7 @@ public final class ArkGalleryScreen extends ArkWindowScreen {
 
     private void paintSlots(UiGraphics graphics, Box area) {
         float y = area.centerY() - ItemSlot.SIZE * 0.5F;
-        List<ItemStack> stacks = List.of(new ItemStack(Items.DIAMOND_SWORD), new ItemStack(Items.TORCH), new ItemStack(Items.GRASS_BLOCK), ItemStack.EMPTY);
+        List<ItemStack> stacks = List.of(SampleItems.of(Items.DIAMOND_SWORD), SampleItems.of(Items.TORCH), SampleItems.of(Items.GRASS_BLOCK), ItemStack.EMPTY);
         float x = area.x();
         for (int index = 0; index < stacks.size(); index++) {
             ItemSlot.draw(graphics, new Box(x, y, ItemSlot.SIZE, ItemSlot.SIZE), stacks.get(index), index == 1);

@@ -11,11 +11,11 @@ public record HudSettings(HudStyle style, float opacity, float size, boolean eff
     public static final int OPACITY_DEFAULT = 30;
     public static final int OPACITY_STEP = 5;
     public static final int SIZE_MIN = 75;
-    public static final int SIZE_MAX = 150;
+    public static final int SIZE_MAX = 125;
     public static final int SIZE_DEFAULT = 100;
     public static final int SIZE_STEP = 5;
     private static final float PERCENT = 100.0F;
-    private static final float GUI_UNIT = 0.45F;
+    private static final float SCALE_AT_1080P = 1.5F;
     private static final HudSettings DEFAULTS = new HudSettings(HudStyle.VANILLA, OPACITY_DEFAULT / PERCENT, SIZE_DEFAULT / PERCENT, true, true, true, true);
 
     public static HudSettings current() {
@@ -27,8 +27,7 @@ public record HudSettings(HudStyle style, float opacity, float size, boolean eff
     }
 
     public UiScale scale(Window window) {
-        float scale = window.getGuiScale() * GUI_UNIT * this.size;
-        return new UiScale(scale, window.getGuiScale(), window.getWidth() / scale, window.getHeight() / scale);
+        return UiScale.reference(window.getWidth(), window.getHeight(), window.getGuiScale(), SCALE_AT_1080P * this.size);
     }
 
     public HudSettings withStyle(HudStyle newStyle) {

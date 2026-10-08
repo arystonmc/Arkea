@@ -46,6 +46,8 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 - Add crosshair shapes, a hit marker and a sound radar
 - Show tooltips as Arkea cards with food values, durability and container previews
 - Draw chat messages on Arkea plates, a little smaller, narrower and above the HUD
+- Show the sender's head and a colored name in front of every chat message, and slide new messages in
+- Draw command help and command suggestions as Arkea panels
 
 ### Fixed
 - Keep the target card in the top left so boss bars no longer push it down
@@ -54,3 +56,8 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 - Import videos about ten times faster, using every processor core
 - Show the Arkea and Helion logos in the options sidebar
 - Keep a cancelled background import from starting again by itself
+- Stop the game from crashing when the HUD settings or the gallery are opened before any world was loaded
+- Size the Arkea HUD for the window so it fits a 1920 x 1080 screen at any GUI scale
+- Make the F3 cards smaller and hide the location chip and target card behind them
+- Show the HUD larger in the settings previews and keep the Vanilla preview from being squashed
+- Keep crisp chat text and the chat above the taller Classic+ HUD

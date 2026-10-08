@@ -83,6 +83,9 @@ public final class HudPainter {
     private static final int VANILLA_ROW_BASE = 2;
     private static final int HEARTS_PER_ROW = 10;
     private static final float HALF = 0.5F;
+    private static final float LAYOUT_GAP = 12.0F;
+    private static final float HOTBAR_WIDTH = SLOTS * SLOT + (SLOTS - 1) * SLOT_GAP + HOTBAR_PAD * 2.0F;
+    public static final float LAYOUT_WIDTH = 2.0F * (MARGIN + STATUS_WIDTH + LAYOUT_GAP + HOTBAR_WIDTH * HALF + SIDE_GAP + SLOT + HOTBAR_PAD * 2.0F);
     private static final float HALVES = 2.0F;
     private static final int SHAKE_HEALTH = 4;
     private static final long SHAKE_MILLIS = 100L;
@@ -233,9 +236,8 @@ public final class HudPainter {
     }
 
     public static Box hotbarBox(Box screen) {
-        float width = SLOTS * SLOT + (SLOTS - 1) * SLOT_GAP + HOTBAR_PAD * 2.0F;
         float height = SLOT + HOTBAR_PAD * 2.0F;
-        return new Box(screen.centerX() - width * HALF, screen.bottom() - HOTBAR_BOTTOM - height, width, height);
+        return new Box(screen.centerX() - HOTBAR_WIDTH * HALF, screen.bottom() - HOTBAR_BOTTOM - height, HOTBAR_WIDTH, height);
     }
 
     private float visibility(UiGraphics graphics, HudSnapshot hud, HudSettings settings) {

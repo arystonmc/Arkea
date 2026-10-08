@@ -51,8 +51,8 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 | In-game HUD styles (Compact, Classic+, Minimal) and their settings page | `HudPainter`, `HudEvents`, `ArkHudScreen`, `HudPreview` |
 | Target card, pickup feed, inventory total, ammo, durability warnings, location chip, damage direction, death point, crosshair, sound radar | `TargetCard`, `PickupFeed`, `HotbarExtras`, `HudTracker`, `InfoChip`, `DamageIndicator`, `Crosshair`, `SoundRadar` |
 | Arkea tooltips with food, durability and container previews | `ArkTooltips`, `TooltipRenderUtilMixin` |
-| F3 debug cards, chat bar | `DebugCards`, `DebugScreenOverlayMixin`, `ChatScreenMixin`, `VanillaTheme.chatBar` |
-| Chat messages on Arkea plates (size, width, position) | `ArkChat`, `ChatComponentMixin` |
+| F3 debug cards, chat bar, command help and suggestions | `DebugCards`, `DebugScreenOverlayMixin`, `ChatScreenMixin`, `CommandSuggestionsMixin`, `SuggestionsListMixin`, `VanillaTheme` |
+| Chat messages: plates, sender heads, colored names, entry animation, size and position | `ArkChat`, `ChatStyle`, `ChatSenders`, `ChatEntries`, `ChatComponentMixin` |
 | Jump back in card, splash text | `JumpBackInCard`, `SplashText`, `RecentWorld`, `LastPlayed` |
 | Texts | `src/main/resources/assets/arkea/lang/` |
 | Mod name, version, loader versions, license, authors | `gradle.properties` |
@@ -72,7 +72,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### Arkea
 - Path: `src/main/java/com/aryston/arkea/Arkea.java`
-- Role: Entry point annotated with `@Mod`. Registers the client config, the NeoForge config screen, the client events, the HUD layers and events and the tooltip components (the latter two on the mod event bus it receives).
+- Role: Entry point annotated with `@Mod`. Registers the client config, the NeoForge config screen, the client events, the HUD layers and events, the chat sender listener and the tooltip components (the latter two on the mod event bus it receives).
 - Members:
   - `MOD_ID`: the mod id.
   - `LOGGER`: shared logger for the whole mod.
@@ -140,7 +140,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### InfoChip
 - Path: `src/main/java/com/aryston/arkea/hud/extra/InfoChip.java`
-- Role: Top left chips: coordinates (hidden with reduced debug info), direction, biome and time of day; and for ten minutes after a death in the same dimension, the distance to the death point with an arrow toward it. `stackBottom` gives the bottom of the drawn chips for the target card below them.
+- Role: Top left chips: coordinates (hidden with reduced debug info), direction, biome and time of day; and for ten minutes after a death in the same dimension, the distance to the death point with an arrow toward it. Nothing is drawn while F3 is open. `stackBottom` gives the bottom of the drawn chips for the target card below them.
 
 #### Crosshair, HitMarker
 - Path: `src/main/java/com/aryston/arkea/hud/extra/Crosshair.java`, `src/main/java/com/aryston/arkea/hud/extra/HitMarker.java`
@@ -196,19 +196,19 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### HudSettings
 - Path: `src/main/java/com/aryston/arkea/hud/HudSettings.java`
-- Role: The HUD config as one record (style, plate opacity, size, effect chips, boss bars, scoreboard, player list) with the slider ranges and defaults. `scale` turns the GUI scale into the HUD design scale (0.45 design pixels per GUI unit times the size), so the HUD grows and shrinks with the GUI scale option like vanilla.
+- Role: The HUD config as one record (style, plate opacity, size, effect chips, boss bars, scoreboard, player list) with the slider ranges and defaults (size 75 to 125 percent). `scale` sizes the HUD for the window through `UiScale.reference`: 1.5 physical pixels per design pixel at 1920 x 1080 times the size, whatever the GUI scale, so text keeps two physical pixels per font pixel there.
 
 #### HudSnapshot
 - Path: `src/main/java/com/aryston/arkea/hud/HudSnapshot.java`
-- Role: Everything the HUD shows, read from the camera player (worn armor and the food that eating the held item would give included): health, max health, absorption, heart type (poison, wither, frozen, through the NeoForge heart type event), hardcore, armor, food, saturation, hunger effect, air, vehicle health, experience, hotbar, offhand, attack indicator and the selected item name with its fade (from `HudAccessor`). `sample` builds a fixed player for previews, `sample(true)` a full one for Minimal.
+- Role: Everything the HUD shows, read from the camera player (worn armor and the food that eating the held item would give included): health, max health, absorption, heart type (poison, wither, frozen, through the NeoForge heart type event), hardcore, armor, food, saturation, hunger effect, air, vehicle health, experience, hotbar, offhand, attack indicator and the selected item name with its fade (from `HudAccessor`). `sample` builds a fixed player for previews, `sample(true)` a full one for Minimal; before any world was loaded the sample has no items and is not cached, so the items appear once components are bound.
 
 #### HudPainter
 - Path: `src/main/java/com/aryston/arkea/hud/HudPainter.java`
-- Role: Draws the health and armor (bottom left), food or vehicle health and air (bottom right), the hotbar with offhand and attack indicator, the experience line and level and the selected item name in design pixels. Compact bars have ten segments that fill smoothly, a gold line for absorption or saturation and a pulsing red edge at low health; Classic+ blits the vanilla heart, food, armor and air sprites at double size, in rows for extra health. Also draws worn armor with durability bars above the health, a pulsing red edge on slots and armor about to break, and the hunger and saturation that the held food would restore as pulsing segments. Holds the fade of Minimal and a `HudMotion`, so each preview and the game use their own painter. Draws the stack count itself (vanilla decorations without the count) so it can roll. `plate` gives the plate color for the opacity setting.
+- Role: Draws the health and armor (bottom left), food or vehicle health and air (bottom right), the hotbar with offhand and attack indicator, the experience line and level and the selected item name in design pixels. Compact bars have ten segments that fill smoothly, a gold line for absorption or saturation and a pulsing red edge at low health; Classic+ blits the vanilla heart, food, armor and air sprites at double size, in rows for extra health. Also draws worn armor with durability bars above the health, a pulsing red edge on slots and armor about to break, and the hunger and saturation that the held food would restore as pulsing segments. Holds the fade of Minimal and a `HudMotion`, so each preview and the game use their own painter. Draws the stack count itself (vanilla decorations without the count) so it can roll. `plate` gives the plate color for the opacity setting; `LAYOUT_WIDTH` is the narrowest screen in design pixels on which the corner panels and the hotbar do not overlap.
 
 #### HudPreview
 - Path: `src/main/java/com/aryston/arkea/hud/HudPreview.java`
-- Role: Draws a style over the sample scene in any box: Arkea styles through `HudPainter` on a virtual screen as wide as the real HUD canvas (so a wide box shows the bottom strip at near real size), Vanilla with the vanilla sprites in GUI units.
+- Role: Draws a style over the sample scene in any box: Arkea styles through `HudPainter` on a virtual screen only as wide as the HUD layout needs (`HudPainter.LAYOUT_WIDTH` divided by the size, at most the real canvas), so the HUD fills the box instead of the scene; Vanilla with the vanilla sprites in GUI units at the same zoom and a uniform scale.
 
 #### HudEffects
 - Path: `src/main/java/com/aryston/arkea/hud/HudEffects.java`
@@ -226,10 +226,6 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 - Path: `src/main/java/com/aryston/arkea/hud/HudTabList.java`
 - Role: The Tab player list as a card at the top: header and footer from the server, players sorted and split into columns of 20 like vanilla, each slot with the player head (online mode), name with team formatting (spectators dimmed), score or hearts value of the list objective and four ping bars colored by latency. The local player's slot is highlighted with the accent.
 
-#### ArkChat
-- Path: `src/main/java/com/aryston/arkea/hud/ArkChat.java`
-- Role: Arkea chat while `CHAT` is on: 0.85 of the vanilla chat scale, at most 42 percent of the screen width (at least 180 GUI units, never wider than the vanilla setting), above the Arkea HUD strip, a small inset from the edge. The wrapped graphics turn the black message backgrounds into dark plates with a thin accent line on the left and the scroll bar into the accent; text, tags and links stay vanilla.
-
 #### HudMotion
 - Path: `src/main/java/com/aryston/arkea/hud/HudMotion.java`
 - Role: Animation state of one painter. The selection highlight slides to the new slot and the slot pops like a click; each slot watches its item, so a new item pops in with a spring, a growing stack bounces up and a shrinking one dips, and the count rolls (the old number slides out, the new one slides in tinted green or warm and turns white). Health and food bars ease to their value and keep a white ghost of lost points that drains after a short hold; the experience line eases and the level pops on level up; the item name rises in.
@@ -241,6 +237,29 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### CrosshairStyle
 - Path: `src/main/java/com/aryston/arkea/hud/CrosshairStyle.java`
 - Role: Crosshair shapes: Vanilla, thin cross, open cross, dot and circle, with their names.
+
+### `com.aryston.arkea.hud.chat`
+
+#### ArkChat
+- Path: `src/main/java/com/aryston/arkea/hud/chat/ArkChat.java`
+- Role: Arkea chat while `CHAT` is on: about 0.85 of the vanilla chat scale snapped to whole physical pixels per font pixel (crisp text), at most 42 percent of the screen width (at least 180 GUI units, never wider than the vanilla setting), above the left column of the Arkea HUD (108 design pixels, converted with the HUD scale). Holds the frame state the mixin reports: the drawing graphics and the line being visited. `split` wraps a message 11 GUI units narrower when it has a sender, to leave room for the head.
+- Depends on: `ChatStyle`, `ChatEntries`, `HudSettings`.
+
+#### ChatStyle
+- Path: `src/main/java/com/aryston/arkea/hud/chat/ChatStyle.java`
+- Role: The `ChatGraphicsAccess` wrapper of the Arkea chat. Message backgrounds become dark plates with a one pixel line in the sender's color (accent otherwise) and a faint divider above the first line of each message; the sender's face (hat layer included) is drawn at the first line and all its lines are indented. New messages slide in from the left and fade in, and every visible line starts lower by the height of the messages still entering, so the chat moves up smoothly. Every offset goes through `updatePose`, so the vanilla hover and click detection follows the drawn text.
+
+#### ChatEntries, ChatEntry
+- Path: `src/main/java/com/aryston/arkea/hud/chat/ChatEntries.java`, `src/main/java/com/aryston/arkea/hud/chat/ChatEntry.java`
+- Role: What Arkea knows about each `GuiMessage` (weak map): its sender, when it arrived (`HudClock`, so the interface check can slow it down), its first wrapped line and line count, and the entrance progress (`Motion.CHAT_ENTRY`, standard easing). Senders announced by `ChatSenders` wait in a weak map keyed by the final message component until the message is wrapped. Messages older than two GUI ticks when first seen (history after a rescale or a reload) do not animate.
+
+#### ChatSender
+- Path: `src/main/java/com/aryston/arkea/hud/chat/ChatSender.java`
+- Role: Sender id and name color of a message; draws the face from the player list skin, or the default skin of the id when the player has left.
+
+#### ChatSenders
+- Path: `src/main/java/com/aryston/arkea/hud/chat/ChatSenders.java`
+- Role: `ClientChatReceivedEvent` listener at the lowest priority. Player chat takes the sender id from the event; disguised chat looks the name of the bound chat type up in the player list; system chat (plugins) guesses the sender from an online player name that stands as a whole word before the first `:`, `>` or `»` within 48 characters. With the Arkea chat on, plain `chat.type.text` messages are rebuilt as colored name, a gray "»" and the message (team colors and the name's click events are kept); the local player's name takes the accent color, others a hue from their id.
 
 ### `com.aryston.arkea.background`
 
@@ -377,7 +396,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### UiScale
 - Path: `src/main/java/com/aryston/arkea/ui/layout/UiScale.java`
-- Role: Maps design pixels (1366 x 768 reference) to GUI units: scale in quarter steps so the design always fits, canvas size, mouse conversion, snapping of line thickness to whole physical pixels.
+- Role: Maps design pixels (1366 x 768 reference) to GUI units: scale in quarter steps so the design always fits, canvas size, mouse conversion, snapping of line thickness to whole physical pixels. `reference` builds a scale from the window alone (a given scale at 1920 x 1080, proportional to the smaller side ratio) for the HUD and the F3 cards.
 
 #### Box
 - Path: `src/main/java/com/aryston/arkea/ui/layout/Box.java`
@@ -464,6 +483,10 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### ItemSlot
 - Path: `src/main/java/com/aryston/arkea/ui/render/ItemSlot.java`
 - Role: Pixel item slot of the design (40 x 40, inset bevel, white frame when selected) with a real `ItemStack` drawn through the vanilla item renderer.
+
+#### SampleItems
+- Path: `src/main/java/com/aryston/arkea/ui/render/SampleItems.java`
+- Role: Item stacks for previews that are safe on the title screen: item components are only bound when a world's data packs load, so before that it gives an empty stack instead of crashing in the `ItemStack` constructor.
 
 ### `com.aryston.arkea.ui.text`
 
@@ -1148,7 +1171,7 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### HudStyleCard
 - Path: `src/main/java/com/aryston/arkea/screen/options/hud/HudStyleCard.java`
-- Role: Selectable card of one style: 16:9 preview with the current transparency and size, name, two lines of description and a check badge when chosen. Widget key `hud:<style>`.
+- Role: Selectable card of one style: 2.4:1 preview with the current transparency and size, name, two lines of description and a check badge when chosen. Widget key `hud:<style>`.
 
 #### HudStyleRow, HudPreviewRow
 - Path: `src/main/java/com/aryston/arkea/screen/options/hud/HudStyleRow.java`, `src/main/java/com/aryston/arkea/screen/options/hud/HudPreviewRow.java`
@@ -1190,7 +1213,7 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### VanillaTheme
 - Path: `src/main/java/com/aryston/arkea/screen/vanilla/VanillaTheme.java`
-- Role: Arkea look for the widgets of every screen Arkea does not replace (vanilla and other mods): buttons (Done, Yes, Proceed and Continue as primary), slider tracks and handles, text fields and text areas, checkboxes, list backgrounds, header and footer separators, scrollbars, menu tabs, the menu background and the chat input bar, with hover animations and the accent color. Vanilla keeps the labels, layout and behavior. Inactive in container screens and when the Arkea Style Everywhere switch is off.
+- Role: Arkea look for the widgets of every screen Arkea does not replace (vanilla and other mods): buttons (Done, Yes, Proceed and Continue as primary), slider tracks and handles, text fields and text areas, checkboxes, list backgrounds, header and footer separators, scrollbars, menu tabs, the menu background, the chat input bar, command help lines and the command suggestion panel (selected row with the accent), with hover animations and the accent color. Vanilla keeps the labels, layout and behavior. Inactive in container screens and when the Arkea Style Everywhere switch is off.
 
 #### VanillaSkin
 - Path: `src/main/java/com/aryston/arkea/screen/vanilla/VanillaSkin.java`
@@ -1235,7 +1258,7 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### DebugCards
 - Path: `src/main/java/com/aryston/arkea/screen/debug/DebugCards.java`
-- Role: Draws the F3 debug lines as compact cards: every group of lines between empty lines becomes a card with an accent bar on the screen edge, the first line as its title. Follows the debug screen scale option. Active while the Arkea Debug Screen switch is on.
+- Role: Draws the F3 debug lines as compact cards: every group of lines between empty lines becomes a card with an accent bar on the screen edge, the first line as its title. Sized for the window through `UiScale.reference` (1.5 at 1920 x 1080, 8 pixel text), undoing the pose scale of the debug screen scale option. Active while the Arkea Debug Screen switch is on.
 
 ### `com.aryston.arkea.mixin`
 
@@ -1327,7 +1350,11 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### ChatComponentMixin
 - Path: `src/main/java/com/aryston/arkea/mixin/ChatComponentMixin.java`
-- Role: Hooks `ChatComponent.extractRenderState`, the one path that both draws the chat and finds the message under the mouse: wraps its `ChatGraphicsAccess` with `ArkChat.wrap`, lifts the bottom offset through `ArkChat.bottom` and caps `getScale` and the private `getWidth` through `ArkChat`, so clicks and hover follow the drawn chat.
+- Role: Hooks `ChatComponent.extractRenderState`, the one path that both draws the chat and finds the message under the mouse: wraps its `ChatGraphicsAccess` with `ArkChat.wrap`, lifts the bottom offset through `ArkChat.bottom` and caps `getScale` and the private `getWidth` through `ArkChat`, so clicks and hover follow the drawn chat. Also hands the drawing graphics of the public `extractRenderState` to `ArkChat` (for heads), reports the line `forEachLine` is visiting (`ArkChat.enter` and `leave`) and wraps lines through `ArkChat.split` in `addMessageToDisplayQueue`. No API exposes the line or the wrap width.
+
+#### CommandSuggestionsMixin, SuggestionsListMixin
+- Path: `src/main/java/com/aryston/arkea/mixin/CommandSuggestionsMixin.java`, `src/main/java/com/aryston/arkea/mixin/SuggestionsListMixin.java`
+- Role: With Arkea Style Everywhere on, the command help lines become `VanillaTheme.chatBar` panels, and the suggestion list draws `VanillaTheme.suggestions` behind its rows (private `rect`, `offset`, `current` shadowed) instead of its black fills, keeps only the dotted more markers in the accent and recolors the entries. No event covers the suggestion drawing; input and narration stay vanilla.
 
 ### `com.aryston.arkea.screen.palette`
 
@@ -1365,11 +1392,11 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### UiCheckToasts, UiCheckLoading, UiCheckServers, UiCheckConfig, UiCheckGame
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheckToasts.java`, `src/main/java/com/aryston/arkea/debug/UiCheckLoading.java`, `src/main/java/com/aryston/arkea/debug/UiCheckServers.java`, `src/main/java/com/aryston/arkea/debug/UiCheckConfig.java`, `src/main/java/com/aryston/arkea/debug/UiCheckGame.java`
-- Role: Check helpers: sample toasts, a progress screen and a connection to an unroutable address (cancelled again), temporary sample servers that are removed at the end, the config screen of Helion when it is installed, and the statistics, death, F3 and chat screens in a fresh world.
+- Role: Check helpers: sample toasts, a progress screen and a connection to an unroutable address (cancelled again), temporary sample servers that are removed at the end, the config screen of Helion when it is installed, and the statistics, death and F3 screens in a fresh world, then three chat messages sent by the player, one more captured mid-entrance with a slowed clock, the chat screen and its command suggestions (`/t`, which works without cheats).
 
 #### UiCheckHud
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheckHud.java`
-- Role: Check helpers for the `hud` group: fills a fresh world with sample items, armor, effects, experience, a scoreboard and a boss bar through commands, switches the HUD style before each screenshot (changing the selected slot so the item name shows), sets low health and poison for the danger shot, slows the HUD clock tenfold and changes the slot, a stack and the health to capture the animations midway, holds the player list key with a sample header and footer, scrolls the HUD settings page to the style cards and switches back to Vanilla at the end.
+- Role: Check helpers for the `hud` group: fills a fresh world with sample items, armor, effects, experience, a scoreboard and a boss bar through commands, switches the HUD style before each screenshot (changing the selected slot so the item name shows), sets low health and poison for the danger shot, slows the HUD clock tenfold (`slowClock`, shared with the chat check) and changes the slot, a stack and the health to capture the animations midway, holds the player list key with a sample header and footer, scrolls the HUD settings page to the style cards and switches back to Vanilla at the end.
 
 #### UiCheckFeatures, UiCheckTooltipScreen
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheckFeatures.java`, `src/main/java/com/aryston/arkea/debug/UiCheckTooltipScreen.java`
@@ -1386,7 +1413,7 @@ Plain JUnit 5 tests without a running game, run by `./gradlew build` and the CI.
 | `src/test/java/com/aryston/arkea/ui/anim/PresenceTest.java` | Hidden start, enter, exit kept alive until it ends, smooth reversal midway, delayed enter. |
 | `src/test/java/com/aryston/arkea/ui/anim/TransitionTest.java` | Reaching the target, retargeting from the current value, snapping. |
 | `src/test/java/com/aryston/arkea/ui/anim/TimelineTest.java` | Delayed enter, exit from one to zero, oscillation loop. |
-| `src/test/java/com/aryston/arkea/ui/layout/UiScaleTest.java` | One to one at 1366 x 768, quarter steps, the design fits every common window, coordinate round trip, one physical pixel minimum for lines. |
+| `src/test/java/com/aryston/arkea/ui/layout/UiScaleTest.java` | One to one at 1366 x 768, quarter steps, the design fits every common window, coordinate round trip, one physical pixel minimum for lines, the window based reference scale ignoring the GUI scale. |
 | `src/test/java/com/aryston/arkea/ui/render/SvgPathParserTest.java` | Absolute and relative lines, closing, implicit commands, compact numbers, arcs on their radius, cubic end points, every catalogue icon parses, invalid data is rejected. |
 | `src/test/java/com/aryston/arkea/ui/render/SoftEdgeProfileTest.java` | Shadow edge coverage and the vignette fade. |
 | `src/test/java/com/aryston/arkea/ui/text/SearchTextTest.java` | Case and accent insensitive matching, Turkish and German letters. |

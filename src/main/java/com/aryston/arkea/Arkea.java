@@ -1,6 +1,7 @@
 package com.aryston.arkea;
 
 import com.aryston.arkea.config.ArkeaConfig;
+import com.aryston.arkea.hud.chat.ChatSenders;
 import com.aryston.arkea.integration.ClientEvents;
 import com.aryston.arkea.integration.HudEvents;
 import com.aryston.arkea.tooltip.ArkTooltips;
@@ -26,6 +27,7 @@ public final class Arkea {
         Theme.setAccentSource(ArkeaConfig::accent);
         ClientEvents.register();
         HudEvents.register(modBus);
+        ChatSenders.register();
         ArkTooltips.register(modBus);
         LOGGER.info("Arkea initialized");
     }

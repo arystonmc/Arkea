@@ -1,7 +1,9 @@
 package com.aryston.arkea.hud;
 
 import com.aryston.arkea.mixin.HudAccessor;
+import com.aryston.arkea.ui.render.SampleItems;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.AttackIndicatorStatus;
@@ -74,6 +76,7 @@ public record HudSnapshot(
     private static final float WORN = 0.66F;
     private static final float USED = 0.3F;
     private static final List<EquipmentSlot> ARMOR_SLOTS = List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET);
+    private static final List<ItemStack> EMPTY_HOTBAR = Collections.nCopies(Inventory.getSelectionSize(), ItemStack.EMPTY);
     private static @Nullable HudSnapshot sample;
     private static @Nullable HudSnapshot fullSample;
 
@@ -117,24 +120,31 @@ public record HudSnapshot(
     }
 
     public static HudSnapshot sample(boolean full) {
-        if (full) {
-            if (fullSample == null) {
-                HudSnapshot base = sample(false);
-                fullSample = new HudSnapshot(null, base.maxHealth, base.maxHealth, 0.0F, base.heart, false, base.armor, (int) MAX_FOOD, base.saturation, false,
-                    1.0F, false, 0.0F, 0.0F, true, true, base.level, base.progress, base.hotbar, base.selected, base.offhand, base.offhandLeft, NO_ATTACK,
-                    base.itemName, base.itemNameAlpha, base.armorItems, 0, 0.0F);
-            }
-            return fullSample;
+        if (!SampleItems.ready(Items.DIAMOND_SWORD)) {
+            HudSnapshot itemless = scene(EMPTY_HOTBAR, ItemStack.EMPTY, List.of());
+            return full ? filled(itemless) : itemless;
         }
-        if (sample == null) {
+        if (sample == null || fullSample == null) {
             List<ItemStack> hotbar = List.of(new ItemStack(Items.DIAMOND_SWORD), worn(Items.IRON_PICKAXE, USED), worn(Items.STONE_AXE, WORN),
                 new ItemStack(Items.BOW), new ItemStack(Items.COOKED_BEEF, STEAK), new ItemStack(Items.BREAD, BREAD), new ItemStack(Items.COBBLESTONE, STACK),
                 new ItemStack(Items.OAK_PLANKS, PLANKS), ItemStack.EMPTY);
-            sample = new HudSnapshot(null, SAMPLE_HEALTH, SAMPLE_MAX_HEALTH, 0.0F, Hud.HeartType.NORMAL, false, SAMPLE_ARMOR, SAMPLE_FOOD, SAMPLE_SATURATION,
-                false, 1.0F, false, 0.0F, 0.0F, true, true, SAMPLE_LEVEL, SAMPLE_PROGRESS, hotbar, 0, new ItemStack(Items.TORCH, TORCHES), true, NO_ATTACK,
-                styledName(hotbar.getFirst()), 1.0F, List.of(new ItemStack(Items.IRON_HELMET), worn(Items.IRON_CHESTPLATE, USED)), 0, 0.0F);
+            sample = scene(hotbar, new ItemStack(Items.TORCH, TORCHES), List.of(new ItemStack(Items.IRON_HELMET), worn(Items.IRON_CHESTPLATE, USED)));
+            fullSample = filled(sample);
         }
-        return sample;
+        return full ? fullSample : sample;
+    }
+
+    private static HudSnapshot scene(List<ItemStack> hotbar, ItemStack offhand, List<ItemStack> armor) {
+        ItemStack held = hotbar.getFirst();
+        return new HudSnapshot(null, SAMPLE_HEALTH, SAMPLE_MAX_HEALTH, 0.0F, Hud.HeartType.NORMAL, false, SAMPLE_ARMOR, SAMPLE_FOOD, SAMPLE_SATURATION,
+            false, 1.0F, false, 0.0F, 0.0F, true, true, SAMPLE_LEVEL, SAMPLE_PROGRESS, hotbar, 0, offhand, true, NO_ATTACK,
+            held.isEmpty() ? null : styledName(held), 1.0F, armor, 0, 0.0F);
+    }
+
+    private static HudSnapshot filled(HudSnapshot base) {
+        return new HudSnapshot(null, base.maxHealth, base.maxHealth, 0.0F, base.heart, false, base.armor, (int) MAX_FOOD, base.saturation, false,
+            1.0F, false, 0.0F, 0.0F, true, true, base.level, base.progress, base.hotbar, base.selected, base.offhand, base.offhandLeft, NO_ATTACK,
+            base.itemName, base.itemNameAlpha, base.armorItems, 0, 0.0F);
     }
 
     private static ItemStack worn(Item item, float share) {

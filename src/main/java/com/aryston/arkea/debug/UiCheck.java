@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.DisconnectedScreen;
 import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
@@ -193,7 +194,10 @@ public final class UiCheck {
             new Step("game", "game_stats", true, UiCheckGame::stats),
             new Step("game", "game_death", true, UiCheckGame::death),
             new Step("game", "game_debug", false, UiCheckGame::debug),
+            new Step("game", "game_chat_messages", false, UiCheckGame::messages),
+            Step.quick("game", "game_chat_entering", UiCheckHud.MID_ANIMATION, UiCheckGame::lateMessage),
             new Step("game", "game_chat", true, UiCheckGame::chat),
+            Step.on("game", "game_chat_suggestions", ChatScreen.class, UiCheckGame::typeSuggestion),
             new Step("features", "features_create", true, minecraft -> CreateWorldScreen.openFresh(minecraft, () -> minecraft.gui.setScreen(new TitleScreen()))),
             Step.press("features", "features_start", "create"),
             Step.await("features", "features_loaded", minecraft -> minecraft.level != null && minecraft.player != null && minecraft.gui.screen() == null),

@@ -16,16 +16,17 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.Util;
 
 public final class DebugCards {
-    private static final float MARGIN = 8.0F;
-    private static final float CARD_GAP = 4.0F;
-    private static final float PADDING_X = 7.0F;
-    private static final float PADDING_Y = 5.0F;
-    private static final float LINE = 11.0F;
+    private static final float SCALE_AT_1080P = 1.5F;
+    private static final float MARGIN = 6.0F;
+    private static final float CARD_GAP = 3.0F;
+    private static final float PADDING_X = 6.0F;
+    private static final float PADDING_Y = 3.0F;
+    private static final float LINE = 10.0F;
     private static final float ACCENT_WIDTH = 2.0F;
     private static final int CARD_FILL = ArkColors.rgba(10, 10, 12, 0.72F);
     private static final int CARD_BORDER = ArkColors.rgba(255, 255, 255, 0.08F);
     private static final int TITLE_COLOR = ArkColors.rgb(0xFFFFFF);
-    private static final TextStyle TEXT = TextStyle.of(9.0F);
+    private static final TextStyle TEXT = TextStyle.of(8.0F);
 
     private DebugCards() {
     }
@@ -38,8 +39,10 @@ public final class DebugCards {
         Minecraft minecraft = Minecraft.getInstance();
         Window window = minecraft.getWindow();
         int debugScale = Math.max(1, Math.round((float) window.getWidth() / screenWidth));
-        UiScale scale = new UiScale(debugScale, debugScale, screenWidth, (float) window.getHeight() / debugScale);
+        UiScale scale = UiScale.reference(window.getWidth(), window.getHeight(), debugScale, SCALE_AT_1080P);
         UiGraphics ui = new UiGraphics(graphics, scale, minecraft.font, Util.getMillis());
+        graphics.pose().pushMatrix();
+        graphics.pose().scale(scale.poseScale());
         TextMetrics metrics = ui.metrics();
         float y = MARGIN;
         for (List<String> card : cards(lines)) {
@@ -64,6 +67,7 @@ public final class DebugCards {
             }
             y += height + CARD_GAP;
         }
+        graphics.pose().popMatrix();
     }
 
     private static List<List<String>> cards(List<String> lines) {

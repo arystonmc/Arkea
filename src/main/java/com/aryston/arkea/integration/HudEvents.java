@@ -92,7 +92,7 @@ public final class HudEvents {
         });
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, layer("target"), (graphics, delta) -> {
             Minecraft minecraft = Minecraft.getInstance();
-            if (visible() && minecraft.gui.screen() == null && ArkeaConfig.on(ArkeaConfig.TARGET_CARD)) {
+            if (visible() && minecraft.gui.screen() == null && !minecraft.debugEntries.isOverlayVisible() && ArkeaConfig.on(ArkeaConfig.TARGET_CARD)) {
                 HudSettings settings = HudSettings.current();
                 paint(graphics, settings, (ui, screen) -> TARGET.draw(ui, screen, minecraft, settings, InfoChip.stackBottom()));
             }

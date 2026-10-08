@@ -14,7 +14,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 public final class HudPreview {
-    public static final float ASPECT = 16.0F / 9.0F;
+    private static final float SCENE_ASPECT = 16.0F / 9.0F;
     private static final Identifier SCENE = Identifier.fromNamespaceAndPath("arkea", "textures/gui/hud_scene.png");
     private static final Identifier HOTBAR = Identifier.withDefaultNamespace("hud/hotbar");
     private static final Identifier SELECTION = Identifier.withDefaultNamespace("hud/hotbar_selection");
@@ -54,11 +54,11 @@ public final class HudPreview {
 
     public static void draw(UiGraphics graphics, Box box, HudSettings settings, HudPainter painter, HudSnapshot hud) {
         graphics.clip(box);
-        graphics.imageCover(SCENE, box, ASPECT, ArkColors.TEXT_PRIMARY);
+        graphics.imageCover(SCENE, box, SCENE_ASPECT, ArkColors.TEXT_PRIMARY);
         Minecraft minecraft = Minecraft.getInstance();
+        UiScale scale = settings.scale(minecraft.getWindow());
+        float width = Math.min(scale.canvasWidth(), HudPainter.LAYOUT_WIDTH / settings.size());
         if (settings.style().arkea()) {
-            UiScale scale = settings.scale(minecraft.getWindow());
-            float width = scale.canvasWidth();
             Box screen = new Box(0.0F, 0.0F, width, width * box.height() / box.width());
             graphics.push();
             graphics.translate(box.x(), box.y());
@@ -69,9 +69,9 @@ public final class HudPreview {
             painter.drawItemName(graphics, screen, hud, settings);
             graphics.pop();
         } else {
-            int width = minecraft.getWindow().getGuiScaledWidth();
-            int height = (int) (width * box.height() / box.width());
-            graphics.vanilla(box, width, vanilla -> vanillaHud(vanilla, minecraft.font, width, height, hud));
+            int guiWidth = Math.min(minecraft.getWindow().getGuiScaledWidth(), Math.round(scale.toGui(width)));
+            int guiHeight = (int) (guiWidth * box.height() / box.width());
+            graphics.vanilla(new Box(box.x(), box.y(), box.width(), box.width()), guiWidth, vanilla -> vanillaHud(vanilla, minecraft.font, guiWidth, guiHeight, hud));
         }
         graphics.endClip();
     }

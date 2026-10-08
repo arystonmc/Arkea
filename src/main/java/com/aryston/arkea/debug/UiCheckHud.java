@@ -86,6 +86,10 @@ final class UiCheckHud {
 
     static void slowMotion(Minecraft minecraft) {
         style(HudStyle.COMPACT).accept(minecraft);
+        slowClock();
+    }
+
+    static void slowClock() {
         long start = Util.getMillis();
         HudClock.use(() -> start + (Util.getMillis() - start) / SLOW_MOTION);
     }

@@ -38,6 +38,7 @@ public final class VanillaTheme {
     private static final float CHAT_GLOW = 6.0F;
     private static final float CHAT_BORDER_ALPHA = 0.5F;
     private static final int CHAT_FILL = ArkColors.rgba(8, 8, 9, 0.78F);
+    private static final int SUGGESTION_FILL = ArkColors.rgba(20, 20, 22, 0.97F);
     private static final int MENU_DIM = ArkColors.rgba(8, 8, 9, 0.55F);
     private static final int LIST_FILL = ArkColors.rgba(0, 0, 0, 0.22F);
     private static final int SLIDER_FILL = ArkColors.rgba(255, 255, 255, 0.04F);
@@ -183,5 +184,28 @@ public final class VanillaTheme {
             ui.fill(box, CHAT_FILL);
             ui.border(box, 1.0F, ArkColors.withAlpha(Theme.accent().light(), CHAT_BORDER_ALPHA));
         });
+    }
+
+    public static void suggestions(GuiGraphicsExtractor graphics, int x, int y, int width, int height, int selectedTop, int rowHeight) {
+        paint(graphics, x, y, width, height, (ui, box) -> {
+            ui.shadow(box, CHAT_GLOW, 0.0F, ArkColors.SHADOW_MENU);
+            ui.fill(box, SUGGESTION_FILL);
+            ui.border(box, 1.0F, ArkColors.BORDER_OVERLAY);
+        });
+        if (selectedTop < 0 || selectedTop >= height) {
+            return;
+        }
+        paint(graphics, x, y + selectedTop, width, rowHeight, (ui, box) -> {
+            ui.fill(box, Theme.accent().tint());
+            ui.fill(box.x(), box.y(), UNDERLINE, box.height(), Theme.accent().light());
+        });
+    }
+
+    public static int suggestionText(boolean selected) {
+        return selected ? Theme.accent().light() : ArkColors.TEXT_SOFT;
+    }
+
+    public static int suggestionMarker() {
+        return Theme.accent().light();
     }
 }
