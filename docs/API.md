@@ -10,7 +10,7 @@ Arkea is published to a Maven repository on GitHub. Add it to `build.gradle`:
 repositories {
     maven {
         name = "Arkea"
-        url = uri("https://raw.githubusercontent.com/lureidcom/Arkea/maven")
+        url = uri("https://raw.githubusercontent.com/arystonmc/Arkea/maven")
         content {
             includeGroup "com.aryston.arkea"
         }
@@ -33,9 +33,9 @@ Then declare Arkea in `neoforge.mods.toml`, so the game refuses to start without
     side="CLIENT"
 ```
 
-Every release also goes to GitHub Packages (`https://maven.pkg.github.com/lureidcom/Arkea`, needs a GitHub token to read). The repository above needs none.
+Every release also goes to GitHub Packages (`https://maven.pkg.github.com/arystonmc/Arkea`, needs a GitHub token to read). The repository above needs none.
 
-Players install the Arkea jar from the [releases](https://github.com/lureidcom/Arkea/releases) next to your mod. Do not embed it with Jar-in-Jar; Arkea also replaces the vanilla menus and must exist only once.
+Players install the Arkea jar from the [releases](https://github.com/arystonmc/Arkea/releases) next to your mod. Do not embed it with Jar-in-Jar; Arkea also replaces the vanilla menus and must exist only once.
 
 ## Option 1: Nothing to Do
 

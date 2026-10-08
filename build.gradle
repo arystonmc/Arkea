@@ -135,7 +135,7 @@ publishing {
         if (providers.environmentVariable('GITHUB_TOKEN').isPresent()) {
             maven {
                 name = 'GitHubPackages'
-                url = uri("https://maven.pkg.github.com/${providers.environmentVariable('GITHUB_REPOSITORY').getOrElse('lureidcom/Arkea')}")
+                url = uri("https://maven.pkg.github.com/${providers.environmentVariable('GITHUB_REPOSITORY').getOrElse('arystonmc/Arkea')}")
                 credentials {
                     username = providers.environmentVariable('GITHUB_ACTOR').getOrElse('')
                     password = providers.environmentVariable('GITHUB_TOKEN').get()
