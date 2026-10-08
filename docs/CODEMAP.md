@@ -114,6 +114,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### HudEvents
 - Path: `src/main/java/com/aryston/arkea/integration/HudEvents.java`
 - Role: While an Arkea HUD style is on, cancels the vanilla HUD layers it replaces in `RenderGuiLayerEvent.Pre` (hotbar, health, armor, food, vehicle health, air, the experience bar and level when the contextual bar shows experience, the selected item name, effects, scoreboard, Tab player list) and draws the Arkea version in the same layer, so layers of other mods keep their order. Boss bars are restyled one by one through `CustomizeGuiOverlayEvent.BossEventProgress`. Spectator mode and the locator and jump bars stay vanilla; nothing is drawn while the HUD is hidden (F1).
+- `clock` swaps the time source of the painters; only the interface check slows it down to capture animations.
 - Also keeps the player list visibility and its narration in vanilla `PlayerTabOverlay.setVisible` with the vanilla rule (Tab held, not alone in singleplayer without a list objective).
 - Depends on: `HudPainter`, `HudEffects`, `HudBossBar`, `HudSidebar`, `HudTabList`, `HudSnapshot`, `HudSettings`, `HudAccessor`, `PlayerTabOverlayAccessor`.
 
@@ -133,7 +134,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### HudPainter
 - Path: `src/main/java/com/aryston/arkea/hud/HudPainter.java`
-- Role: Draws the health and armor (bottom left), food or vehicle health and air (bottom right), the hotbar with offhand and attack indicator, the experience line and level and the selected item name in design pixels. Compact bars have ten segments that fill smoothly, a gold line for absorption or saturation and a pulsing red edge at low health; Classic+ blits the vanilla heart, food, armor and air sprites at double size, in rows for extra health. Holds the fade of Minimal, so each preview and the game use their own painter. `plate` gives the plate color for the opacity setting.
+- Role: Draws the health and armor (bottom left), food or vehicle health and air (bottom right), the hotbar with offhand and attack indicator, the experience line and level and the selected item name in design pixels. Compact bars have ten segments that fill smoothly, a gold line for absorption or saturation and a pulsing red edge at low health; Classic+ blits the vanilla heart, food, armor and air sprites at double size, in rows for extra health. Holds the fade of Minimal and a `HudMotion`, so each preview and the game use their own painter. Draws the stack count itself (vanilla decorations without the count) so it can roll. `plate` gives the plate color for the opacity setting.
 
 #### HudPreview
 - Path: `src/main/java/com/aryston/arkea/hud/HudPreview.java`
@@ -154,6 +155,10 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### HudTabList
 - Path: `src/main/java/com/aryston/arkea/hud/HudTabList.java`
 - Role: The Tab player list as a card at the top: header and footer from the server, players sorted and split into columns of 20 like vanilla, each slot with the player head (online mode), name with team formatting (spectators dimmed), score or hearts value of the list objective and four ping bars colored by latency. The local player's slot is highlighted with the accent.
+
+#### HudMotion
+- Path: `src/main/java/com/aryston/arkea/hud/HudMotion.java`
+- Role: Animation state of one painter. The selection highlight slides to the new slot and the slot pops like a click; each slot watches its item, so a new item pops in with a spring, a growing stack bounces up and a shrinking one dips, and the count rolls (the old number slides out, the new one slides in tinted green or warm and turns white). Health and food bars ease to their value and keep a white ghost of lost points that drains after a short hold; the experience line eases and the level pops on level up; the item name rises in.
 
 ### `com.aryston.arkea.background`
 
@@ -1258,7 +1263,7 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### UiCheck
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheck.java`
-- Role: Developer check (`-Define arkea.uiCheck=all` or a comma list of groups: title, options, worlds, create, servers, mods, loading, toasts, gallery, config, helion, vanilla, game, hud). `Step.await` waits for a condition such as a loaded world. Opens screens, presses widgets by key, sends keys, saves a screenshot after every step as `screenshots/arkea_<step>.png` and closes the game. Does nothing in production.
+- Role: Developer check (`-Define arkea.uiCheck=all` or a comma list of groups: title, options, worlds, create, servers, mods, loading, toasts, gallery, config, helion, vanilla, game, hud). `Step.await` waits for a condition such as a loaded world; `Step.quick` takes its screenshot after a given number of ticks. Opens screens, presses widgets by key, sends keys, saves a screenshot after every step as `screenshots/arkea_<step>.png` and closes the game. Does nothing in production.
 
 #### UiCheckToasts, UiCheckLoading, UiCheckServers, UiCheckConfig, UiCheckGame
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheckToasts.java`, `src/main/java/com/aryston/arkea/debug/UiCheckLoading.java`, `src/main/java/com/aryston/arkea/debug/UiCheckServers.java`, `src/main/java/com/aryston/arkea/debug/UiCheckConfig.java`, `src/main/java/com/aryston/arkea/debug/UiCheckGame.java`
@@ -1266,7 +1271,7 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### UiCheckHud
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheckHud.java`
-- Role: Check helpers for the `hud` group: fills a fresh world with sample items, armor, effects, experience, a scoreboard and a boss bar through commands, switches the HUD style before each screenshot (changing the selected slot so the item name shows), sets low health and poison for the danger shot, holds the player list key with a sample header and footer, scrolls the HUD settings page to the style cards and switches back to Vanilla at the end.
+- Role: Check helpers for the `hud` group: fills a fresh world with sample items, armor, effects, experience, a scoreboard and a boss bar through commands, switches the HUD style before each screenshot (changing the selected slot so the item name shows), sets low health and poison for the danger shot, slows the HUD clock tenfold and changes the slot, a stack and the health to capture the animations midway, holds the player list key with a sample header and footer, scrolls the HUD settings page to the style cards and switches back to Vanilla at the end.
 
 ## Tests
 
@@ -1291,6 +1296,7 @@ Plain JUnit 5 tests without a running game, run by `./gradlew build` and the CI.
 | `src/test/java/com/aryston/arkea/background/NalUnitsTest.java` | Non-reference slices are disposable, reference and key frames are kept, parameter sets and SEI before the slice are skipped, data without a slice is kept. |
 | `src/test/java/com/aryston/arkea/background/PictureScalerTest.java` | Limited and full range colors, shrinking 4K to 720p, the crop hides coded padding, area averaging. |
 | `src/test/java/com/aryston/arkea/background/DropFolderTest.java` | A dropped file settles on the second poll, a growing file waits, missing files are ignored. |
+| `src/test/java/com/aryston/arkea/hud/HudMotionTest.java` | Bars ease and keep a ghost after damage but not after healing, the selection slides and pops, level up pops the level. |
 | `src/test/java/com/aryston/arkea/screen/title/LastPlayedTest.java` | Today, yesterday across midnight, and the localized date for older worlds. |
 
 ## Source Files

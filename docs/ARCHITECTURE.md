@@ -93,7 +93,8 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 
 ## Motion
 
-- Time comes from `Util.getMillis()`, never ticks.
+- Time comes from `Util.getMillis()`, never ticks. The HUD reads it through `HudEvents.clock`, which the interface check can slow down.
+- HUD animations react to changes between frames: `HudMotion` compares each snapshot with the last one (selected slot, item and count per slot, health, food, level) instead of listening to game events, so they work for every source of change (picking up, placing, dropping, commands, other mods).
 - `Presence` and `Timeline` implement "every enter has a shorter ease-in exit". Durations live in `Motion`, curves in `Easing`.
 - Screen switches go through `ArkScreen.navigate` or `leave`: the screen plays its exit, then the switch happens. Input is ignored while leaving.
 - `added()` restarts the enter animation each time a screen is shown again; a resize only lays out again.

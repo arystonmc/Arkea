@@ -13,6 +13,7 @@ import com.aryston.arkea.ui.layout.Box;
 import com.aryston.arkea.ui.layout.UiScale;
 import com.aryston.arkea.ui.render.UiGraphics;
 import java.util.function.BiConsumer;
+import java.util.function.LongSupplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
@@ -33,6 +34,7 @@ import net.neoforged.neoforge.common.NeoForge;
 
 public final class HudEvents {
     private static final HudPainter PAINTER = new HudPainter();
+    private static LongSupplier clock = Util::getMillis;
 
     private HudEvents() {
     }
@@ -40,6 +42,10 @@ public final class HudEvents {
     public static void register() {
         NeoForge.EVENT_BUS.addListener(HudEvents::onLayer);
         NeoForge.EVENT_BUS.addListener(HudEvents::onBossBar);
+    }
+
+    public static void clock(LongSupplier source) {
+        clock = source;
     }
 
     private static void onLayer(RenderGuiLayerEvent.Pre event) {
@@ -122,7 +128,7 @@ public final class HudEvents {
     private static void paint(GuiGraphicsExtractor graphics, HudSettings settings, BiConsumer<UiGraphics, Box> painter) {
         Minecraft minecraft = Minecraft.getInstance();
         UiScale scale = settings.scale(minecraft.getWindow());
-        UiGraphics ui = new UiGraphics(graphics, scale, minecraft.font, Util.getMillis());
+        UiGraphics ui = new UiGraphics(graphics, scale, minecraft.font, clock.getAsLong());
         graphics.pose().pushMatrix();
         graphics.pose().scale(scale.poseScale());
         painter.accept(ui, new Box(0.0F, 0.0F, scale.canvasWidth(), scale.canvasHeight()));

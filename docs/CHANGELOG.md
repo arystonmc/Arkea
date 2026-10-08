@@ -40,6 +40,7 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 - Show the F3 debug information as Arkea cards and draw the chat bar in the Arkea style
 - Add Arkea HUD styles (Compact, Classic+ and Minimal) with a settings page and live previews
 - Show the Tab player list as an Arkea card with heads, scores and ping bars
+- Animate the Arkea HUD: sliding selection, rolling stack counts, easing bars with a damage trace and a level up pop
 
 ### Fixed
 - Keep key bindings with Ctrl, Shift or Alt after a restart

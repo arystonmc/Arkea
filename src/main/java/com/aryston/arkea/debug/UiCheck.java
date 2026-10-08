@@ -96,12 +96,20 @@ public final class UiCheck {
         this.next++;
         Arkea.LOGGER.info("Arkea interface check: {}", step.name());
         step.action().accept(minecraft);
-        this.wait = step.opensScreen() ? SETTLE_TICKS : ACTION_SETTLE_TICKS;
+        this.wait = step.settle() > 0 ? step.settle() : step.opensScreen() ? SETTLE_TICKS : ACTION_SETTLE_TICKS;
     }
 
-    record Step(String group, String name, boolean opensScreen, Consumer<Minecraft> action, Predicate<Minecraft> ready) {
+    record Step(String group, String name, boolean opensScreen, Consumer<Minecraft> action, Predicate<Minecraft> ready, int settle) {
         Step(String group, String name, boolean opensScreen, Consumer<Minecraft> action) {
-            this(group, name, opensScreen, action, minecraft -> true);
+            this(group, name, opensScreen, action, minecraft -> true, 0);
+        }
+
+        Step(String group, String name, boolean opensScreen, Consumer<Minecraft> action, Predicate<Minecraft> ready) {
+            this(group, name, opensScreen, action, ready, 0);
+        }
+
+        static Step quick(String group, String name, int settle, Consumer<Minecraft> action) {
+            return new Step(group, name, false, action, minecraft -> true, settle);
         }
 
         static Step await(String group, String name, Predicate<Minecraft> condition) {
@@ -193,6 +201,11 @@ public final class UiCheck {
             new Step("hud", "hud_compact", false, UiCheckHud.style(HudStyle.COMPACT)),
             new Step("hud", "hud_classic", false, UiCheckHud.style(HudStyle.CLASSIC)),
             new Step("hud", "hud_minimal", false, UiCheckHud.style(HudStyle.MINIMAL)),
+            new Step("hud", "hud_anim_ready", false, UiCheckHud::slowMotion),
+            Step.quick("hud", "hud_anim_select", UiCheckHud.MID_ANIMATION, UiCheckHud::selectNext),
+            Step.quick("hud", "hud_anim_count", UiCheckHud.MID_ANIMATION, UiCheckHud::useOne),
+            Step.quick("hud", "hud_anim_damage", UiCheckHud.MID_ANIMATION, UiCheckHud::hurt),
+            new Step("hud", "hud_anim_done", false, UiCheckHud::realTime),
             new Step("hud", "hud_danger", false, UiCheckHud::danger),
             new Step("hud", "hud_tab_list", false, UiCheckHud::tabList),
             new Step("hud", "hud_tab_released", false, UiCheckHud::releaseTabList),

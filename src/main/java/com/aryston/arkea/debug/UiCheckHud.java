@@ -2,6 +2,7 @@ package com.aryston.arkea.debug;
 
 import com.aryston.arkea.config.ArkeaConfig;
 import com.aryston.arkea.hud.HudStyle;
+import com.aryston.arkea.integration.HudEvents;
 import com.aryston.arkea.mixin.HudAccessor;
 import java.util.List;
 import java.util.function.Consumer;
@@ -11,10 +12,15 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
 
 final class UiCheckHud {
     private static final int SAMPLE_FOOD = 15;
+    static final int MID_ANIMATION = 20;
+    private static final long SLOW_MOTION = 10L;
     private static final int OTHER_SLOT = 8;
+    private static final int STACK_SLOT = 6;
+    private static final float HURT = 4.0F;
     private static final double SCROLL = -10.0;
     private static final double HALF = 0.5;
     private static final String SAMPLE_HEADER = "Aryston SMP";
@@ -76,6 +82,34 @@ final class UiCheckHud {
                 minecraft.player.getInventory().setSelectedSlot(selected == 0 ? OTHER_SLOT : 0);
             }
         };
+    }
+
+    static void slowMotion(Minecraft minecraft) {
+        style(HudStyle.COMPACT).accept(minecraft);
+        long start = Util.getMillis();
+        HudEvents.clock(() -> start + (Util.getMillis() - start) / SLOW_MOTION);
+    }
+
+    static void realTime(Minecraft minecraft) {
+        HudEvents.clock(Util::getMillis);
+    }
+
+    static void selectNext(Minecraft minecraft) {
+        if (minecraft.player != null) {
+            minecraft.player.getInventory().setSelectedSlot(STACK_SLOT);
+        }
+    }
+
+    static void useOne(Minecraft minecraft) {
+        if (minecraft.player != null) {
+            minecraft.player.getInventory().getItem(STACK_SLOT).shrink(1);
+        }
+    }
+
+    static void hurt(Minecraft minecraft) {
+        if (minecraft.player != null) {
+            minecraft.player.setHealth(minecraft.player.getHealth() - HURT);
+        }
     }
 
     static void tabList(Minecraft minecraft) {

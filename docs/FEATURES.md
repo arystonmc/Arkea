@@ -158,6 +158,7 @@ Players pick how health, hunger and the hotbar look while playing.
 - Compact: health in the bottom left and hunger in the bottom right as slim, semi-transparent bars with numbers; armor and air as thin lines above them; the center keeps only a slim hotbar, the experience line and the item name
 - Classic+: the vanilla hearts, food, armor and air icons on transparent plates in the same corners
 - Minimal: like Compact, but the bars fade out while health, hunger and air are full
+- Smooth motion: the selection slides and pops like a click when you switch items, new items pop in, stack counts roll up or down with a bounce of the icon, bars ease to their value and leave a fading trace of lost health or food, the level pops on level up and the item name rises in
 - Low health pulses the health bar; poison, wither, frozen, absorption, saturation, the hunger effect, vehicle health and extra health rows are all shown
 - Effect chips with time and level, slim boss bars, a transparent scoreboard card and a Tab player list card with heads, scores and ping bars, each with its own switch
 - Plate transparency (0 to 80 percent) and HUD size (75 to 150 percent) sliders; the HUD follows the GUI scale like vanilla
