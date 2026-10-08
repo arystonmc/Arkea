@@ -12,6 +12,7 @@
     "AlertScreenAccessor",
     "BackupConfirmScreenAccessor",
     "ChatScreenMixin",
+    "BossHealthOverlayAccessor",
     "CheckboxMixin",
     "ClientPacketListenerMixin",
     "ConfigurationScreenAccessor",
@@ -23,10 +24,12 @@
     "EditBoxMixin",
     "GuiGraphicsExtractorMixin",
     "HudAccessor",
+    "HudCrosshairMixin",
     "JoinMultiplayerScreenAccessor",
     "LevelLoadingScreenAccessor",
     "MenuTabButtonMixin",
     "ModListScreenAccessor",
+    "MultiPlayerGameModeAccessor",
     "OptionInstanceAccessor",
     "OptionsMixin",
     "OptionsSubScreenAccessor",
@@ -41,6 +44,7 @@
     "StatsScreenAccessor",
     "SystemToastMixin",
     "TooltipAccessor",
+    "TooltipRenderUtilMixin",
     "TutorialToastMixin"
   ],
   "injectors": {

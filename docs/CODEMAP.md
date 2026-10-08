@@ -49,6 +49,8 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 | Arkea look of every other screen and of other mods | `VanillaTheme`, theme mixins, `DialogSkin` |
 | Pause, death and statistics screens | `PauseSkin`, `PauseCard`, `DeathSkin`, `ArkStatsScreen` |
 | In-game HUD styles (Compact, Classic+, Minimal) and their settings page | `HudPainter`, `HudEvents`, `ArkHudScreen`, `HudPreview` |
+| Target card, pickup feed, inventory total, ammo, durability warnings, location chip, damage direction, death point, crosshair, sound radar | `TargetCard`, `PickupFeed`, `HotbarExtras`, `HudTracker`, `InfoChip`, `DamageIndicator`, `Crosshair`, `SoundRadar` |
+| Arkea tooltips with food, durability and container previews | `ArkTooltips`, `TooltipRenderUtilMixin` |
 | F3 debug cards, chat bar | `DebugCards`, `DebugScreenOverlayMixin`, `ChatScreenMixin`, `VanillaTheme.chatBar` |
 | Jump back in card, splash text | `JumpBackInCard`, `SplashText`, `RecentWorld`, `LastPlayed` |
 | Texts | `src/main/resources/assets/arkea/lang/` |
@@ -69,7 +71,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### Arkea
 - Path: `src/main/java/com/aryston/arkea/Arkea.java`
-- Role: Entry point annotated with `@Mod`. Registers the client config, the NeoForge config screen and the client events.
+- Role: Entry point annotated with `@Mod`. Registers the client config, the NeoForge config screen, the client events, the HUD layers and events and the tooltip components (the latter two on the mod event bus it receives).
 - Members:
   - `MOD_ID`: the mod id.
   - `LOGGER`: shared logger for the whole mod.
@@ -90,9 +92,75 @@ Every class and source file of Arkea with its purpose. Find the right file here 
   - `WORLD_SORT`: order of the singleplayer world list.
   - `HUD_STYLE`: in-game HUD style (`HudStyle`), Vanilla by default.
   - `HUD_OPACITY`, `HUD_SIZE`: plate transparency and HUD size in percent.
+  - `TOOLTIPS`, `TOOLTIP_FOOD`, `TOOLTIP_DURABILITY`, `TOOLTIP_CONTAINERS`: Arkea tooltip card and its food, durability and container parts.
+  - `TARGET_CARD`, `PICKUP_FEED`, `STACK_TOTAL`, `AMMO_COUNTER`, `INFO_CHIP`, `DEATH_POINT`, `DURABILITY_WARNING`, `ARMOR_ICONS`, `FOOD_PREVIEW`, `DAMAGE_DIRECTION`, `SLEEP_REMINDER`, `HIT_MARKER`, `SOUND_RADAR`: the HUD features (location chip, sleep reminder, hit marker and sound radar off by default).
+  - `CROSSHAIR`: crosshair shape (`CrosshairStyle`).
+  - `on`: reads a switch, false before the config loads.
   - `HUD_EFFECTS`, `HUD_BOSS_BARS`, `HUD_SCOREBOARD`, `HUD_TAB_LIST`: effect chips, slim boss bars, the scoreboard card and the player list card while an Arkea HUD style is on.
   - `set`: sets a value and saves the file at once (the Arkea settings page changes values live).
   - `SPEC`: the built spec.
+
+### `com.aryston.arkea.hud.target`
+
+#### TargetCard
+- Path: `src/main/java/com/aryston/arkea/hud/target/TargetCard.java`
+- Role: Card at the top center (below boss bars) about what the crosshair points at, in the spirit of Jade: item icon, name, hearts or a health bar with numbers and armor for living things, info lines and the mod name in blue italics; a breaking progress line while mining. Fades in and out; hidden while a screen is open.
+
+#### TargetReader
+- Path: `src/main/java/com/aryston/arkea/hud/target/TargetReader.java`
+- Role: Builds the card content. Blocks: pick block icon, the effective tool from the mineable tags and whether the held item can harvest it, growth percent from the `age` property, redstone power or powered state, breaking progress from `MultiPlayerGameModeAccessor`. Entities: spawn egg or item icon, health, armor, baby, villager profession and level, horse speed and jump height, item stack count. Mod names come from `ModList`.
+
+#### TargetInfo
+- Path: `src/main/java/com/aryston/arkea/hud/target/TargetInfo.java`
+- Role: The card content: key, icon, name, mod, lines with color and icon, health, armor and breaking progress.
+
+### `com.aryston.arkea.hud.extra`
+
+#### PickupFeed
+- Path: `src/main/java/com/aryston/arkea/hud/extra/PickupFeed.java`
+- Role: Picked up items and experience as rows on the right ("+5 Iron Ingot" with the icon), filled from the take item packet (`ClientPacketListenerMixin`). Rows of the same item merge for three seconds with a bump of the count, slide in, and fade out after four seconds.
+
+#### HotbarExtras
+- Path: `src/main/java/com/aryston/arkea/hud/extra/HotbarExtras.java`
+- Role: Inventory total of the held stack as a badge above the selected slot (bumps when it changes) and the ammo counter next to the hotbar while a bow or crossbow is held (infinite in creative or with Infinity, red at zero). Works over the Arkea and the vanilla hotbar.
+
+#### HudTracker
+- Path: `src/main/java/com/aryston/arkea/hud/extra/HudTracker.java`
+- Role: Client tick watcher: one toast when a hotbar item or worn armor drops under ten percent durability (again after a repair), one sleep toast per night in the Overworld, new hits for `DamageIndicator` (skipping fall, fire, lava, drowning, freezing and starving, which have no direction) and the time of death for the death point.
+
+#### Durability
+- Path: `src/main/java/com/aryston/arkea/hud/extra/Durability.java`
+- Role: Remaining uses and the ten percent "about to break" rule.
+
+#### DamageIndicator
+- Path: `src/main/java/com/aryston/arkea/hud/extra/DamageIndicator.java`
+- Role: Red arcs around the crosshair toward the attacker, from the hurt direction the server sends; the arc keeps pointing at the attacker while the player turns and fades in about a second.
+
+#### InfoChip
+- Path: `src/main/java/com/aryston/arkea/hud/extra/InfoChip.java`
+- Role: Top left chips: coordinates (hidden with reduced debug info), direction, biome and time of day; and for ten minutes after a death in the same dimension, the distance to the death point with an arrow toward it.
+
+#### Crosshair, HitMarker
+- Path: `src/main/java/com/aryston/arkea/hud/extra/Crosshair.java`, `src/main/java/com/aryston/arkea/hud/extra/HitMarker.java`
+- Role: The sprite of the chosen crosshair shape (drawn by vanilla with its contrast pipeline through `HudCrosshairMixin`), and a short fading mark around the crosshair when the player attacks an entity (`AttackEntityEvent`).
+
+#### SoundRadar
+- Path: `src/main/java/com/aryston/arkea/hud/extra/SoundRadar.java`
+- Role: Sound listener that places the subtitles of positioned sounds around the crosshair in the direction of the sound, merging repeats and fading after two seconds.
+
+### `com.aryston.arkea.tooltip`
+
+#### ArkTooltips
+- Path: `src/main/java/com/aryston/arkea/tooltip/ArkTooltips.java`
+- Role: Draws the default tooltip background as an Arkea card (shadow, dark fill, border, accent line; custom tooltip styles of items stay), adds the food, durability and container components in `RenderTooltipEvent.GatherComponents`, removes the vanilla container text lines when the grid replaces them, and registers the client components.
+
+#### FoodTooltip, DurabilityTooltip, ContainerTooltip
+- Path: `src/main/java/com/aryston/arkea/tooltip/FoodTooltip.java`, `src/main/java/com/aryston/arkea/tooltip/DurabilityTooltip.java`, `src/main/java/com/aryston/arkea/tooltip/ContainerTooltip.java`
+- Role: Tooltip component data: nutrition and saturation, remaining and maximum uses with the bar color, and the items of a container.
+
+#### ClientFoodTooltip, ClientDurabilityTooltip, ClientContainerTooltip
+- Path: `src/main/java/com/aryston/arkea/tooltip/ClientFoodTooltip.java`, `src/main/java/com/aryston/arkea/tooltip/ClientDurabilityTooltip.java`, `src/main/java/com/aryston/arkea/tooltip/ClientContainerTooltip.java`
+- Role: Draw them in the tooltip: hunger shanks and golden saturation gems (a count past ten icons), a durability bar with "remaining / max", and a nine column slot grid with counts.
 
 ### `com.aryston.arkea.integration`
 
@@ -114,7 +182,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### HudEvents
 - Path: `src/main/java/com/aryston/arkea/integration/HudEvents.java`
 - Role: While an Arkea HUD style is on, cancels the vanilla HUD layers it replaces in `RenderGuiLayerEvent.Pre` (hotbar, health, armor, food, vehicle health, air, the experience bar and level when the contextual bar shows experience, the selected item name, effects, scoreboard, Tab player list) and draws the Arkea version in the same layer, so layers of other mods keep their order. Boss bars are restyled one by one through `CustomizeGuiOverlayEvent.BossEventProgress`. Spectator mode and the locator and jump bars stay vanilla; nothing is drawn while the HUD is hidden (F1).
-- `clock` swaps the time source of the painters; only the interface check slows it down to capture animations.
+- Registers the Arkea GUI layers on the mod bus (`RegisterGuiLayersEvent`): damage direction above the camera overlays, hit marker above the crosshair, hotbar extras above the hotbar, pickup feed above the item name, location chip above the effects, target card above the boss bars, sound radar above the subtitles. They draw in every HUD style, Vanilla included, and hide with F1. Ticks `HudTracker` and registers the `SoundRadar` listener once.
 - Also keeps the player list visibility and its narration in vanilla `PlayerTabOverlay.setVisible` with the vanilla rule (Tab held, not alone in singleplayer without a list objective).
 - Depends on: `HudPainter`, `HudEffects`, `HudBossBar`, `HudSidebar`, `HudTabList`, `HudSnapshot`, `HudSettings`, `HudAccessor`, `PlayerTabOverlayAccessor`.
 
@@ -130,11 +198,11 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### HudSnapshot
 - Path: `src/main/java/com/aryston/arkea/hud/HudSnapshot.java`
-- Role: Everything the HUD shows, read from the camera player: health, max health, absorption, heart type (poison, wither, frozen, through the NeoForge heart type event), hardcore, armor, food, saturation, hunger effect, air, vehicle health, experience, hotbar, offhand, attack indicator and the selected item name with its fade (from `HudAccessor`). `sample` builds a fixed player for previews, `sample(true)` a full one for Minimal.
+- Role: Everything the HUD shows, read from the camera player (worn armor and the food that eating the held item would give included): health, max health, absorption, heart type (poison, wither, frozen, through the NeoForge heart type event), hardcore, armor, food, saturation, hunger effect, air, vehicle health, experience, hotbar, offhand, attack indicator and the selected item name with its fade (from `HudAccessor`). `sample` builds a fixed player for previews, `sample(true)` a full one for Minimal.
 
 #### HudPainter
 - Path: `src/main/java/com/aryston/arkea/hud/HudPainter.java`
-- Role: Draws the health and armor (bottom left), food or vehicle health and air (bottom right), the hotbar with offhand and attack indicator, the experience line and level and the selected item name in design pixels. Compact bars have ten segments that fill smoothly, a gold line for absorption or saturation and a pulsing red edge at low health; Classic+ blits the vanilla heart, food, armor and air sprites at double size, in rows for extra health. Holds the fade of Minimal and a `HudMotion`, so each preview and the game use their own painter. Draws the stack count itself (vanilla decorations without the count) so it can roll. `plate` gives the plate color for the opacity setting.
+- Role: Draws the health and armor (bottom left), food or vehicle health and air (bottom right), the hotbar with offhand and attack indicator, the experience line and level and the selected item name in design pixels. Compact bars have ten segments that fill smoothly, a gold line for absorption or saturation and a pulsing red edge at low health; Classic+ blits the vanilla heart, food, armor and air sprites at double size, in rows for extra health. Also draws worn armor with durability bars above the health, a pulsing red edge on slots and armor about to break, and the hunger and saturation that the held food would restore as pulsing segments. Holds the fade of Minimal and a `HudMotion`, so each preview and the game use their own painter. Draws the stack count itself (vanilla decorations without the count) so it can roll. `plate` gives the plate color for the opacity setting.
 
 #### HudPreview
 - Path: `src/main/java/com/aryston/arkea/hud/HudPreview.java`
@@ -159,6 +227,14 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### HudMotion
 - Path: `src/main/java/com/aryston/arkea/hud/HudMotion.java`
 - Role: Animation state of one painter. The selection highlight slides to the new slot and the slot pops like a click; each slot watches its item, so a new item pops in with a spring, a growing stack bounces up and a shrinking one dips, and the count rolls (the old number slides out, the new one slides in tinted green or warm and turns white). Health and food bars ease to their value and keep a white ghost of lost points that drains after a short hold; the experience line eases and the level pops on level up; the item name rises in.
+
+#### HudClock
+- Path: `src/main/java/com/aryston/arkea/hud/HudClock.java`
+- Role: Time source of every HUD painter and tracker (`Util.getMillis` by default); the interface check slows it down to capture animations.
+
+#### CrosshairStyle
+- Path: `src/main/java/com/aryston/arkea/hud/CrosshairStyle.java`
+- Role: Crosshair shapes: Vanilla, thin cross, open cross, dot and circle, with their names.
 
 ### `com.aryston.arkea.background`
 
@@ -1061,7 +1137,7 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### ArkHudScreen
 - Path: `src/main/java/com/aryston/arkea/screen/options/hud/ArkHudScreen.java`
-- Role: The HUD settings page: a large live preview of the chosen style, four style cards with their own previews, plate transparency and HUD size sliders, and switches for effect chips, boss bars, the scoreboard card and the player list card.
+- Role: The HUD settings page: a large live preview of the chosen style, four style cards with their own previews, plate transparency and HUD size sliders, switches for effect chips, boss bars, the scoreboard card and the player list card, and the Information, Warnings, Crosshair (shape dropdown and hit marker), Tooltips and Accessibility sections of the HUD features.
 - Depends on: `OptionsPageScreen`, `ArkeaConfig`, `HudSettings`.
 
 #### HudStyleCard
@@ -1139,7 +1215,7 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### DeathSkin
 - Path: `src/main/java/com/aryston/arkea/screen/game/DeathSkin.java`
-- Role: Death screen of the design over the vanilla `DeathScreen` (kept for the game's `instanceof` checks): red tint and vignette, large title, cause and score fading in late, Respawn and Title Screen buttons that keep the vanilla one second delay.
+- Role: Death screen of the design over the vanilla `DeathScreen` (kept for the game's `instanceof` checks): red tint and vignette, large title, cause, score and the death coordinates (with the death point switch, not with reduced debug info) fading in late, Respawn and Title Screen buttons that keep the vanilla one second delay.
 
 #### ArkStatsScreen
 - Path: `src/main/java/com/aryston/arkea/screen/game/ArkStatsScreen.java`
@@ -1213,7 +1289,19 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### HudAccessor
 - Path: `src/main/java/com/aryston/arkea/mixin/HudAccessor.java`
-- Role: Reads the selected item name timer and item, the current contextual bar and the player list overlay of `Hud`, which have no getters.
+- Role: Reads the selected item name timer and item, the current contextual bar, the boss overlay and the player list overlay of `Hud`, which have no getters.
+
+#### TooltipRenderUtilMixin
+- Path: `src/main/java/com/aryston/arkea/mixin/TooltipRenderUtilMixin.java`
+- Role: Hands the default tooltip background to `ArkTooltips`; styled tooltips keep their sprites.
+
+#### HudCrosshairMixin
+- Path: `src/main/java/com/aryston/arkea/mixin/HudCrosshairMixin.java`
+- Role: Swaps only the crosshair sprite in `Hud.extractCrosshair`, so the spectator, third person, 3D crosshair and attack indicator rules stay vanilla.
+
+#### MultiPlayerGameModeAccessor, BossHealthOverlayAccessor
+- Path: `src/main/java/com/aryston/arkea/mixin/MultiPlayerGameModeAccessor.java`, `src/main/java/com/aryston/arkea/mixin/BossHealthOverlayAccessor.java`
+- Role: Read the breaking progress and position, and the boss bars (so the target card moves below them).
 
 #### PlayerTabOverlayAccessor
 - Path: `src/main/java/com/aryston/arkea/mixin/PlayerTabOverlayAccessor.java`
@@ -1221,7 +1309,7 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### ClientPacketListenerMixin
 - Path: `src/main/java/com/aryston/arkea/mixin/ClientPacketListenerMixin.java`
-- Role: Tells `ArkStatsScreen` when the statistics arrive; vanilla only notifies `StatsScreen`.
+- Role: Tells `ArkStatsScreen` when the statistics arrive (vanilla only notifies `StatsScreen`) and hands items and experience the local player picks up to `PickupFeed`, right after the packet moves to the main thread.
 
 #### DebugScreenOverlayMixin
 - Path: `src/main/java/com/aryston/arkea/mixin/DebugScreenOverlayMixin.java`
@@ -1263,7 +1351,7 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### UiCheck
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheck.java`
-- Role: Developer check (`-Define arkea.uiCheck=all` or a comma list of groups: title, options, worlds, create, servers, mods, loading, toasts, gallery, config, helion, vanilla, game, hud). `Step.await` waits for a condition such as a loaded world; `Step.quick` takes its screenshot after a given number of ticks. Opens screens, presses widgets by key, sends keys, saves a screenshot after every step as `screenshots/arkea_<step>.png` and closes the game. Does nothing in production.
+- Role: Developer check (`-Define arkea.uiCheck=all` or a comma list of groups: title, options, worlds, create, servers, mods, loading, toasts, gallery, config, helion, vanilla, game, hud, features). `Step.await` waits for a condition such as a loaded world; `Step.quick` takes its screenshot after a given number of ticks. Opens screens, presses widgets by key, sends keys, saves a screenshot after every step as `screenshots/arkea_<step>.png` and closes the game. Does nothing in production.
 
 #### UiCheckToasts, UiCheckLoading, UiCheckServers, UiCheckConfig, UiCheckGame
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheckToasts.java`, `src/main/java/com/aryston/arkea/debug/UiCheckLoading.java`, `src/main/java/com/aryston/arkea/debug/UiCheckServers.java`, `src/main/java/com/aryston/arkea/debug/UiCheckConfig.java`, `src/main/java/com/aryston/arkea/debug/UiCheckGame.java`
@@ -1272,6 +1360,10 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 #### UiCheckHud
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheckHud.java`
 - Role: Check helpers for the `hud` group: fills a fresh world with sample items, armor, effects, experience, a scoreboard and a boss bar through commands, switches the HUD style before each screenshot (changing the selected slot so the item name shows), sets low health and poison for the danger shot, slows the HUD clock tenfold and changes the slot, a stack and the health to capture the animations midway, holds the player list key with a sample header and footer, scrolls the HUD settings page to the style cards and switches back to Vanilla at the end.
+
+#### UiCheckFeatures, UiCheckTooltipScreen
+- Path: `src/main/java/com/aryston/arkea/debug/UiCheckFeatures.java`, `src/main/java/com/aryston/arkea/debug/UiCheckTooltipScreen.java`
+- Role: Check helpers for the `features` group: a worn pickaxe, stacks, food, a bow with arrows and worn armor, an ore wall to look at, hunger, item and experience pickups, a hit from the left with a slowed clock, a horse, nightfall, a death with a respawn and a walk away; and a screen that shows one item tooltip (food, worn tool, filled shulker box). Switches the features it turned on back off at the end.
 
 ## Tests
 
@@ -1311,7 +1403,7 @@ Plain JUnit 5 tests without a running game, run by `./gradlew build` and the CI.
 | Folder | Contents |
 |---|---|
 | `src/main/resources/assets/arkea/lang/` | `en_us.json` and `tr_tr.json`: config, title screen, window and options texts, short option descriptions (`arkea.option.*`). Menu labels reuse vanilla keys so every game language shows them. |
-| `src/main/resources/assets/arkea/textures/gui/` | `gallery_before.png` and `gallery_after.png`: sample images of the before and after preview in the gallery. `arkea_logo.png` and `helion_logo.png`: 48 x 48 logos (scaled from the 128 pixel design handoff logos) for the sidebar, the "UI by Arkea" footer and the Helion banner, with `.png.mcmeta` files that turn on linear filtering. `helion_preview.png`: preview of the Helion banner. `hud_scene.png`: sample scene behind the HUD previews (from the design handoff). |
+| `src/main/resources/assets/arkea/textures/gui/` | `gallery_before.png` and `gallery_after.png`: sample images of the before and after preview in the gallery. `arkea_logo.png` and `helion_logo.png`: 48 x 48 logos (scaled from the 128 pixel design handoff logos) for the sidebar, the "UI by Arkea" footer and the Helion banner, with `.png.mcmeta` files that turn on linear filtering. `helion_preview.png`: preview of the Helion banner. `hud_scene.png`: sample scene behind the HUD previews (from the design handoff). `sprites/crosshair/`: 15 x 15 crosshair shapes (`cross`, `gap`, `dot`, `circle`) and the `hit` marker, white on transparent, in the GUI sprite atlas. |
 
 ## Build Files
 

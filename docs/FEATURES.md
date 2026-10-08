@@ -165,6 +165,32 @@ Players pick how health, hunger and the hotbar look while playing.
 - HUD parts added by other mods stay where they are; spectator mode, the locator bar and the jump bar stay vanilla
 - Since: 0.1
 
+### HUD Features
+Useful information on screen, in every HUD style (Vanilla included), each with its own switch on the HUD page.
+
+- Target card in the spirit of Jade: what you look at with its icon, name and mod; the right tool and whether you can harvest it; crop growth; redstone power; breaking progress; hearts or a health bar, armor, baby, villager profession and level, horse speed and jump height
+- Pickup feed: "+5 Iron Ingot" rows with icons on the right, merging repeats, plus experience
+- Inventory total of the held stack above the selected slot, and an ammo counter next to the hotbar with a bow or crossbow
+- Low durability warning: one notice and a pulsing slot when a tool or armor piece drops under ten percent
+- Worn armor with durability bars above the health bar (Arkea styles)
+- Food preview in the spirit of AppleSkin: while holding food, the hunger and saturation it would restore pulse in the hunger bar (Arkea styles)
+- Damage direction arcs around the crosshair that keep pointing at the attacker
+- Death point: the death coordinates on the death screen, then the distance and direction back for ten minutes
+- Location chip with coordinates, direction, biome and time (off by default; coordinates hidden on servers with reduced debug info)
+- Sleep reminder once per night (off by default)
+- Crosshair shapes (thin cross, open cross, dot, circle) that stay readable on every background, and a hit marker (off by default)
+- Sound radar: subtitles placed around the crosshair in the direction of the sound (off by default)
+- Since: 0.1
+
+### Arkea Tooltips
+Item tooltips show more and look like Arkea.
+
+- Tooltips are Arkea cards with an accent line; tooltips with their own item style keep it
+- Food shows its hunger shanks and golden saturation gems
+- Damaged tools and armor show a durability bar with remaining and maximum uses
+- Shulker boxes and other containers show their items as a grid instead of a text list
+- Since: 0.1
+
 ### Debug Screen and Chat Bar
 F3 and the chat input match Arkea.
 

@@ -1,6 +1,18 @@
 package com.aryston.arkea.integration;
 
+import com.aryston.arkea.Arkea;
+import com.aryston.arkea.config.ArkeaConfig;
+import com.aryston.arkea.hud.extra.DamageIndicator;
+import com.aryston.arkea.hud.extra.HitMarker;
+import com.aryston.arkea.hud.extra.HotbarExtras;
+import com.aryston.arkea.hud.extra.HudTracker;
+import com.aryston.arkea.hud.extra.InfoChip;
+import com.aryston.arkea.hud.extra.PickupFeed;
+import com.aryston.arkea.hud.extra.SoundRadar;
+import com.aryston.arkea.hud.target.TargetCard;
+import com.aryston.arkea.mixin.BossHealthOverlayAccessor;
 import com.aryston.arkea.hud.HudBossBar;
+import com.aryston.arkea.hud.HudClock;
 import com.aryston.arkea.hud.HudEffects;
 import com.aryston.arkea.hud.HudPainter;
 import com.aryston.arkea.hud.HudSettings;
@@ -13,7 +25,6 @@ import com.aryston.arkea.ui.layout.Box;
 import com.aryston.arkea.ui.layout.UiScale;
 import com.aryston.arkea.ui.render.UiGraphics;
 import java.util.function.BiConsumer;
-import java.util.function.LongSupplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
@@ -21,31 +32,122 @@ import net.minecraft.client.gui.contextualbar.ExperienceBar;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Util;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Scoreboard;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.CustomizeGuiOverlayEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.common.NeoForge;
 
 public final class HudEvents {
     private static final HudPainter PAINTER = new HudPainter();
-    private static LongSupplier clock = Util::getMillis;
+    private static final TargetCard TARGET = new TargetCard();
+    private static final float PICKUPS_ABOVE_STATUS = 82.0F;
+    private static final float PICKUPS_ABOVE_EDGE = 16.0F;
+    private static final int VANILLA_HALF = 91;
+    private static final int VANILLA_HEIGHT = 22;
+    private static final int VANILLA_SLOT = 20;
 
     private HudEvents() {
     }
 
-    public static void register() {
+    public static void register(IEventBus modBus) {
+        modBus.addListener(HudEvents::registerLayers);
         NeoForge.EVENT_BUS.addListener(HudEvents::onLayer);
         NeoForge.EVENT_BUS.addListener(HudEvents::onBossBar);
+        NeoForge.EVENT_BUS.addListener(HudEvents::onTick);
+        NeoForge.EVENT_BUS.addListener(HitMarker::onAttack);
     }
 
-    public static void clock(LongSupplier source) {
-        clock = source;
+    private static void registerLayers(RegisterGuiLayersEvent event) {
+        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, layer("damage_direction"), (graphics, delta) -> {
+            LocalPlayer player = Minecraft.getInstance().player;
+            if (visible() && player != null && ArkeaConfig.on(ArkeaConfig.DAMAGE_DIRECTION)) {
+                paint(graphics, HudSettings.current(), (ui, screen) -> DamageIndicator.draw(ui, screen, player.getYRot()));
+            }
+        });
+        event.registerAbove(VanillaGuiLayers.CROSSHAIR, layer("hit_marker"), (graphics, delta) -> {
+            if (visible() && Minecraft.getInstance().options.getCameraType().isFirstPerson()) {
+                HitMarker.draw(graphics);
+            }
+        });
+        event.registerAbove(VanillaGuiLayers.HOTBAR, layer("hotbar_extras"), (graphics, delta) -> hotbarExtras(graphics));
+        event.registerAbove(VanillaGuiLayers.SELECTED_ITEM_NAME, layer("pickups"), (graphics, delta) -> {
+            if (visible()) {
+                HudSettings settings = HudSettings.current();
+                float bottom = settings.style().arkea() ? PICKUPS_ABOVE_STATUS : PICKUPS_ABOVE_EDGE;
+                paint(graphics, settings, (ui, screen) -> PickupFeed.draw(ui, screen, settings, screen.bottom() - bottom));
+            }
+        });
+        event.registerAbove(VanillaGuiLayers.EFFECTS, layer("info"), (graphics, delta) -> {
+            if (visible()) {
+                HudSettings settings = HudSettings.current();
+                paint(graphics, settings, (ui, screen) -> InfoChip.draw(ui, screen, settings, Minecraft.getInstance()));
+            }
+        });
+        event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, layer("target"), (graphics, delta) -> {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (visible() && minecraft.gui.screen() == null && ArkeaConfig.on(ArkeaConfig.TARGET_CARD)) {
+                HudSettings settings = HudSettings.current();
+                int bossBars = ((BossHealthOverlayAccessor) ((HudAccessor) minecraft.gui.hud).arkea$bossOverlay()).arkea$events().size();
+                paint(graphics, settings, (ui, screen) -> TARGET.draw(ui, screen, minecraft, settings, bossBars));
+            }
+        });
+        event.registerAbove(VanillaGuiLayers.SUBTITLE_OVERLAY, layer("sound_radar"), (graphics, delta) -> {
+            LocalPlayer player = Minecraft.getInstance().player;
+            if (visible() && player != null && ArkeaConfig.on(ArkeaConfig.SOUND_RADAR)) {
+                HudSettings settings = HudSettings.current();
+                paint(graphics, settings, (ui, screen) -> SoundRadar.draw(ui, screen, settings, player));
+            }
+        });
+    }
+
+    private static void hotbarExtras(GuiGraphicsExtractor graphics) {
+        Minecraft minecraft = Minecraft.getInstance();
+        LocalPlayer player = minecraft.player;
+        if (!visible() || player == null || minecraft.gameMode == null || minecraft.gameMode.getPlayerMode() == GameType.SPECTATOR) {
+            return;
+        }
+        HudSettings settings = HudSettings.current();
+        int selected = player.getInventory().getSelectedSlot();
+        paint(graphics, settings, (ui, screen) -> {
+            Box hotbar;
+            Box slot;
+            if (settings.style().arkea()) {
+                hotbar = HudPainter.hotbarBox(screen);
+                slot = HudPainter.slot(screen, selected);
+            } else {
+                UiScale scale = ui.scale();
+                int center = minecraft.getWindow().getGuiScaledWidth() / 2;
+                int bottom = minecraft.getWindow().getGuiScaledHeight();
+                hotbar = new Box(scale.toDesign(center - VANILLA_HALF), scale.toDesign(bottom - VANILLA_HEIGHT), scale.toDesign(VANILLA_HALF * 2),
+                    scale.toDesign(VANILLA_HEIGHT));
+                slot = new Box(scale.toDesign(center - VANILLA_HALF + 1 + selected * VANILLA_SLOT), scale.toDesign(bottom - VANILLA_HEIGHT + 1),
+                    scale.toDesign(VANILLA_SLOT), scale.toDesign(VANILLA_SLOT));
+            }
+            HotbarExtras.draw(ui, screen, hotbar, slot, settings, minecraft, player);
+        });
+    }
+
+    private static boolean visible() {
+        Minecraft minecraft = Minecraft.getInstance();
+        return minecraft.player != null && minecraft.level != null && !minecraft.gui.hud.isHidden();
+    }
+
+    private static Identifier layer(String name) {
+        return Identifier.fromNamespaceAndPath(Arkea.MOD_ID, name);
+    }
+
+    private static void onTick(ClientTickEvent.Post event) {
+        Minecraft minecraft = Minecraft.getInstance();
+        SoundRadar.ensureRegistered(minecraft);
+        HudTracker.tick(minecraft);
     }
 
     private static void onLayer(RenderGuiLayerEvent.Pre event) {
@@ -128,7 +230,7 @@ public final class HudEvents {
     private static void paint(GuiGraphicsExtractor graphics, HudSettings settings, BiConsumer<UiGraphics, Box> painter) {
         Minecraft minecraft = Minecraft.getInstance();
         UiScale scale = settings.scale(minecraft.getWindow());
-        UiGraphics ui = new UiGraphics(graphics, scale, minecraft.font, clock.getAsLong());
+        UiGraphics ui = new UiGraphics(graphics, scale, minecraft.font, HudClock.now());
         graphics.pose().pushMatrix();
         graphics.pose().scale(scale.poseScale());
         painter.accept(ui, new Box(0.0F, 0.0F, scale.canvasWidth(), scale.canvasHeight()));

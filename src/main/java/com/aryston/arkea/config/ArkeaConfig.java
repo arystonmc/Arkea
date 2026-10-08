@@ -1,5 +1,6 @@
 package com.aryston.arkea.config;
 
+import com.aryston.arkea.hud.CrosshairStyle;
 import com.aryston.arkea.hud.HudSettings;
 import com.aryston.arkea.hud.HudStyle;
 import com.aryston.arkea.screen.worlds.WorldSort;
@@ -71,6 +72,78 @@ public final class ArkeaConfig {
         .translation("arkea.configuration.hudTabList")
         .define("hudTabList", true);
 
+    public static final ModConfigSpec.BooleanValue TOOLTIPS = BUILDER
+        .translation("arkea.configuration.tooltips")
+        .define("tooltips", true);
+
+    public static final ModConfigSpec.BooleanValue TOOLTIP_FOOD = BUILDER
+        .translation("arkea.configuration.tooltipFood")
+        .define("tooltipFood", true);
+
+    public static final ModConfigSpec.BooleanValue TOOLTIP_DURABILITY = BUILDER
+        .translation("arkea.configuration.tooltipDurability")
+        .define("tooltipDurability", true);
+
+    public static final ModConfigSpec.BooleanValue TOOLTIP_CONTAINERS = BUILDER
+        .translation("arkea.configuration.tooltipContainers")
+        .define("tooltipContainers", true);
+
+    public static final ModConfigSpec.BooleanValue TARGET_CARD = BUILDER
+        .translation("arkea.configuration.targetCard")
+        .define("targetCard", true);
+
+    public static final ModConfigSpec.BooleanValue PICKUP_FEED = BUILDER
+        .translation("arkea.configuration.pickupFeed")
+        .define("pickupFeed", true);
+
+    public static final ModConfigSpec.BooleanValue STACK_TOTAL = BUILDER
+        .translation("arkea.configuration.stackTotal")
+        .define("stackTotal", true);
+
+    public static final ModConfigSpec.BooleanValue AMMO_COUNTER = BUILDER
+        .translation("arkea.configuration.ammoCounter")
+        .define("ammoCounter", true);
+
+    public static final ModConfigSpec.BooleanValue DURABILITY_WARNING = BUILDER
+        .translation("arkea.configuration.durabilityWarning")
+        .define("durabilityWarning", true);
+
+    public static final ModConfigSpec.BooleanValue ARMOR_ICONS = BUILDER
+        .translation("arkea.configuration.armorIcons")
+        .define("armorIcons", true);
+
+    public static final ModConfigSpec.BooleanValue FOOD_PREVIEW = BUILDER
+        .translation("arkea.configuration.foodPreview")
+        .define("foodPreview", true);
+
+    public static final ModConfigSpec.BooleanValue INFO_CHIP = BUILDER
+        .translation("arkea.configuration.infoChip")
+        .define("infoChip", false);
+
+    public static final ModConfigSpec.BooleanValue DAMAGE_DIRECTION = BUILDER
+        .translation("arkea.configuration.damageDirection")
+        .define("damageDirection", true);
+
+    public static final ModConfigSpec.BooleanValue DEATH_POINT = BUILDER
+        .translation("arkea.configuration.deathPoint")
+        .define("deathPoint", true);
+
+    public static final ModConfigSpec.BooleanValue SLEEP_REMINDER = BUILDER
+        .translation("arkea.configuration.sleepReminder")
+        .define("sleepReminder", false);
+
+    public static final ModConfigSpec.BooleanValue HIT_MARKER = BUILDER
+        .translation("arkea.configuration.hitMarker")
+        .define("hitMarker", false);
+
+    public static final ModConfigSpec.BooleanValue SOUND_RADAR = BUILDER
+        .translation("arkea.configuration.soundRadar")
+        .define("soundRadar", false);
+
+    public static final ModConfigSpec.EnumValue<CrosshairStyle> CROSSHAIR = BUILDER
+        .translation("arkea.configuration.crosshair")
+        .defineEnum("crosshair", CrosshairStyle.VANILLA);
+
     public static final ModConfigSpec.EnumValue<Accent> ACCENT = BUILDER
         .translation("arkea.configuration.accent")
         .defineEnum("accent", Accent.GREEN);
@@ -94,6 +167,10 @@ public final class ArkeaConfig {
 
     public static Accent accent() {
         return SPEC.isLoaded() ? ACCENT.get() : Accent.GREEN;
+    }
+
+    public static boolean on(ModConfigSpec.BooleanValue value) {
+        return SPEC.isLoaded() && value.get();
     }
 
     public static <T> void set(ModConfigSpec.ConfigValue<T> value, T newValue) {

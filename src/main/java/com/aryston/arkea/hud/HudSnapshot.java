@@ -12,7 +12,9 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
@@ -48,7 +50,10 @@ public record HudSnapshot(
     boolean offhandLeft,
     float attack,
     @Nullable Component itemName,
-    float itemNameAlpha
+    float itemNameAlpha,
+    List<ItemStack> armorItems,
+    int previewFood,
+    float previewSaturation
 ) {
     public static final float MAX_FOOD = 20.0F;
     public static final float MAX_ARMOR = 20.0F;
@@ -68,6 +73,7 @@ public record HudSnapshot(
     private static final int TORCHES = 48;
     private static final float WORN = 0.66F;
     private static final float USED = 0.3F;
+    private static final List<EquipmentSlot> ARMOR_SLOTS = List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET);
     private static @Nullable HudSnapshot sample;
     private static @Nullable HudSnapshot fullSample;
 
@@ -95,6 +101,7 @@ public record HudSnapshot(
         int maxAir = player.getMaxAirSupply();
         int air = Math.clamp(player.getAirSupply(), 0, maxAir);
         boolean underWater = player.getFluidInteraction().isEyeInFluidMatching(player, (entity, type, unused) -> entity.canDrownInFluidType(type));
+        FoodProperties food = edible(player);
         float attack = NO_ATTACK;
         if (minecraft.options.attackIndicator().get() == AttackIndicatorStatus.HOTBAR) {
             float strength = player.getAttackStrengthScale(0.0F);
@@ -105,7 +112,8 @@ public record HudSnapshot(
             player.hasEffect(MobEffects.HUNGER), maxAir > 0 ? air / (float) maxAir : 1.0F, underWater || air < maxAir,
             vehicle != null ? vehicle.getHealth() : 0.0F, vehicle != null ? vehicle.getMaxHealth() : 0.0F, minecraft.gameMode != null && minecraft.gameMode.canHurtPlayer(),
             experience, player.experienceLevel, player.experienceProgress, hotbar, inventory.getSelectedSlot(), player.getOffhandItem(),
-            player.getMainArm().getOpposite() == HumanoidArm.LEFT, attack, itemName(hud), Math.min(1.0F, hud.arkea$toolHighlightTimer() / NAME_FADE_TICKS));
+            player.getMainArm().getOpposite() == HumanoidArm.LEFT, attack, itemName(hud), Math.min(1.0F, hud.arkea$toolHighlightTimer() / NAME_FADE_TICKS),
+            armor(player), food != null ? food.nutrition() : 0, food != null ? food.saturation() : 0.0F);
     }
 
     public static HudSnapshot sample(boolean full) {
@@ -114,7 +122,7 @@ public record HudSnapshot(
                 HudSnapshot base = sample(false);
                 fullSample = new HudSnapshot(null, base.maxHealth, base.maxHealth, 0.0F, base.heart, false, base.armor, (int) MAX_FOOD, base.saturation, false,
                     1.0F, false, 0.0F, 0.0F, true, true, base.level, base.progress, base.hotbar, base.selected, base.offhand, base.offhandLeft, NO_ATTACK,
-                    base.itemName, base.itemNameAlpha);
+                    base.itemName, base.itemNameAlpha, base.armorItems, 0, 0.0F);
             }
             return fullSample;
         }
@@ -124,7 +132,7 @@ public record HudSnapshot(
                 new ItemStack(Items.OAK_PLANKS, PLANKS), ItemStack.EMPTY);
             sample = new HudSnapshot(null, SAMPLE_HEALTH, SAMPLE_MAX_HEALTH, 0.0F, Hud.HeartType.NORMAL, false, SAMPLE_ARMOR, SAMPLE_FOOD, SAMPLE_SATURATION,
                 false, 1.0F, false, 0.0F, 0.0F, true, true, SAMPLE_LEVEL, SAMPLE_PROGRESS, hotbar, 0, new ItemStack(Items.TORCH, TORCHES), true, NO_ATTACK,
-                styledName(hotbar.getFirst()), 1.0F);
+                styledName(hotbar.getFirst()), 1.0F, List.of(new ItemStack(Items.IRON_HELMET), worn(Items.IRON_CHESTPLATE, USED)), 0, 0.0F);
         }
         return sample;
     }
@@ -133,6 +141,27 @@ public record HudSnapshot(
         ItemStack stack = new ItemStack(item);
         stack.setDamageValue((int) (stack.getMaxDamage() * share));
         return stack;
+    }
+
+    private static List<ItemStack> armor(Player player) {
+        List<ItemStack> armor = new ArrayList<>(ARMOR_SLOTS.size());
+        for (EquipmentSlot slot : ARMOR_SLOTS) {
+            ItemStack stack = player.getItemBySlot(slot);
+            if (!stack.isEmpty()) {
+                armor.add(stack);
+            }
+        }
+        return armor;
+    }
+
+    private static @Nullable FoodProperties edible(Player player) {
+        for (ItemStack stack : List.of(player.getMainHandItem(), player.getOffhandItem())) {
+            FoodProperties food = stack.get(DataComponents.FOOD);
+            if (food != null && (food.canAlwaysEat() || player.getFoodData().needsFood())) {
+                return food;
+            }
+        }
+        return null;
     }
 
     private static Hud.HeartType heart(Player player) {

@@ -3,10 +3,12 @@ package com.aryston.arkea;
 import com.aryston.arkea.config.ArkeaConfig;
 import com.aryston.arkea.integration.ClientEvents;
 import com.aryston.arkea.integration.HudEvents;
+import com.aryston.arkea.tooltip.ArkTooltips;
 import com.aryston.arkea.screen.options.arkea.ArkArkeaScreen;
 import com.aryston.arkea.ui.theme.Theme;
 import com.mojang.logging.LogUtils;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
@@ -18,12 +20,13 @@ public final class Arkea {
     public static final String MOD_ID = "arkea";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public Arkea(ModContainer container) {
+    public Arkea(IEventBus modBus, ModContainer container) {
         container.registerConfig(ModConfig.Type.CLIENT, ArkeaConfig.SPEC);
         container.registerExtensionPoint(IConfigScreenFactory.class, (mod, parent) -> new ArkArkeaScreen(parent));
         Theme.setAccentSource(ArkeaConfig::accent);
         ClientEvents.register();
-        HudEvents.register();
+        HudEvents.register(modBus);
+        ArkTooltips.register(modBus);
         LOGGER.info("Arkea initialized");
     }
 }

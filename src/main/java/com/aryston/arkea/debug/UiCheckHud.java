@@ -2,7 +2,7 @@ package com.aryston.arkea.debug;
 
 import com.aryston.arkea.config.ArkeaConfig;
 import com.aryston.arkea.hud.HudStyle;
-import com.aryston.arkea.integration.HudEvents;
+import com.aryston.arkea.hud.HudClock;
 import com.aryston.arkea.mixin.HudAccessor;
 import java.util.List;
 import java.util.function.Consumer;
@@ -87,11 +87,11 @@ final class UiCheckHud {
     static void slowMotion(Minecraft minecraft) {
         style(HudStyle.COMPACT).accept(minecraft);
         long start = Util.getMillis();
-        HudEvents.clock(() -> start + (Util.getMillis() - start) / SLOW_MOTION);
+        HudClock.use(() -> start + (Util.getMillis() - start) / SLOW_MOTION);
     }
 
     static void realTime(Minecraft minecraft) {
-        HudEvents.clock(Util::getMillis);
+        HudClock.use(Util::getMillis);
     }
 
     static void selectNext(Minecraft minecraft) {

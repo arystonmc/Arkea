@@ -41,6 +41,10 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 - Add Arkea HUD styles (Compact, Classic+ and Minimal) with a settings page and live previews
 - Show the Tab player list as an Arkea card with heads, scores and ping bars
 - Animate the Arkea HUD: sliding selection, rolling stack counts, easing bars with a damage trace and a level up pop
+- Add a target card, pickup feed, inventory total, ammo counter, low durability warnings and armor durability
+- Add a food preview in the hunger bar, damage direction arcs, a death point, a location chip and a sleep reminder
+- Add crosshair shapes, a hit marker and a sound radar
+- Show tooltips as Arkea cards with food values, durability and container previews
 
 ### Fixed
 - Keep key bindings with Ctrl, Shift or Alt after a restart

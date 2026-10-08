@@ -13,11 +13,14 @@ import com.aryston.arkea.ui.theme.ArkColors;
 import com.aryston.arkea.ui.widget.ButtonVariant;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public final class DeathSkin extends VanillaSkin {
     private static final float TITLE_TO_CAUSE = 26.0F;
@@ -74,8 +77,9 @@ public final class DeathSkin extends VanillaSkin {
                 buttons.add(button);
             }
         }
+        Component location = location();
         float height = metrics.capHeight(TITLE) + TITLE_TO_CAUSE + causeLines.size() * LINE + CAUSE_TO_SCORE + metrics.capHeight(SCORE)
-            + SCORE_TO_BUTTONS + RESPAWN_HEIGHT + (buttons.size() - 1) * (BUTTON_HEIGHT + BUTTON_GAP);
+            + (location != null ? LINE : 0.0F) + SCORE_TO_BUTTONS + RESPAWN_HEIGHT + (buttons.size() - 1) * (BUTTON_HEIGHT + BUTTON_GAP);
         float centerX = canvas.centerX();
         float y = (canvas.height() - height) * 0.5F;
         String title = screen.getTitle().getString();
@@ -99,9 +103,24 @@ public final class DeathSkin extends VanillaSkin {
         float scoreY = y;
         late(frame, SCORE_DELAY, () -> graphics.richText(score, centerX - metrics.width(score.getString(), SCORE) * 0.5F, scoreY, TEXT_WIDTH, SCORE,
             ArkColors.TEXT_SOFT));
+        if (location != null) {
+            float locationY = y + LINE;
+            late(frame, SCORE_DELAY, () -> graphics.text(location.getString(), centerX - metrics.width(location.getString(), SCORE) * 0.5F, locationY, SCORE,
+                ArkColors.TEXT_DESCRIPTION));
+            y += LINE;
+        }
         y += metrics.capHeight(SCORE) + SCORE_TO_BUTTONS;
         float buttonsY = y;
         late(frame, BUTTONS_DELAY, () -> this.drawButtons(frame, buttons, centerX - BUTTON_WIDTH * 0.5F, buttonsY));
+    }
+
+    private static @Nullable Component location() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null || minecraft.showOnlyReducedInfo() || !ArkeaConfig.on(ArkeaConfig.DEATH_POINT)) {
+            return null;
+        }
+        BlockPos pos = minecraft.player.blockPosition();
+        return Component.translatable("arkea.death.location", pos.getX(), pos.getY(), pos.getZ());
     }
 
     private void drawButtons(Frame frame, List<AbstractButton> buttons, float x, float top) {

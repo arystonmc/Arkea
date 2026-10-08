@@ -1,5 +1,7 @@
 package com.aryston.arkea.hud;
 
+import com.aryston.arkea.config.ArkeaConfig;
+import com.aryston.arkea.hud.extra.Durability;
 import com.aryston.arkea.ui.anim.Easing;
 import com.aryston.arkea.ui.anim.Motion;
 import com.aryston.arkea.ui.anim.Transition;
@@ -15,6 +17,7 @@ import net.minecraft.client.gui.Hud;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -54,6 +57,14 @@ public final class HudPainter {
     private static final float ROLL_DISTANCE = 9.0F;
     private static final float NAME_RISE = 6.0F;
     private static final float LEVEL_FLASH = 0.6F;
+    private static final float ARMOR_ICON = 16.0F;
+    private static final int ITEM_PIXELS = 16;
+    private static final float ARMOR_ICON_GAP = 4.0F;
+    private static final float ARMOR_BAR = 2.0F;
+    private static final float ARMOR_BAR_GAP = 2.0F;
+    private static final float PREVIEW_MIN = 0.3F;
+    private static final float PREVIEW_RANGE = 0.5F;
+    private static final int PREVIEW_PERIOD = 1100;
     private static final float XP_GAP = 6.0F;
     private static final float XP_HEIGHT = 2.0F;
     private static final float LEVEL_GAP = 3.0F;
@@ -143,16 +154,21 @@ public final class HudPainter {
         long now = graphics.now();
         graphics.fill(bar, plate);
         for (int slot = 0; slot < SLOTS; slot++) {
-            graphics.border(slotBox(bar, slot), 1.0F, SLOT_BORDER);
+            graphics.border(slotIn(bar, slot), 1.0F, SLOT_BORDER);
         }
         float selection = this.motion.selection(hud.selected(), now);
         float pop = this.motion.selectionScale(now);
-        Box highlight = scaled(slotBox(bar, selection), pop);
+        Box highlight = scaled(slotIn(bar, selection), pop);
         graphics.shadow(highlight, GLOW_BLUR, 0.0F, Theme.accent().glow());
         graphics.fill(highlight, Theme.accent().tint());
         graphics.border(highlight, 1.0F, Theme.accent().light());
+        boolean warn = ArkeaConfig.on(ArkeaConfig.DURABILITY_WARNING);
         for (int slot = 0; slot < SLOTS; slot++) {
-            this.item(graphics, slotBox(bar, slot), hud.hotbar().get(slot), hud.owner(), slot, slot == hud.selected() ? pop : 1.0F);
+            ItemStack stack = hud.hotbar().get(slot);
+            if (warn && Durability.low(stack)) {
+                graphics.border(slotIn(bar, slot), 1.0F, ArkColors.withAlpha(ArkColors.ERROR, pulse(now)));
+            }
+            this.item(graphics, slotIn(bar, slot), stack, hud.owner(), slot, slot == hud.selected() ? pop : 1.0F);
         }
         float sideY = bar.y();
         if (!hud.offhand().isEmpty()) {
@@ -216,7 +232,7 @@ public final class HudPainter {
         graphics.pop();
     }
 
-    static Box hotbarBox(Box screen) {
+    public static Box hotbarBox(Box screen) {
         float width = SLOTS * SLOT + (SLOTS - 1) * SLOT_GAP + HOTBAR_PAD * 2.0F;
         float height = SLOT + HOTBAR_PAD * 2.0F;
         return new Box(screen.centerX() - width * HALF, screen.bottom() - HOTBAR_BOTTOM - height, width, height);
@@ -242,13 +258,44 @@ public final class HudPainter {
         boolean low = hud.low();
         long now = graphics.now();
         this.motion.health().update(hud.health(), now);
-        Meter health = new Meter(HEART_ICON, this.motion.health().value(now), this.motion.health().ghost(now), hud.maxHealth(), healthColor(hud), String.valueOf(Mth.ceil(hud.health())),
-            low ? ArkColors.DANGER_TEXT : ArkColors.TEXT_PRIMARY, extra, ABSORPTION, hud.absorption() / hud.maxHealth(), ABSORPTION, low);
+        Meter health = new Meter(HEART_ICON, this.motion.health().value(now), this.motion.health().ghost(now), 0.0F, hud.maxHealth(), healthColor(hud),
+            String.valueOf(Mth.ceil(hud.health())), low ? ArkColors.DANGER_TEXT : ArkColors.TEXT_PRIMARY, extra, ABSORPTION, hud.absorption() / hud.maxHealth(),
+            0.0F, ABSORPTION, low);
         meter(graphics, plate, settings, health, false);
+        float top = plate.y();
         if (hud.armor() > 0) {
             Box row = new Box(x, plate.y() - ROW_GAP - THIN_ROW, STATUS_WIDTH, THIN_ROW);
             thin(graphics, row, ARMOR_FULL, hud.armor() / HudSnapshot.MAX_ARMOR, ARMOR, String.valueOf(hud.armor()), ArkColors.TEXT_SOFT, false);
+            top = row.y();
         }
+        armorIcons(graphics, x + PAD_X, top - ROW_GAP, hud);
+    }
+
+    private static void armorIcons(UiGraphics graphics, float x, float bottom, HudSnapshot hud) {
+        if (!ArkeaConfig.on(ArkeaConfig.ARMOR_ICONS) || hud.armorItems().isEmpty()) {
+            return;
+        }
+        float y = bottom - ARMOR_BAR - ARMOR_BAR_GAP - ARMOR_ICON;
+        boolean warn = ArkeaConfig.on(ArkeaConfig.DURABILITY_WARNING);
+        for (ItemStack stack : hud.armorItems()) {
+            Box icon = new Box(x, y, ARMOR_ICON, ARMOR_ICON);
+            graphics.vanilla(icon, ITEM_PIXELS, vanilla -> vanilla.fakeItem(stack, 0, 0));
+            if (stack.isDamageableItem()) {
+                float share = Durability.remaining(stack) / (float) stack.getMaxDamage();
+                float barY = icon.bottom() + ARMOR_BAR_GAP;
+                graphics.fill(x, barY, ARMOR_ICON, ARMOR_BAR, THIN_TRACK);
+                graphics.fill(x, barY, ARMOR_ICON * share, ARMOR_BAR, ArkColors.withAlpha(stack.getBarColor(), 1.0F));
+                if (warn && Durability.low(stack)) {
+                    graphics.border(new Box(x - 1.0F, y - 1.0F, ARMOR_ICON + 2.0F, ARMOR_ICON + ARMOR_BAR_GAP + ARMOR_BAR + 2.0F), 1.0F,
+                        ArkColors.withAlpha(ArkColors.ERROR, pulse(graphics.now())));
+                }
+            }
+            x += ARMOR_ICON + ARMOR_ICON_GAP;
+        }
+    }
+
+    private static float pulse(long now) {
+        return PREVIEW_MIN + PREVIEW_RANGE * (Mth.sin((float) (now % PREVIEW_PERIOD) / PREVIEW_PERIOD * Mth.TWO_PI) + 1.0F) * HALF;
     }
 
     private void drawRight(UiGraphics graphics, Box screen, HudSnapshot hud, HudSettings settings) {
@@ -262,8 +309,8 @@ public final class HudPainter {
         float x = screen.right() - MARGIN - STATUS_WIDTH;
         Box plate = new Box(x, screen.bottom() - MARGIN - PLATE_HEIGHT, STATUS_WIDTH, PLATE_HEIGHT);
         if (hud.riding()) {
-            Meter vehicle = new Meter(VEHICLE_FULL, hud.vehicleHealth(), hud.vehicleHealth(), hud.vehicleMaxHealth(), VEHICLE, String.valueOf(Mth.ceil(hud.vehicleHealth())),
-                ArkColors.TEXT_PRIMARY, null, VEHICLE, 0.0F, VEHICLE, false);
+            Meter vehicle = new Meter(VEHICLE_FULL, hud.vehicleHealth(), hud.vehicleHealth(), 0.0F, hud.vehicleMaxHealth(), VEHICLE,
+                String.valueOf(Mth.ceil(hud.vehicleHealth())), ArkColors.TEXT_PRIMARY, null, VEHICLE, 0.0F, 0.0F, VEHICLE, false);
             meter(graphics, plate, settings, vehicle, true);
         } else {
             int color = hud.hungerEffect() ? FOOD_HUNGER : FOOD;
@@ -271,8 +318,12 @@ public final class HudPainter {
             boolean hungry = hud.food() <= HudSnapshot.MAX_FOOD * LOW_SHARE;
             long now = graphics.now();
             this.motion.food().update(hud.food(), now);
-            Meter food = new Meter(icon, this.motion.food().value(now), this.motion.food().ghost(now), HudSnapshot.MAX_FOOD, color, String.valueOf(hud.food()),
-                hungry ? ArkColors.WARNING_TEXT : ArkColors.TEXT_PRIMARY, null, SATURATION, hud.saturation() / HudSnapshot.MAX_FOOD, SATURATION, false);
+            boolean preview = ArkeaConfig.on(ArkeaConfig.FOOD_PREVIEW) && hud.previewFood() > 0;
+            float after = preview ? Math.min(HudSnapshot.MAX_FOOD, hud.food() + hud.previewFood()) : 0.0F;
+            float saturationAfter = preview ? Math.min(after, hud.saturation() + hud.previewSaturation()) : 0.0F;
+            Meter food = new Meter(icon, this.motion.food().value(now), this.motion.food().ghost(now), after, HudSnapshot.MAX_FOOD, color,
+                String.valueOf(hud.food()), hungry ? ArkColors.WARNING_TEXT : ArkColors.TEXT_PRIMARY, null, SATURATION, hud.saturation() / HudSnapshot.MAX_FOOD,
+                saturationAfter / HudSnapshot.MAX_FOOD, SATURATION, false);
             meter(graphics, plate, settings, food, true);
         }
         if (hud.survival() && hud.airVisible()) {
@@ -316,6 +367,9 @@ public final class HudPainter {
                 Identifier icon = halves < hud.armor() ? ARMOR_FULL : halves == hud.armor() ? ARMOR_HALF : ARMOR_EMPTY;
                 sprite(graphics, icon, armor.x() + CLASSIC_PAD + index * SPRITE_STEP, armor.y() + CLASSIC_PAD);
             }
+            armorIcons(graphics, plate.x() + CLASSIC_PAD, armor.y() - CLASSIC_GAP, hud);
+        } else {
+            armorIcons(graphics, plate.x() + CLASSIC_PAD, plate.y() - CLASSIC_GAP, hud);
         }
     }
 
@@ -342,6 +396,8 @@ public final class HudPainter {
             Identifier full = hud.hungerEffect() ? FOOD_FULL_HUNGER : FOOD_FULL;
             Identifier half = hud.hungerEffect() ? FOOD_HALF_HUNGER : FOOD_HALF;
             Identifier empty = hud.hungerEffect() ? FOOD_EMPTY_HUNGER : FOOD_EMPTY;
+            int after = ArkeaConfig.on(ArkeaConfig.FOOD_PREVIEW) ? Math.min((int) HudSnapshot.MAX_FOOD, hud.food() + hud.previewFood()) : hud.food();
+            int pulse = ARGB.white(pulse(graphics.now()));
             for (int index = 0; index < HEARTS_PER_ROW; index++) {
                 float x = plate.right() - CLASSIC_PAD - SPRITE - index * SPRITE_STEP;
                 float y = plate.y() + CLASSIC_PAD;
@@ -349,6 +405,8 @@ public final class HudPainter {
                 int halves = index * 2 + 1;
                 if (halves <= hud.food()) {
                     sprite(graphics, halves < hud.food() ? full : half, x, y);
+                } else if (halves <= after) {
+                    sprite(graphics, halves < after ? full : half, x, y, SPRITE, pulse);
                 }
             }
         }
@@ -406,11 +464,20 @@ public final class HudPainter {
         float barX = mirrored ? valueX + valueWidth + ICON_GAP : iconX + ICON + ICON_GAP;
         float barWidth = plate.width() - PAD_X * 2.0F - ICON - valueWidth - ICON_GAP * 2.0F;
         Box bar = new Box(barX, centerY - BAR * HALF, barWidth, BAR);
+        segments(graphics, bar, 0.0F, BAR, meter.color(), TRACK, mirrored);
         if (meter.ghost() > meter.value()) {
-            segments(graphics, bar, meter.ghost() / meter.max(), BAR, GHOST, TRACK, mirrored);
-            segments(graphics, bar, meter.value() / meter.max(), BAR, meter.color(), ArkColors.TRANSPARENT, mirrored);
-        } else {
-            segments(graphics, bar, meter.value() / meter.max(), BAR, meter.color(), TRACK, mirrored);
+            segments(graphics, bar, meter.ghost() / meter.max(), BAR, GHOST, ArkColors.TRANSPARENT, mirrored);
+        }
+        float pulse = pulse(graphics.now());
+        if (meter.preview() > meter.value()) {
+            segments(graphics, bar, meter.preview() / meter.max(), BAR, ArkColors.multiplyAlpha(meter.color(), pulse), ArkColors.TRANSPARENT, mirrored);
+        }
+        segments(graphics, bar, meter.value() / meter.max(), BAR, meter.color(), ArkColors.TRANSPARENT, mirrored);
+        float previewOverlay = Math.clamp(meter.previewOverlay(), 0.0F, 1.0F);
+        if (previewOverlay > meter.overlay()) {
+            float width = bar.width() * previewOverlay;
+            graphics.fill(mirrored ? bar.right() - width : bar.x(), bar.y() - OVERLAY_LINE, width, OVERLAY_LINE,
+                ArkColors.multiplyAlpha(meter.overlayColor(), pulse));
         }
         float overlay = Math.clamp(meter.overlay(), 0.0F, 1.0F);
         if (overlay > 0.0F) {
@@ -452,8 +519,12 @@ public final class HudPainter {
     }
 
     private static void sprite(UiGraphics graphics, Identifier sprite, float x, float y, float size) {
+        sprite(graphics, sprite, x, y, size, ARGB.white(1.0F));
+    }
+
+    private static void sprite(UiGraphics graphics, Identifier sprite, float x, float y, float size, int color) {
         graphics.vanilla(new Box(x, y, size, size), SPRITE_PIXELS,
-            vanilla -> vanilla.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, 0, 0, SPRITE_PIXELS, SPRITE_PIXELS));
+            vanilla -> vanilla.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, 0, 0, SPRITE_PIXELS, SPRITE_PIXELS, color));
     }
 
     private void item(UiGraphics graphics, Box slot, ItemStack stack, @Nullable Player owner, int index, float extraScale) {
@@ -505,7 +576,11 @@ public final class HudPainter {
         graphics.endClip();
     }
 
-    private static Box slotBox(Box bar, float slot) {
+    public static Box slot(Box screen, int slot) {
+        return slotIn(hotbarBox(screen), slot);
+    }
+
+    private static Box slotIn(Box bar, float slot) {
         return new Box(bar.x() + HOTBAR_PAD + slot * (SLOT + SLOT_GAP), bar.y() + HOTBAR_PAD, SLOT, SLOT);
     }
 
@@ -515,7 +590,7 @@ public final class HudPainter {
         return new Box(box.centerX() - width * HALF, box.centerY() - height * HALF, width, height);
     }
 
-    private record Meter(Identifier icon, float value, float ghost, float max, int color, String text, int textColor, @Nullable String extra, int extraColor, float overlay,
-        int overlayColor, boolean pulse) {
+    private record Meter(Identifier icon, float value, float ghost, float preview, float max, int color, String text, int textColor, @Nullable String extra,
+        int extraColor, float overlay, float previewOverlay, int overlayColor, boolean pulse) {
     }
 }
