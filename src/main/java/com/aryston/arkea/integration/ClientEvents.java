@@ -5,11 +5,15 @@ import com.aryston.arkea.api.config.ModConfigScreens;
 import com.aryston.arkea.config.ArkeaConfig;
 import com.aryston.arkea.debug.UiCheck;
 import com.aryston.arkea.mixin.ConfigurationScreenAccessor;
+import com.aryston.arkea.mixin.StatsScreenAccessor;
 import com.aryston.arkea.mixin.JoinMultiplayerScreenAccessor;
 import com.aryston.arkea.mixin.ModListScreenAccessor;
 import com.aryston.arkea.mixin.OptionsSubScreenAccessor;
 import com.aryston.arkea.mixin.SelectWorldScreenAccessor;
+import com.aryston.arkea.screen.game.ArkStatsScreen;
+import com.aryston.arkea.screen.game.PauseExtras;
 import com.aryston.arkea.screen.loading.LoadingSkin;
+import com.aryston.arkea.screen.vanilla.VanillaSkins;
 import com.aryston.arkea.screen.loading.Reconnect;
 import com.aryston.arkea.screen.mods.ArkModsScreen;
 import com.aryston.arkea.screen.options.ArkAccessibilityScreen;
@@ -47,6 +51,7 @@ import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.minecraft.client.gui.screens.achievement.StatsScreen;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.modlist.ModListScreen;
 import net.neoforged.neoforge.client.event.ScreenEvent;
@@ -76,6 +81,12 @@ public final class ClientEvents {
     }
 
     private static void onScreenInit(ScreenEvent.Init.Post event) {
+        if (ArkeaConfig.IN_GAME_SCREENS.get()) {
+            Button helion = PauseExtras.button(event.getScreen());
+            if (helion != null) {
+                event.addListener(helion);
+            }
+        }
         if (!ArkeaConfig.MENU_SCREENS.get()) {
             return;
         }
@@ -98,7 +109,12 @@ public final class ClientEvents {
         if (ArkeaConfig.MENU_SCREENS.get() && LoadingSkin.handles(screen)) {
             event.setCanceled(true);
             LOADING_SKIN.render(screen, event.getGuiGraphics(), event.getMouseX(), event.getMouseY(), event.getPartialTick());
+            return;
         }
+        VanillaSkins.find(screen).ifPresent(skin -> {
+            event.setCanceled(true);
+            skin.render(screen, event.getGuiGraphics(), event.getMouseX(), event.getMouseY(), event.getPartialTick());
+        });
     }
 
     private static void onScreenOpening(ScreenEvent.Opening event) {
@@ -115,6 +131,8 @@ public final class ClientEvents {
             event.setNewScreen(new ArkCreateWorldScreen((CreateWorldScreen) screen));
         } else if (screen.getClass() == ModListScreen.class && ArkeaConfig.MENU_SCREENS.get()) {
             event.setNewScreen(new ArkModsScreen(((ModListScreenAccessor) screen).arkea$lastScreen()));
+        } else if (screen.getClass() == StatsScreen.class && ArkeaConfig.IN_GAME_SCREENS.get()) {
+            event.setNewScreen(new ArkStatsScreen(((StatsScreenAccessor) screen).arkea$lastScreen()));
         } else if (screen.getClass() == ConfigurationScreen.class && ArkeaConfig.MOD_CONFIG_SCREENS.get()) {
             Screen parent = ((OptionsSubScreenAccessor) screen).arkea$lastScreen();
             event.setNewScreen(ModConfigScreens.forMod(((ConfigurationScreenAccessor) screen).arkea$mod(), parent));

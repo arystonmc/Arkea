@@ -6,6 +6,7 @@ import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
 final class UiCheckConfig {
+    static final String SAMPLE_LINK = "https://github.com/lureidcom/Arkea";
     private static final String HELION = "helion";
 
     private UiCheckConfig() {

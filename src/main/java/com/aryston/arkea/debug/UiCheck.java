@@ -7,6 +7,7 @@ import com.aryston.arkea.screen.palette.CommandPaletteScreen;
 import com.aryston.arkea.ui.screen.ArkScreen;
 import com.aryston.arkea.ui.widget.ArkWidget;
 import com.mojang.blaze3d.platform.InputConstants;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -14,13 +15,19 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.DisconnectedScreen;
 import net.minecraft.client.gui.screens.GenericMessageScreen;
+import net.minecraft.client.gui.screens.ConfirmLinkScreen;
+import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.gui.screens.multiplayer.SafetyScreen;
+import net.minecraft.client.gui.screens.telemetry.TelemetryInfoScreen;
+import net.minecraft.client.gui.screens.CreditsAndAttributionScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
@@ -37,6 +44,7 @@ public final class UiCheck {
     private static final int START_DELAY_TICKS = 100;
     private static final int SETTLE_TICKS = 30;
     private static final int ACTION_SETTLE_TICKS = 20;
+    private static final int AWAIT_TICKS = 20;
     private static final int SCREENSHOT_DOWNSCALE = 1;
     private static final String SCREENSHOT_PREFIX = "arkea_";
 
@@ -78,13 +86,26 @@ public final class UiCheck {
             minecraft.stop();
             return;
         }
-        Step step = this.steps.get(this.next++);
+        Step step = this.steps.get(this.next);
+        if (!step.ready().test(minecraft)) {
+            this.wait = AWAIT_TICKS;
+            return;
+        }
+        this.next++;
         Arkea.LOGGER.info("Arkea interface check: {}", step.name());
         step.action().accept(minecraft);
         this.wait = step.opensScreen() ? SETTLE_TICKS : ACTION_SETTLE_TICKS;
     }
 
-    record Step(String group, String name, boolean opensScreen, Consumer<Minecraft> action) {
+    record Step(String group, String name, boolean opensScreen, Consumer<Minecraft> action, Predicate<Minecraft> ready) {
+        Step(String group, String name, boolean opensScreen, Consumer<Minecraft> action) {
+            this(group, name, opensScreen, action, minecraft -> true);
+        }
+
+        static Step await(String group, String name, Predicate<Minecraft> condition) {
+            return new Step(group, name, true, minecraft -> { }, condition);
+        }
+
         static Step screen(String group, String name, Function<Screen, Screen> factory) {
             return new Step(group, name, true, minecraft -> minecraft.gui.setScreen(factory.apply(new TitleScreen())));
         }
@@ -155,6 +176,18 @@ public final class UiCheck {
             Step.press("gallery", "gallery_progress", "gallery:progress"),
             Step.key("gallery", "gallery_after_progress", InputConstants.KEY_ESCAPE),
             Step.screen("config", "config_neoforge", parent -> ModConfigScreens.forMod(ModList.get().getModContainerById("neoforge").orElseThrow(), parent)),
+            new Step("game", "game_create", true, minecraft -> CreateWorldScreen.openFresh(minecraft, () -> minecraft.gui.setScreen(new TitleScreen()))),
+            Step.press("game", "game_start", "create"),
+            Step.await("game", "game_loaded", minecraft -> minecraft.level != null && minecraft.player != null && minecraft.gui.screen() == null),
+            new Step("game", "game_pause", true, minecraft -> minecraft.gui.setScreen(new PauseScreen(true))),
+            new Step("game", "game_stats", true, UiCheckGame::stats),
+            new Step("game", "game_death", true, UiCheckGame::death),
+            new Step("game", "game_debug", false, UiCheckGame::debug),
+            new Step("game", "game_chat", true, UiCheckGame::chat),
+            Step.screen("vanilla", "vanilla_telemetry", parent -> new TelemetryInfoScreen(parent, Minecraft.getInstance().options)),
+            Step.screen("vanilla", "vanilla_credits", CreditsAndAttributionScreen::new),
+            Step.screen("vanilla", "vanilla_safety", SafetyScreen::new),
+            Step.screen("vanilla", "vanilla_link", parent -> new ConfirmLinkScreen(accepted -> { }, URI.create(UiCheckConfig.SAMPLE_LINK), true)),
             Step.screen("helion", "helion_general", parent -> UiCheckConfig.helion(parent)),
             Step.press("helion", "helion_rendering", "nav:rendering"),
             Step.press("helion", "helion_lighting", "nav:lighting"),

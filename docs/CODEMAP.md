@@ -46,6 +46,9 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 | Config screen library for other mods | `ArkeaConfigScreen`, `ConfigOption`, `ModConfigScreens`, `ArkConfigScreen` |
 | Radio, stepper, chips, range, color picker, context menu, side sheet, preview | `ArkRadio`, `ArkStepper`, `ArkChip`, `ArkRangeSlider`, `ColorPickerPopup`, `ArkContextMenu`, `ArkSideSheet`, `ArkCompareView` |
 | Component gallery | `ArkGalleryScreen` |
+| Arkea look of every other screen and of other mods | `VanillaTheme`, theme mixins, `DialogSkin` |
+| Pause, death and statistics screens | `PauseSkin`, `PauseCard`, `DeathSkin`, `ArkStatsScreen` |
+| F3 debug cards, chat bar | `DebugCards`, `DebugScreenOverlayMixin`, `ChatScreenMixin`, `VanillaTheme.chatBar` |
 | Jump back in card, splash text | `JumpBackInCard`, `SplashText`, `RecentWorld`, `LastPlayed` |
 | Texts | `src/main/resources/assets/arkea/lang/` |
 | Mod name, version, loader versions, license, authors | `gradle.properties` |
@@ -1033,6 +1036,57 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 - Path: `src/main/java/com/aryston/arkea/screen/gallery/PaintRow.java`
 - Role: Gallery row that runs a painter inside a row frame.
 
+### `com.aryston.arkea.screen.vanilla`
+
+#### VanillaTheme
+- Path: `src/main/java/com/aryston/arkea/screen/vanilla/VanillaTheme.java`
+- Role: Arkea look for the widgets of every screen Arkea does not replace (vanilla and other mods): buttons (Done, Yes, Proceed and Continue as primary), slider tracks and handles, text fields and text areas, checkboxes, list backgrounds, header and footer separators, scrollbars, menu tabs, the menu background and the chat input bar, with hover animations and the accent color. Vanilla keeps the labels, layout and behavior. Inactive in container screens and when the Arkea Style Everywhere switch is off.
+
+#### VanillaSkin
+- Path: `src/main/java/com/aryston/arkea/screen/vanilla/VanillaSkin.java`
+- Role: Base of screens that keep their vanilla instance but are drawn by Arkea: cancels nothing itself, draws the background, opens a design pixel frame and offers `Frame` helpers that move vanilla widgets to design boxes (so they stay the input targets) and paint them.
+
+#### VanillaSkins
+- Path: `src/main/java/com/aryston/arkea/screen/vanilla/VanillaSkins.java`
+- Role: The skins `ClientEvents` asks in `ScreenEvent.Render.Pre`: dialogs, pause and death.
+
+#### DialogSkin
+- Path: `src/main/java/com/aryston/arkea/screen/vanilla/DialogSkin.java`
+- Role: Draws confirm, link, alert, popup, warning (multiplayer safety) and backup screens as an Arkea dialog: tone icon, wrapped title, the texts of the screen, its checkboxes and its buttons right aligned. Only screens whose children are buttons and text widgets are drawn this way.
+
+### `com.aryston.arkea.screen.game`
+
+#### PauseSkin
+- Path: `src/main/java/com/aryston/arkea/screen/game/PauseSkin.java`
+- Role: Pause menu of the design over the vanilla `PauseScreen` (kept because the game checks `instanceof PauseScreen`): world name, title, Back to Game, a grid of tiles for every vanilla and mod button, small icon buttons (bug report, feedback, friends, player reporting), Mods and the red Save and Quit, plus the world card. Rows stagger in.
+- Notes: F3 + Esc (no menu) stays vanilla.
+
+#### PauseCard
+- Path: `src/main/java/com/aryston/arkea/screen/game/PauseCard.java`
+- Role: World card of the pause menu: world icon or server icon, day, clock and weather, game mode, difficulty, players, dimension, and whether the world is local.
+
+#### PauseExtras
+- Path: `src/main/java/com/aryston/arkea/screen/game/PauseExtras.java`
+- Role: Adds a Helion Graphics button to the pause menu when Helion is installed.
+
+#### DeathSkin
+- Path: `src/main/java/com/aryston/arkea/screen/game/DeathSkin.java`
+- Role: Death screen of the design over the vanilla `DeathScreen` (kept for the game's `instanceof` checks): red tint and vignette, large title, cause and score fading in late, Respawn and Title Screen buttons that keep the vanilla one second delay.
+
+#### ArkStatsScreen
+- Path: `src/main/java/com/aryston/arkea/screen/game/ArkStatsScreen.java`
+- Role: Statistics window of the design: world name, General, Items and Mobs tabs, two column general stats, item table with sortable columns and item icons, mob rows with kill bars; requests the stats like vanilla and shows a spinner until they arrive.
+
+#### StatsData
+- Path: `src/main/java/com/aryston/arkea/screen/game/StatsData.java`
+- Role: Reads general, item and mob statistics from the `StatsCounter`.
+
+### `com.aryston.arkea.screen.debug`
+
+#### DebugCards
+- Path: `src/main/java/com/aryston/arkea/screen/debug/DebugCards.java`
+- Role: Draws the F3 debug lines as compact cards: every group of lines between empty lines becomes a card with an accent bar on the screen edge, the first line as its title. Follows the debug screen scale option. Active while the Arkea Debug Screen switch is on.
+
 ### `com.aryston.arkea.mixin`
 
 #### SplashRendererAccessor
@@ -1080,6 +1134,27 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 - Path: `src/main/java/com/aryston/arkea/mixin/ConfigurationScreenAccessor.java`
 - Role: Reads the mod of a NeoForge `ConfigurationScreen` so `ClientEvents` can open the Arkea screen of the same mod. No event or getter exposes it.
 
+#### AbstractButtonMixin, AbstractSliderButtonMixin, EditBoxMixin, CheckboxMixin, AbstractTextAreaWidgetMixin, AbstractSelectionListMixin, AbstractScrollAreaMixin, MenuTabButtonMixin, ScreenMixin, GuiGraphicsExtractorMixin
+- Path: `src/main/java/com/aryston/arkea/mixin/AbstractButtonMixin.java`, `src/main/java/com/aryston/arkea/mixin/AbstractSliderButtonMixin.java`, `src/main/java/com/aryston/arkea/mixin/EditBoxMixin.java`, `src/main/java/com/aryston/arkea/mixin/CheckboxMixin.java`, `src/main/java/com/aryston/arkea/mixin/AbstractTextAreaWidgetMixin.java`, `src/main/java/com/aryston/arkea/mixin/AbstractSelectionListMixin.java`, `src/main/java/com/aryston/arkea/mixin/AbstractScrollAreaMixin.java`, `src/main/java/com/aryston/arkea/mixin/MenuTabButtonMixin.java`, `src/main/java/com/aryston/arkea/mixin/ScreenMixin.java`, `src/main/java/com/aryston/arkea/mixin/GuiGraphicsExtractorMixin.java`
+- Role: Replace the sprite and texture drawing of vanilla widgets, lists, tabs, the menu background and the header and footer separators with `VanillaTheme` while it is active; labels and behavior stay vanilla.
+- Notes: No NeoForge event exposes widget drawing. `GuiGraphicsExtractorMixin` sits on a frequent `blit` overload and only compares the texture with the four separator textures before returning.
+
+#### AlertScreenAccessor, BackupConfirmScreenAccessor, DeathScreenAccessor, StatsScreenAccessor
+- Path: `src/main/java/com/aryston/arkea/mixin/AlertScreenAccessor.java`
+- Role: Read the private message of alerts, the description of the backup prompt, the cause and score of the death screen and the previous screen of the statistics screen. Paths of the others: `src/main/java/com/aryston/arkea/mixin/BackupConfirmScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/DeathScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/StatsScreenAccessor.java`.
+
+#### ClientPacketListenerMixin
+- Path: `src/main/java/com/aryston/arkea/mixin/ClientPacketListenerMixin.java`
+- Role: Tells `ArkStatsScreen` when the statistics arrive; vanilla only notifies `StatsScreen`.
+
+#### DebugScreenOverlayMixin
+- Path: `src/main/java/com/aryston/arkea/mixin/DebugScreenOverlayMixin.java`
+- Role: Hands the left and right F3 line lists to `DebugCards` instead of the vanilla text with gray bars. Charts and the profiler stay vanilla.
+
+#### ChatScreenMixin
+- Path: `src/main/java/com/aryston/arkea/mixin/ChatScreenMixin.java`
+- Role: Replaces the black fill behind the chat input with `VanillaTheme.chatBar`. Suggestions, the command preview and chat messages stay vanilla.
+
 ### `com.aryston.arkea.screen.palette`
 
 #### CommandPaletteScreen
@@ -1112,11 +1187,11 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### UiCheck
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheck.java`
-- Role: Developer check (`-Define arkea.uiCheck=all` or a comma list of groups: title, options, worlds, create, servers, mods, loading, toasts, gallery, config, helion). Opens screens, presses widgets by key, sends keys, saves a screenshot after every step as `screenshots/arkea_<step>.png` and closes the game. Does nothing in production.
+- Role: Developer check (`-Define arkea.uiCheck=all` or a comma list of groups: title, options, worlds, create, servers, mods, loading, toasts, gallery, config, helion, vanilla, game). `Step.await` waits for a condition such as a loaded world. Opens screens, presses widgets by key, sends keys, saves a screenshot after every step as `screenshots/arkea_<step>.png` and closes the game. Does nothing in production.
 
-#### UiCheckToasts, UiCheckLoading, UiCheckServers, UiCheckConfig
-- Path: `src/main/java/com/aryston/arkea/debug/UiCheckToasts.java`, `src/main/java/com/aryston/arkea/debug/UiCheckLoading.java`, `src/main/java/com/aryston/arkea/debug/UiCheckServers.java`, `src/main/java/com/aryston/arkea/debug/UiCheckConfig.java`
-- Role: Check helpers: sample toasts, a progress screen and a connection to an unroutable address (cancelled again), temporary sample servers that are removed at the end, and the config screen of Helion when it is installed.
+#### UiCheckToasts, UiCheckLoading, UiCheckServers, UiCheckConfig, UiCheckGame
+- Path: `src/main/java/com/aryston/arkea/debug/UiCheckToasts.java`, `src/main/java/com/aryston/arkea/debug/UiCheckLoading.java`, `src/main/java/com/aryston/arkea/debug/UiCheckServers.java`, `src/main/java/com/aryston/arkea/debug/UiCheckConfig.java`, `src/main/java/com/aryston/arkea/debug/UiCheckGame.java`
+- Role: Check helpers: sample toasts, a progress screen and a connection to an unroutable address (cancelled again), temporary sample servers that are removed at the end, the config screen of Helion when it is installed, and the statistics, death, F3 and chat screens in a fresh world.
 
 ## Tests
 

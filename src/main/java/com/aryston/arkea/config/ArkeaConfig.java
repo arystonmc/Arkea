@@ -29,6 +29,14 @@ public final class ArkeaConfig {
         .translation("arkea.configuration.modConfigScreens")
         .define("modConfigScreens", true);
 
+    public static final ModConfigSpec.BooleanValue VANILLA_THEME = BUILDER
+        .translation("arkea.configuration.vanillaTheme")
+        .define("vanillaTheme", true);
+
+    public static final ModConfigSpec.BooleanValue DEBUG_OVERLAY = BUILDER
+        .translation("arkea.configuration.debugOverlay")
+        .define("debugOverlay", true);
+
     public static final ModConfigSpec.BooleanValue GAME_TOASTS = BUILDER
         .translation("arkea.configuration.gameToasts")
         .define("gameToasts", true);

@@ -34,6 +34,10 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 - Show the settings of every mod in the Arkea style
 - Add a Component Gallery for mod developers
 - Add a reset button and badges to setting rows
+- Add Arkea pause, death and statistics screens
+- Draw every other screen and other mods' screens with Arkea buttons, sliders, fields, lists and backgrounds
+- Show confirmations, link warnings, alerts and backup prompts as Arkea dialogs
+- Show the F3 debug information as Arkea cards and draw the chat bar in the Arkea style
 
 ### Fixed
 - Keep key bindings with Ctrl, Shift or Alt after a restart

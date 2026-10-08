@@ -140,6 +140,34 @@ Arkea is a library: other mods build their screens with the same components.
 - Developer guide: `docs/API.md`
 - Since: 0.1
 
+### Pause, Death and Statistics
+The screens you see while playing match the rest of Arkea.
+
+- Pause menu with a big Back to Game button, tiles for every action (buttons added by other mods included), a red Save and Quit, and a card with the world picture, day, time, weather, game mode, difficulty, players and dimension
+- A Helion Graphics button in the pause menu when Helion is installed
+- Death screen with a red vignette, the cause and score fading in, and Respawn and Title Screen buttons
+- Statistics window with General, Items and Mobs tabs, sortable item columns with item icons and kill bars for every mob
+- Turn it off on the Arkea page of the options (In-Game Screens)
+- Since: 0.1
+
+### Debug Screen and Chat Bar
+F3 and the chat input match Arkea.
+
+- F3 information grouped in compact cards with an accent edge, following the debug screen scale option
+- Charts, the profiler and the chunk map stay vanilla
+- The chat input bar is drawn as an Arkea field with an accent glow
+- Turn the debug cards off on the Arkea page of the options (Arkea Debug Screen); the chat bar follows Arkea Style Everywhere
+- Since: 0.1
+
+### Arkea Style Everywhere
+Screens that Arkea does not redesign still look like Arkea.
+
+- Buttons, sliders, text fields, checkboxes, lists, tabs, scrollbars and backgrounds of every other screen, from vanilla or from other mods, use the Arkea style and accent color
+- Confirmations, link warnings, alerts, the online play warning and backup prompts open as Arkea dialogs
+- Inventories and containers keep the vanilla look
+- Turn it off on the Arkea page of the options
+- Since: 0.1
+
 ### Command Palette
 Jump anywhere with the keyboard.
 

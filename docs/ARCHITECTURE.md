@@ -62,6 +62,14 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 - Slow world operations (backup, delete, rename, measuring sizes) run on the IO pool and report with menu toasts; dialogs carry custom content through `DialogForm`, and the delete dialog shows the world image as a hero.
 - Menu toasts (`ArkToasts`) live outside any screen, so a toast started on one screen finishes on the next; every `ArkScreen` draws them above its content and below dialogs, and a click on a toast is handled before the content.
 
+## In-Game Screens and Vanilla Skins
+
+- `PauseScreen` and `DeathScreen` are never replaced: the game checks `instanceof PauseScreen` (toasts, pausing, F3 + Esc) and `instanceof DeathScreen` (HUD, respawn packets). Like the loading screens, `ClientEvents` cancels `ScreenEvent.Render.Pre` for them and a `VanillaSkin` draws the design. Vanilla widgets stay the input targets; every frame the skin moves them to the boxes it draws, so keyboard focus, narration, delays (respawn after one second), draft report checks and buttons added by other mods keep working.
+- `StatsScreen` is replaced by `ArkStatsScreen`; the only game code that knows it is the stats packet handler, which `ClientPacketListenerMixin` extends.
+- `DialogSkin` draws confirm, link, alert, popup, warning and backup screens as Arkea dialogs when all their children are buttons and text widgets.
+- Every other screen keeps its vanilla layout. `VanillaTheme` and the theme mixins replace only the sprites and textures of its widgets, lists, tabs, separators and background, so mod screens built from vanilla widgets look like Arkea too. Container screens are left alone.
+- The HUD stays vanilla except two parts drawn through narrow mixins: `DebugScreenOverlayMixin` hands the F3 lines to `DebugCards` (inside the pose the overlay scaled for its own scale option, so the cards build a `UiScale` from that width), and `ChatScreenMixin` redirects the one fill behind the chat input.
+
 ## Config Windows
 
 - `ArkeaConfigScreen.Builder` collects groups, pages, sections and options into a `Definition`. `ArkConfigScreen.open` creates a `ConfigSession` and the screen of the first page that has options. Every page is its own `ArkConfigScreen` sharing the session, so switching pages plays the content animation of `switchTo` and keeps unapplied values, expanded sections and text field states.

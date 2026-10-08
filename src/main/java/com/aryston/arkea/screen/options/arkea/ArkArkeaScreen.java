@@ -104,6 +104,12 @@ public final class ArkArkeaScreen extends OptionsPageScreen {
         this.toggle(screens, new ItemContent(Icons.PACK, Component.translatable("arkea.configuration.modConfigScreens"),
             Component.translatable("arkea.settings.modConfig.description")), ArkeaConfig.MOD_CONFIG_SCREENS::get,
             value -> ArkeaConfig.set(ArkeaConfig.MOD_CONFIG_SCREENS, value), true);
+        this.toggle(screens, new ItemContent(Icons.BLEND, Component.translatable("arkea.configuration.vanillaTheme"),
+            Component.translatable("arkea.settings.vanillaTheme.description")), ArkeaConfig.VANILLA_THEME::get,
+            value -> ArkeaConfig.set(ArkeaConfig.VANILLA_THEME, value), true);
+        this.toggle(screens, new ItemContent(Icons.CHUNKS, Component.translatable("arkea.configuration.debugOverlay"),
+            Component.translatable("arkea.settings.debugOverlay.description")), ArkeaConfig.DEBUG_OVERLAY::get,
+            value -> ArkeaConfig.set(ArkeaConfig.DEBUG_OVERLAY, value), true);
         SettingsSection developers = settings.section(this.section("developers"), true);
         this.link(developers, new ItemContent(Icons.LAYERS, Component.translatable("arkea.gallery.title"), Component.translatable("arkea.gallery.link")),
             Component.translatable("arkea.gallery.open"), () -> this.switchTo(() -> new ArkGalleryScreen(this)));
