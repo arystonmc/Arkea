@@ -1,0 +1,91 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.aryston.arkea",
+    "module": "arkea-neoforge-26.3",
+    "version": "0.1",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.2.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 25,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "arkea-neoforge-26.3-0.1.jar",
+          "url": "arkea-neoforge-26.3-0.1.jar",
+          "size": 3856070,
+          "sha512": "9bd8883ae1fdbb588be50317091d7c332bb30f23ba8c08265d0bb5189c2da86a8fe1b8a062cbe6e9790afc9427685496359d1f2df55d28d84f0bee1e209a4dc2",
+          "sha256": "ca44007ed357bedbbb10adfc9e7e676379281346b3eaf4c42c87cc54c24cbce8",
+          "sha1": "c68b94346279ff608244fbd7d838d4b27278d5bf",
+          "md5": "15d760ce434d39e89eda4bc22600a47f"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 25,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.jcodec",
+          "module": "jcodec",
+          "version": {
+            "strictly": "[0.2.5,0.3)",
+            "requires": "[0.2.5,0.3)",
+            "prefers": "0.2.5"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "arkea-neoforge-26.3-0.1.jar",
+          "url": "arkea-neoforge-26.3-0.1.jar",
+          "size": 3856070,
+          "sha512": "9bd8883ae1fdbb588be50317091d7c332bb30f23ba8c08265d0bb5189c2da86a8fe1b8a062cbe6e9790afc9427685496359d1f2df55d28d84f0bee1e209a4dc2",
+          "sha256": "ca44007ed357bedbbb10adfc9e7e676379281346b3eaf4c42c87cc54c24cbce8",
+          "sha1": "c68b94346279ff608244fbd7d838d4b27278d5bf",
+          "md5": "15d760ce434d39e89eda4bc22600a47f"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "arkea-neoforge-26.3-0.1-sources.jar",
+          "url": "arkea-neoforge-26.3-0.1-sources.jar",
+          "size": 986141,
+          "sha512": "cc798cef4e6e7958e1c201284052da7d7992de9bc9612e7503dfc600562d923f8ad1399855434b6d96d545197531d57bba259ac519958ceff84666bd37cc9584",
+          "sha256": "07dabea07c1372ad500dd8e00c19e2fa4217dfdbc1830a8ff2f6daaae9a1da9e",
+          "sha1": "855c3184e58168e10f75792c8b68edcc2089bf26",
+          "md5": "0567406030b680fe01287521395d56bb"
+        }
+      ]
+    }
+  ]
+}
