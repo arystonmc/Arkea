@@ -1,0 +1,23 @@
+name: Feature Request
+description: Propose an enhancement, new UI component, or HUD element for Arkea
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to make Arkea better? Let us know!
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Feature Description
+      description: Clear and concise description of the feature or menu design you propose
+    validations:
+      required: true
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Rationale / Use Case
+      description: Why would this be a great addition to Arkea?
+    validations:
+      required: false
+

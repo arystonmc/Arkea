@@ -1,0 +1,51 @@
+name: Bug Report
+description: Report an issue, layout glitch, or crash in Arkea
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue! Please check existing issues before submitting.
+  - type: input
+    id: environment
+    attributes:
+      label: System Environment
+      description: Your OS and display resolution
+      placeholder: "e.g. Windows 11, 1920x1080 (GUI Scale 3)"
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Game & Mod Versions
+      description: Minecraft version, NeoForge build, and Arkea version
+      placeholder: "e.g. Minecraft 26.3, NeoForge 26.3.0.51-beta, Arkea 0.1"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Problem Description
+      description: What screen or HUD element glitched, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Exact steps to trigger the bug
+      placeholder: |
+        1. Open Options menu
+        2. Click Video Settings
+        3. Switch HUD style to Compact
+    validations:
+      required: true
+  - type: input
+    id: log
+    attributes:
+      label: Log Link
+      description: Upload logs/latest.log to https://mclo.gs and paste the link here
+      placeholder: "https://mclo.gs/..."
+    validations:
+      required: false
+
