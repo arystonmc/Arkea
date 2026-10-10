@@ -1057,6 +1057,7 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 #### ModEntry
 - Path: `src/main/java/com/aryston/arkea/screen/mods/ModEntry.java`
 - Role: A mod container with its NeoForge `ModDisplayInfo` (custom or default), icon resource (the vanilla pack icon for Minecraft), config screen factory and update check result.
+- Notes: For mods without a custom `ModDisplayInfo`, `authors` and `credits` are read from the mod metadata directly and accept a string or a list, because `DefaultModDisplayInfo` casts both to a string and throws a `ClassCastException` for lists (Distant Horizons).
 
 #### ModRow
 - Path: `src/main/java/com/aryston/arkea/screen/mods/ModRow.java`

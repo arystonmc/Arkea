@@ -2,6 +2,8 @@ package com.aryston.arkea.screen.mods;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -18,6 +20,9 @@ record ModEntry(ModContainer container, ModDisplayInfo info) {
     private static final String MOJANG = "Mojang Studios";
     private static final String VANILLA_PACK = "vanilla";
     private static final String PACK_ICON = "pack.png";
+    private static final String AUTHORS_KEY = "authors";
+    private static final String CREDITS_KEY = "credits";
+    private static final String LIST_SEPARATOR = ", ";
 
     static ModEntry of(ModContainer container) {
         ModDisplayInfo info = container.getCustomExtension(ModDisplayInfo.class).orElseGet(() -> new DefaultModDisplayInfo(container));
@@ -37,8 +42,24 @@ record ModEntry(ModContainer container, ModDisplayInfo info) {
     }
 
     Component authors() {
-        Component authors = this.info.authors();
+        Component authors = this.metadata(AUTHORS_KEY, this.info::authors);
         return authors.getString().isEmpty() && this.isGame() ? Component.literal(MOJANG) : authors;
+    }
+
+    Component credits() {
+        return this.metadata(CREDITS_KEY, this.info::credits);
+    }
+
+    private Component metadata(String key, Supplier<Component> custom) {
+        if (!(this.info instanceof DefaultModDisplayInfo)) {
+            return custom.get();
+        }
+        Object value = this.container.getModInfo().getConfig().getConfigElement(key).orElse(null);
+        return switch (value) {
+            case String text -> Component.literal(text);
+            case List<?> names -> Component.literal(names.stream().map(String::valueOf).collect(Collectors.joining(LIST_SEPARATOR)));
+            case null, default -> Component.empty();
+        };
     }
 
     @Nullable ImageResource icon() {

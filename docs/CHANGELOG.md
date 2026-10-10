@@ -6,6 +6,9 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 
 ## Unreleased
 
+### Fixed
+- Fix a crash when opening the Mods screen with mods that list several authors, such as Distant Horizons
+
 ## [0.1] - 2026-10-09
 
 ### Added

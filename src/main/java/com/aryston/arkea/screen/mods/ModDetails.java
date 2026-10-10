@@ -61,7 +61,7 @@ final class ModDetails {
         if (!license.getString().isEmpty()) {
             info.add(new Info(Component.translatable("arkea.mods.license"), license));
         }
-        Component credits = this.entry.info().credits();
+        Component credits = this.entry.credits();
         if (!credits.getString().isEmpty()) {
             info.add(new Info(Component.translatable("arkea.mods.credits"), credits));
         }
