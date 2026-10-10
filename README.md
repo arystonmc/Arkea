@@ -11,6 +11,7 @@
 <p align="center">
   <a href="https://modrinth.com/mod/arkea"><img src="https://img.shields.io/badge/Download_on-Modrinth-00AF5C?style=for-the-badge&logo=modrinth&logoColor=white" alt="Download on Modrinth"></a>
   <a href="https://www.curseforge.com/minecraft/mc-mods/arkea"><img src="https://img.shields.io/badge/Download_on-CurseForge-F16436?style=for-the-badge&logo=curseforge&logoColor=white" alt="Download on CurseForge"></a>
+  <a href="https://lureid.com/mods/arkea"><img src="https://img.shields.io/badge/Website-Aryston-3C8527?style=for-the-badge" alt="Aryston website"></a>
 </p>
 
 <p align="center">
@@ -45,6 +46,8 @@ Every menu is modernized with fluid entrance animations, smooth sliders, and uni
   - Interactive item tooltips (durability bars & shulker grid previews).
 - ⌨️ **Command Palette (Ctrl + K):** Jump to any setting, screen, or recent world instantly.
 - 🧩 **Auto-Theming for Every Mod:** Every mod using NeoForge configuration automatically gains an Arkea settings window.
+- 💬 **Arkea Chat & Tooltips:** Player heads next to chat messages, food and durability details in tooltips, and container contents as a grid.
+- ⏸️ **Pause, Death & Statistics Screens:** A pause menu with a world card, a cinematic death screen and a sortable statistics window.
 
 For the complete list of player features, see the [Arkea Feature Guide](docs/FEATURES.md).
 
@@ -77,6 +80,7 @@ Developer documentation and component guides are available in [docs/API.md](docs
 
 ## Community & Contributing
 
+- **Website:** [lureid.com/mods/arkea](https://lureid.com/mods/arkea) with the [wiki](https://lureid.com/wiki/arkea), [compatibility list](https://lureid.com/mods/arkea/compatibility) and [support](https://lureid.com/support?mod=arkea).
 - Found a bug or have a suggestion? Read [SUPPORT.md](SUPPORT.md) or open an issue on our [Issue Tracker](https://github.com/arystonmc/Arkea/issues).
 - Want to compile or contribute code? Read [CONTRIBUTING.md](CONTRIBUTING.md).
 

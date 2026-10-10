@@ -4,6 +4,8 @@ Need help with Arkea or encountered a problem? Here is how to get support.
 
 ## Getting Help
 
+- **Crash Helper:** Paste your crash report into the [crash helper](https://lureid.com/support/crash) on the Aryston website; it recognises known problems and shows the fix.
+- **Compatibility List:** Check which mods, shaders and resource packs work with Arkea on the [compatibility page](https://lureid.com/mods/arkea/compatibility).
 - **Documentation & Features:** Check the [Arkea Feature Guide](docs/FEATURES.md).
 - **Developer Documentation:** Check the [Arkea API Guide](docs/API.md).
 - **Issue Tracker:** If you found a bug or have a suggestion, search existing issues first on our [GitHub Issues](https://github.com/arystonmc/Arkea/issues).
