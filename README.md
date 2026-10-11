@@ -51,6 +51,19 @@ Every menu is modernized with fluid entrance animations, smooth sliders, and uni
 
 For the complete list of player features, see the [Arkea Feature Guide](docs/FEATURES.md).
 
+## Gallery
+
+<p align="center">
+  <img src="branding/gallery/01-title.jpg" alt="Arkea title screen with Jump back in" width="100%">
+</p>
+
+| | |
+|---|---|
+| <img src="branding/gallery/02-options.jpg" alt="Arkea options window"> | <img src="branding/gallery/03-worlds.jpg" alt="Singleplayer world list"> |
+| <img src="branding/gallery/04-command-palette.jpg" alt="Command palette"> | <img src="branding/gallery/05-hud-styles.jpg" alt="Compact, Classic+ and Minimal HUD styles"> |
+| <img src="branding/gallery/06-in-game.jpg" alt="Target card, pickup feed and HUD extras"> | <img src="branding/gallery/07-tooltips.jpg" alt="Arkea tooltips"> |
+| <img src="branding/gallery/08-pause.jpg" alt="Pause menu"> | <img src="branding/gallery/09-every-mod.jpg" alt="Arkea settings for every mod"> |
+
 ## Requirements
 
 | Requirement | Supported Version |
