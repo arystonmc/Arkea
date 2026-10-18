@@ -63,7 +63,7 @@ Arkea has its own page in the options window, no need to go through the mod list
 
 - Menu background gallery and import
 - Accent color for every Arkea screen: green, emerald, gold or stone
-- Switches for the Arkea title screen, options window, menu screens, in-game screens and mod settings
+- Switches for the Arkea title screen, options window, menu screens, join sound, in-game screens and mod settings
 - Since: 0.1
 
 ### Singleplayer
@@ -97,9 +97,13 @@ Servers and LAN games in one window.
 - Since: 0.1
 
 ### Loading Screens
-Connecting and loading show what is happening.
+Connecting and loading show what is happening, smoothly from the first frame to the game.
 
 - Server connections list each step (connecting, logging in, joining, loading terrain) with a progress bar
+- Opening a single player world is one continuous screen with four steps (world data, starting the world, spawn area, terrain) and a bar that only moves forward
+- The screen keeps animating while data packs load, where vanilla froze for over a second
+- When the world is ready, the bar fills, a check mark pops in and the screen dips to black and fades into the game
+- Joining a world or server ends with a level up chime; turn it off with Join Sound in the Arkea settings
 - World loading, saving, portal travel and other waits share the same look, with a tip at the bottom
 - A lost connection shows the reason clearly with one button back
 - Since: 0.1

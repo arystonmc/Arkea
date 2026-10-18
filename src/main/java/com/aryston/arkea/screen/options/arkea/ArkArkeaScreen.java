@@ -98,6 +98,8 @@ public final class ArkArkeaScreen extends OptionsPageScreen {
             Component.translatable("arkea.settings.options.description")), ArkeaConfig.OPTIONS_SCREEN::get, value -> ArkeaConfig.set(ArkeaConfig.OPTIONS_SCREEN, value), true);
         this.toggle(screens, new ItemContent(Icons.WORLD, Component.translatable("arkea.configuration.menuScreens"),
             Component.translatable("arkea.settings.menus.description")), ArkeaConfig.MENU_SCREENS::get, value -> ArkeaConfig.set(ArkeaConfig.MENU_SCREENS, value), true);
+        this.toggle(screens, new ItemContent(Icons.NOTE, Component.translatable("arkea.configuration.joinSound"),
+            Component.translatable("arkea.settings.joinSound.description")), ArkeaConfig.JOIN_SOUND::get, value -> ArkeaConfig.set(ArkeaConfig.JOIN_SOUND, value), true);
         this.toggle(screens, new ItemContent(Icons.BELL, Component.translatable("arkea.configuration.gameToasts"),
             Component.translatable("arkea.settings.toasts.description")), ArkeaConfig.GAME_TOASTS::get, value -> ArkeaConfig.set(ArkeaConfig.GAME_TOASTS, value), true);
         this.toggle(screens, new ItemContent(Icons.PLAY, Component.translatable("arkea.configuration.inGameScreens"),

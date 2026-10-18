@@ -18,6 +18,7 @@
     "CommandSuggestionsMixin",
     "ClientPacketListenerMixin",
     "ConfigurationScreenAccessor",
+    "ConnectionLocalServerMixin",
     "ConnectScreenAccessor",
     "CreateWorldScreenInvoker",
     "DeathScreenAccessor",
@@ -29,6 +30,7 @@
     "HudCrosshairMixin",
     "JoinMultiplayerScreenAccessor",
     "LevelLoadingScreenAccessor",
+    "MinecraftAccessor",
     "MenuTabButtonMixin",
     "ModListScreenAccessor",
     "MultiPlayerGameModeAccessor",
@@ -42,13 +44,15 @@
     "RecipeToastMixin",
     "ScreenMixin",
     "SelectWorldScreenAccessor",
+    "ServerConnectionListenerMixin",
     "SplashRendererAccessor",
     "StatsScreenAccessor",
     "SuggestionsListMixin",
     "SystemToastMixin",
     "TooltipAccessor",
     "TooltipRenderUtilMixin",
-    "TutorialToastMixin"
+    "TutorialToastMixin",
+    "WorldOpenFlowsMixin"
   ],
   "injectors": {
     "defaultRequire": 1

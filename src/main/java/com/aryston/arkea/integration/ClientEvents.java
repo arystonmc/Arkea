@@ -1,5 +1,6 @@
 package com.aryston.arkea.integration;
 
+import com.aryston.arkea.Arkea;
 import com.aryston.arkea.background.MenuBackground;
 import com.aryston.arkea.api.config.ModConfigScreens;
 import com.aryston.arkea.config.ArkeaConfig;
@@ -12,6 +13,7 @@ import com.aryston.arkea.mixin.OptionsSubScreenAccessor;
 import com.aryston.arkea.mixin.SelectWorldScreenAccessor;
 import com.aryston.arkea.screen.game.ArkStatsScreen;
 import com.aryston.arkea.screen.game.PauseExtras;
+import com.aryston.arkea.screen.loading.LoadingOutro;
 import com.aryston.arkea.screen.loading.LoadingSkin;
 import com.aryston.arkea.screen.vanilla.VanillaSkins;
 import com.aryston.arkea.screen.loading.Reconnect;
@@ -50,7 +52,12 @@ import net.minecraft.client.gui.screens.options.controls.ControlsScreen;
 import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
+import net.minecraft.resources.Identifier;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.minecraft.client.gui.screens.achievement.StatsScreen;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.modlist.ModListScreen;
@@ -61,16 +68,35 @@ import org.jspecify.annotations.Nullable;
 public final class ClientEvents {
     private static final @Nullable UiCheck UI_CHECK = UiCheck.requested().orElse(null);
     private static final LoadingSkin LOADING_SKIN = new LoadingSkin();
+    private static final LoadingOutro LOADING_OUTRO = new LoadingOutro(LOADING_SKIN);
+    private static final Identifier LOADING_OUTRO_LAYER = Identifier.fromNamespaceAndPath(Arkea.MOD_ID, "loading_outro");
 
     private ClientEvents() {
     }
 
-    public static void register() {
+    public static void register(IEventBus modBus) {
+        modBus.addListener(ClientEvents::onRegisterGuiLayers);
+        NeoForge.EVENT_BUS.addListener(ClientEvents::onRenderGui);
+        NeoForge.EVENT_BUS.addListener(ClientEvents::onRenderGuiLayer);
         NeoForge.EVENT_BUS.addListener(ClientEvents::onScreenOpening);
         NeoForge.EVENT_BUS.addListener(ClientEvents::onClientTick);
         NeoForge.EVENT_BUS.addListener(ClientEvents::onScreenRender);
         NeoForge.EVENT_BUS.addListener(ClientEvents::onScreenKey);
         NeoForge.EVENT_BUS.addListener(ClientEvents::onScreenInit);
+    }
+
+    private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
+        event.registerAboveAll(LOADING_OUTRO_LAYER, LOADING_OUTRO::render);
+    }
+
+    private static void onRenderGui(RenderGuiEvent.Pre event) {
+        LOADING_OUTRO.update(Minecraft.getInstance());
+    }
+
+    private static void onRenderGuiLayer(RenderGuiLayerEvent.Pre event) {
+        if (LOADING_OUTRO.hidesHud() && !LOADING_OUTRO_LAYER.equals(event.getName())) {
+            event.setCanceled(true);
+        }
     }
 
     private static void onClientTick(ClientTickEvent.Post event) {
@@ -111,6 +137,7 @@ public final class ClientEvents {
             LOADING_SKIN.render(screen, event.getGuiGraphics(), event.getMouseX(), event.getMouseY(), event.getPartialTick());
             return;
         }
+        LOADING_SKIN.otherScreenShown();
         VanillaSkins.find(screen).ifPresent(skin -> {
             event.setCanceled(true);
             skin.render(screen, event.getGuiGraphics(), event.getMouseX(), event.getMouseY(), event.getPartialTick());

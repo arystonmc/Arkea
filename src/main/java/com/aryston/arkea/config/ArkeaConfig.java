@@ -24,6 +24,10 @@ public final class ArkeaConfig {
         .translation("arkea.configuration.menuScreens")
         .define("menuScreens", true);
 
+    public static final ModConfigSpec.BooleanValue JOIN_SOUND = BUILDER
+        .translation("arkea.configuration.joinSound")
+        .define("joinSound", true);
+
     public static final ModConfigSpec.BooleanValue IN_GAME_SCREENS = BUILDER
         .translation("arkea.configuration.inGameScreens")
         .define("inGameScreens", true);

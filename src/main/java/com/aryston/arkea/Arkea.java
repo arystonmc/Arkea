@@ -25,7 +25,7 @@ public final class Arkea {
         container.registerConfig(ModConfig.Type.CLIENT, ArkeaConfig.SPEC);
         container.registerExtensionPoint(IConfigScreenFactory.class, (mod, parent) -> new ArkArkeaScreen(parent));
         Theme.setAccentSource(ArkeaConfig::accent);
-        ClientEvents.register();
+        ClientEvents.register(modBus);
         HudEvents.register(modBus);
         ChatSenders.register();
         ArkTooltips.register(modBus);

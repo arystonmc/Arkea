@@ -194,7 +194,7 @@ public abstract class ArkScreen extends Screen implements UiHost {
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (this.isLeaving() && this.sinceLeft() >= this.exitDuration() && !this.navigating) {
             this.navigating = true;
-            this.destination.run();
+            this.minecraft.schedule(this.destination);
         }
         long now = this.now();
         UiGraphics ui = new UiGraphics(graphics, this.scale, this.font, now);

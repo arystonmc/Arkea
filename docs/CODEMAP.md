@@ -90,6 +90,7 @@ Every class and source file of Arkea with its purpose. Find the right file here 
   - `BACKGROUND`: folder name of the selected menu background, or `vanilla` for the panorama.
   - `BACKGROUND_PAN`: slow pan over still image backgrounds.
   - `MENU_SCREENS`: replaces the singleplayer, create world, multiplayer, mods and loading screens when on.
+  - `JOIN_SOUND`: plays the level up chime when the loading outro of a world or server join starts.
   - `WORLD_SORT`: order of the singleplayer world list.
   - `HUD_STYLE`: in-game HUD style (`HudStyle`), Vanilla by default.
   - `HUD_OPACITY`, `HUD_SIZE`: plate transparency and HUD size in percent.
@@ -176,9 +177,9 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 
 #### ClientEvents
 - Path: `src/main/java/com/aryston/arkea/integration/ClientEvents.java`
-- Role: Swaps a newly opened vanilla `TitleScreen` for `ArkTitleScreen` (not in demo mode), `OptionsScreen` for `ArkOptionsScreen` and the video, sound, chat, accessibility, skin, controls, mouse, key binds, language and font screens for the Arkea pages, keeping the previous screen, in `ScreenEvent.Opening`, each unless the config turns it off. With the menu screens on it also replaces `SelectWorldScreen`, `CreateWorldScreen`, `JoinMultiplayerScreen` and the NeoForge `ModListScreen`, and in `ScreenEvent.Render.Pre` lets `LoadingSkin` draw the connecting and loading screens instead of vanilla. Only the exact vanilla classes are replaced, so subclasses from other mods stay.
+- Role: Swaps a newly opened vanilla `TitleScreen` for `ArkTitleScreen` (not in demo mode), `OptionsScreen` for `ArkOptionsScreen` and the video, sound, chat, accessibility, skin, controls, mouse, key binds, language and font screens for the Arkea pages, keeping the previous screen, in `ScreenEvent.Opening`, each unless the config turns it off. With the menu screens on it also replaces `SelectWorldScreen`, `CreateWorldScreen`, `JoinMultiplayerScreen` and the NeoForge `ModListScreen`, and in `ScreenEvent.Render.Pre` lets `LoadingSkin` draw the connecting and loading screens instead of vanilla (any other screen ends the loading session). Registers the `LoadingOutro` layer above every other GUI layer, updates it in `RenderGuiEvent.Pre` and hides the other HUD layers while the outro covers the screen. Only the exact vanilla classes are replaced, so subclasses from other mods stay.
 - Also ticks `MenuBackground` every client tick so a background nobody draws frees its texture and decoder thread. Runs `UiCheck` when it is requested.
-- Depends on: `ArkeaConfig`, `ArkTitleScreen`, `ArkOptionsScreen`, the options pages, `OptionsSubScreenAccessor`, `MenuBackground`.
+- Depends on: `ArkeaConfig`, `ArkTitleScreen`, `ArkOptionsScreen`, the options pages, `OptionsSubScreenAccessor`, `MenuBackground`, `LoadingSkin`, `LoadingOutro`.
 
 #### KeyModifierRepair
 - Path: `src/main/java/com/aryston/arkea/integration/KeyModifierRepair.java`
@@ -411,6 +412,10 @@ Every class and source file of Arkea with its purpose. Find the right file here 
 #### Oscillation
 - Path: `src/main/java/com/aryston/arkea/ui/anim/Oscillation.java`
 - Role: Smooth 0 to 1 to 0 loop for pulses (splash text).
+
+#### ProgressMotion
+- Path: `src/main/java/com/aryston/arkea/ui/anim/ProgressMotion.java`
+- Role: Progress bar motion: maps a fraction into its span, lets an unknown fraction creep toward 90 % of its span, and follows the target smoothly (140 ms time constant) without ever going back.
 
 ### `com.aryston.arkea.ui.layout`
 
@@ -871,7 +876,7 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### ArkScreen
 - Path: `src/main/java/com/aryston/arkea/ui/screen/ArkScreen.java`
-- Role: Base of every Arkea screen. Computes `UiScale` on every init, scales the pose to design pixels, converts the mouse, renders the tooltip, runs one dialog on its own stratum with the menu blur, routes input and focus to the dialog while it is open, closes it with Escape, plays the exit animation before `navigate` or `leave` switches screens, and narrates dialogs.
+- Role: Base of every Arkea screen. Computes `UiScale` on every init, scales the pose to design pixels, converts the mouse, renders the tooltip, runs one dialog on its own stratum with the menu blur, routes input and focus to the dialog while it is open, closes it with Escape, plays the exit animation before `navigate` or `leave` switches screens (the switch is scheduled as a main thread task after the frame, so world loading started from a menu never runs inside a frame, where every frame it tries to draw is skipped), and narrates dialogs.
 - Depends on: `UiScale`, `UiGraphics`, `ArkWidget`, `ArkDialog`, `ArkTooltip`.
 - Notes: a subclass that blurs its background reports it with `blursBackground`, so the dialog does not request the single blur of the frame again. `openPopup` shows a popup above the content; `rebuild` lays the screen out again and gives focus back to the widget with the same `key`. `hoveredHint` decides which tooltip shows; the frame that switches screens still draws this screen, so no empty frame appears between two screens.
 
@@ -1028,16 +1033,30 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### LoadingSkin
 - Path: `src/main/java/com/aryston/arkea/screen/loading/LoadingSkin.java`
-- Role: Draws the connecting and loading design over vanilla loading screens without replacing them: background, spinner or error tile, kicker, title, detail, step label with percentage and an 8 pixel progress bar, step list, buttons and a tip card. The vanilla buttons keep handling input; every frame they are moved to where the design draws them and painted with `ButtonPainter`.
+- Role: Draws the connecting and loading design over vanilla loading screens without replacing them: background, spinner, check tile or error tile, kicker, title (fades in when it changes), detail, step label with percentage and an 8 pixel progress bar with a moving sheen, step list (ticks pop in when a step finishes), buttons and a tip card. Every animation runs on the session clock, and the bar shows the session's smoothed progress. The vanilla buttons keep handling input; every frame they are moved to where the design draws them and painted with `ButtonPainter`. Also draws the same content for `LoadingOutro`.
 - Notes: The vanilla screens cannot be replaced: game code checks `instanceof LevelLoadingScreen` (HUD, portals, music, packet handling) and `ConnectScreen` runs the connection itself.
 
 #### LoadingViews
 - Path: `src/main/java/com/aryston/arkea/screen/loading/LoadingViews.java`
-- Role: Builds the view of a supported vanilla screen: `ConnectScreen` (steps from the connection status), `LevelLoadingScreen` (world, server terrain or portal travel), `ProgressScreen`, `GenericMessageScreen` and `DisconnectedScreen` (error with the reason).
+- Role: Builds the view of a supported vanilla screen: `ConnectScreen` (steps from the connection status), `LevelLoadingScreen` (world, server terrain or portal travel), `ProgressScreen`, `GenericMessageScreen` and `DisconnectedScreen` (error with the reason). A single player join is one view with four steps (world data, starting the world, spawn area, terrain) from the first "Reading world data" message to the end, so the screen never changes its layout; each step owns a span of the bar (0 to 12 %, 12 to 20 %, 20 to 100 % from the load tracker), and connecting to a server gives each connection step a quarter.
 
 #### LoadingView
 - Path: `src/main/java/com/aryston/arkea/screen/loading/LoadingView.java`
-- Role: Mood, texts, progress and steps of one loading frame.
+- Role: Mood (busy, ready, error), texts, progress span and fraction (unknown fractions creep), steps of one loading frame and whether it belongs to a world join; `joinsWorld` is true for world and server joins (they have steps; portal travel and other waits do not); `ready` turns it into the finished view of the outro.
+
+#### LoadingSession
+- Path: `src/main/java/com/aryston/arkea/screen/loading/LoadingSession.java`
+- Role: One loading sequence across vanilla screens: it continues while loading screens follow each other (a new one starts after another screen or 1.5 s without one), so the enter animation and the tip appear once. Keeps a clock that advances at most 34 ms per frame, so a slow frame pauses the animations instead of making them jump, follows the progress target smoothly without ever moving back (a new sequence starts the bar again), and remembers when the title and each step changed. `finish` turns the last view into the ready view, `tick` drives the clock during the outro.
+- Depends on: `LoadingView`, `ProgressMotion`.
+
+#### LoadingOutro
+- Path: `src/main/java/com/aryston/arkea/screen/loading/LoadingOutro.java`
+- Role: GUI layer above everything that plays the move into the game when a loading screen closes into a world: 280 ms ready state (bar fills, every step ticks, the spinner turns into the green check tile), 240 ms dip in which the content fades and grows while the picture goes to black, then 640 ms in which the black fades out over the world. Until the black covers the screen it draws the closed loading screen's own background (with its blur) and hides every other HUD layer; with another screen open it skips straight to the black. Stops when a new loading screen opens. When the outro of a world or server join starts it plays `PLAYER_LEVELUP` as a UI sound at half volume, unless `JOIN_SOUND` is off.
+- Depends on: `LoadingSkin`, `LoadingSession`, `LoadingView`, `ArkeaConfig`.
+
+#### LoadingFrames
+- Path: `src/main/java/com/aryston/arkea/screen/loading/LoadingFrames.java`
+- Role: While vanilla blocks the render thread for data packs (`WorldOpenFlows.loadWorldDataBlocking`) and a loading screen is shown, keeps pumping window events and drawing frames, and runs the main thread tasks the loading needs between them; vanilla showed one frozen frame for 1.2 to 1.5 s there.
 
 #### Reconnect
 - Path: `src/main/java/com/aryston/arkea/screen/loading/Reconnect.java`
@@ -1160,7 +1179,7 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### ArkArkeaScreen
 - Path: `src/main/java/com/aryston/arkea/screen/options/arkea/ArkArkeaScreen.java`
-- Role: The Arkea settings page: Import (native file picker) and Open Folder buttons, a three column gallery of the panorama, every imported background (delete with confirmation), running imports and an import tile, then slow pan, accent color, a link to the HUD page and the screen switches. Files dropped on the window are imported. Rebuilds when the library changes.
+- Role: The Arkea settings page: Import (native file picker) and Open Folder buttons, a three column gallery of the panorama, every imported background (delete with confirmation), running imports and an import tile, then slow pan, accent color, a link to the HUD page, the screen switches and the join sound switch. Files dropped on the window are imported. Rebuilds when the library changes.
 - Depends on: `OptionsPageScreen`, `BackgroundLibrary`, `FileDialogs`, `ArkeaConfig`.
 
 #### MediaTile
@@ -1328,6 +1347,25 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 - Path: `src/main/java/com/aryston/arkea/mixin/ConnectScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/LevelLoadingScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/ProgressScreenAccessor.java`, `src/main/java/com/aryston/arkea/mixin/DisconnectedScreenAccessor.java`
 - Role: Read the status, load tracker and reason, header, stage and progress, and disconnection details that `LoadingViews` shows; none of these screens exposes them.
 
+#### MinecraftAccessor
+- Path: `src/main/java/com/aryston/arkea/mixin/MinecraftAccessor.java`
+- Role: Reads the private SDL event handler so `LoadingFrames` can pump window events while it draws.
+
+#### WorldOpenFlowsMixin
+- Path: `src/main/java/com/aryston/arkea/mixin/WorldOpenFlowsMixin.java`
+- Role: Hands the blocking wait for data packs in `WorldOpenFlows.loadWorldDataBlocking` to `LoadingFrames`.
+- Notes: Vanilla waits with `managedBlock`, which runs tasks but draws nothing; there is no event to draw from.
+
+#### ServerConnectionListenerMixin
+- Path: `src/main/java/com/aryston/arkea/mixin/ServerConnectionListenerMixin.java`
+- Role: Hands the blocking wait in `ServerConnectionListener.startMemoryChannel`, which opens the integrated server's in-memory channel, to `LoadingFrames`, so the loading screen keeps drawing.
+- Notes: Vanilla calls `syncUninterruptibly` on the render thread; there is no event to draw from.
+
+#### ConnectionLocalServerMixin
+- Path: `src/main/java/com/aryston/arkea/mixin/ConnectionLocalServerMixin.java`
+- Role: Hands the blocking wait in `Connection.connectToLocalServer`, where the client connects to the integrated server, to `LoadingFrames`.
+- Notes: Vanilla calls `syncUninterruptibly` on the render thread; there is no event to draw from.
+
 #### ConfigurationScreenAccessor
 - Path: `src/main/java/com/aryston/arkea/mixin/ConfigurationScreenAccessor.java`
 - Role: Reads the mod of a NeoForge `ConfigurationScreen` so `ClientEvents` can open the Arkea screen of the same mod. No event or getter exposes it.
@@ -1438,6 +1476,7 @@ Plain JUnit 5 tests without a running game, run by `./gradlew build` and the CI.
 | File | What it checks |
 |---|---|
 | `src/test/java/com/aryston/arkea/LanguageFilesTest.java` | Every language file has the same keys and every config entry has a `.tooltip` translation. |
+| `src/test/java/com/aryston/arkea/ui/anim/ProgressMotionTest.java` | Known fractions map into their span, unknown ones creep without reaching the end, the shown progress follows smoothly and never moves back. |
 | `src/test/java/com/aryston/arkea/ui/anim/CubicBezierTest.java` | Fixed endpoints, linear identity, the CSS `ease` reference value, the standard curve rising early and the spring overshooting. |
 | `src/test/java/com/aryston/arkea/ui/anim/PresenceTest.java` | Hidden start, enter, exit kept alive until it ends, smooth reversal midway, delayed enter. |
 | `src/test/java/com/aryston/arkea/ui/anim/TransitionTest.java` | Reaching the target, retargeting from the current value, snapping. |
@@ -1462,7 +1501,7 @@ Plain JUnit 5 tests without a running game, run by `./gradlew build` and the CI.
 | File | Purpose |
 |---|---|
 | `src/main/templates/META-INF/neoforge.mods.toml` | Mod metadata template filled from `gradle.properties`: dependencies and mixin config. |
-| `src/main/resources/arkea.mixins.json` | Mixin configuration listing the accessors. |
+| `src/main/resources/arkea.mixins.json` | Mixin configuration listing the accessors and mixins (`MinecraftAccessor`, `WorldOpenFlowsMixin`, `ServerConnectionListenerMixin` and `ConnectionLocalServerMixin` for drawing while data packs load and the integrated server connects). |
 
 ## Asset Folders
 

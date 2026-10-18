@@ -1,6 +1,7 @@
 package com.aryston.arkea.screen.loading;
 
 import com.aryston.arkea.ui.anim.Easing;
+import com.aryston.arkea.ui.anim.Motion;
 import com.aryston.arkea.ui.layout.Box;
 import com.aryston.arkea.ui.layout.UiScale;
 import com.aryston.arkea.ui.render.Icons;
@@ -17,7 +18,6 @@ import com.mojang.blaze3d.platform.Window;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -27,9 +27,11 @@ import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public final class LoadingSkin {
-    private static final int TIP_COUNT = 13;
     private static final int ENTER_MS = 300;
+    private static final int TITLE_FADE_MS = 200;
+    private static final int STEP_FADE_MS = 220;
     private static final long PULSE_MS = 900L;
+    private static final long SHEEN_MS = 1800L;
     private static final float ENTER_RISE = 12.0F;
     private static final float ICON_AREA = 40.0F;
     private static final float SPINNER_SCALE = 32.0F / PixelSpinner.SIZE;
@@ -41,6 +43,7 @@ public final class LoadingSkin {
     private static final float COLUMN_WIDTH = 440.0F;
     private static final float BLOCK_GAP = 14.0F;
     private static final float BAR_HEIGHT = 8.0F;
+    private static final float SHEEN_WIDTH = 90.0F;
     private static final float STEP_ICON = 12.0F;
     private static final float STEP_GAP = 8.0F;
     private static final float STEP_TEXT_GAP = 10.0F;
@@ -58,6 +61,10 @@ public final class LoadingSkin {
     private static final float ERROR_ICON = 18.0F;
     private static final float ERROR_FILL = 0.15F;
     private static final float ERROR_BORDER = 0.5F;
+    private static final float CHECK_WIDTH = 18.0F;
+    private static final float CHECK_HEIGHT = 14.0F;
+    private static final float CHECK_GLOW = 30.0F;
+    private static final float CHECK_START_SCALE = 0.6F;
     private static final float LABEL_SHARE = 0.8F;
     private static final float BAR_GLOW = 12.0F;
     private static final float MIN_PULSE = 0.35F;
@@ -65,6 +72,8 @@ public final class LoadingSkin {
     private static final int PERCENT = 100;
     private static final int DIM = ArkColors.rgba(8, 8, 9, 0.55F);
     private static final int TRACK = ArkColors.rgba(255, 255, 255, 0.10F);
+    private static final int SHEEN = ArkColors.rgba(255, 255, 255, 0.28F);
+    private static final int CLEAR = ArkColors.rgba(255, 255, 255, 0.0F);
     private static final int WAITING_BORDER = ArkColors.rgba(255, 255, 255, 0.20F);
     private static final int TIP_FILL = ArkColors.rgba(16, 16, 18, 0.7F);
     private static final int TITLE_SHADOW_COLOR = ArkColors.rgba(0, 0, 0, 0.45F);
@@ -72,40 +81,54 @@ public final class LoadingSkin {
     private static final TextStyle TITLE = TextStyle.of(26.0F).shadow(TITLE_SHADOW_COLOR, TITLE_SHADOW);
     private static final TextStyle SMALL = TextStyle.of(11.0F);
 
-    private @Nullable Screen current;
-    private long shownAt;
-    private int tip;
+    private final LoadingSession session = new LoadingSession();
+    private @Nullable Screen lastScreen;
 
-    public static boolean handles(Screen screen) {
-        return LoadingViews.supports(screen);
+    public static boolean handles(@Nullable Screen screen) {
+        return screen != null && LoadingViews.supports(screen);
     }
 
     public void render(Screen screen, GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        Optional<LoadingView> found = LoadingViews.of(screen);
+        long now = Util.getMillis();
+        this.session.frame(now);
+        Optional<LoadingView> found = LoadingViews.of(screen, this.session.worldJoin());
         if (found.isEmpty()) {
             return;
         }
-        if (screen != this.current) {
-            this.current = screen;
-            this.shownAt = Util.getMillis();
-            this.tip = ThreadLocalRandom.current().nextInt(TIP_COUNT);
-        }
-        Minecraft minecraft = Minecraft.getInstance();
-        Window window = minecraft.getWindow();
-        UiScale scale = UiScale.compute(window.getWidth(), window.getHeight(), window.getGuiScale());
+        this.session.show(found.get());
+        this.lastScreen = screen;
         screen.extractBackground(graphics, mouseX, mouseY, partialTick);
         graphics.nextStratum();
-        UiGraphics ui = new UiGraphics(graphics, scale, minecraft.font, Util.getMillis());
+        UiGraphics ui = this.graphics(graphics);
         graphics.pose().pushMatrix();
-        graphics.pose().scale(scale.poseScale());
-        ui.fill(0.0F, 0.0F, scale.canvasWidth(), scale.canvasHeight(), DIM);
-        float enter = Easing.STANDARD.apply(Math.clamp((ui.now() - this.shownAt) / (float) ENTER_MS, 0.0F, 1.0F));
+        graphics.pose().scale(ui.scale().poseScale());
+        ui.fill(0.0F, 0.0F, ui.scale().canvasWidth(), ui.scale().canvasHeight(), DIM);
+        float enter = Easing.STANDARD.apply(Math.clamp(this.session.clock() / (float) ENTER_MS, 0.0F, 1.0F));
         ui.push();
         ui.fade(enter);
         ui.translate(0.0F, ENTER_RISE * (1.0F - enter));
-        this.draw(ui, found.get(), buttons(screen), minecraft.getLastInputType().isKeyboard());
+        this.draw(ui, found.get(), buttons(screen), Minecraft.getInstance().getLastInputType().isKeyboard());
         ui.pop();
         graphics.pose().popMatrix();
+    }
+
+    UiGraphics graphics(GuiGraphicsExtractor graphics) {
+        Minecraft minecraft = Minecraft.getInstance();
+        Window window = minecraft.getWindow();
+        UiScale scale = UiScale.compute(window.getWidth(), window.getHeight(), window.getGuiScale());
+        return new UiGraphics(graphics, scale, minecraft.font, this.session.clock());
+    }
+
+    LoadingSession session() {
+        return this.session;
+    }
+
+    public void otherScreenShown() {
+        this.session.end();
+    }
+
+    @Nullable Screen lastScreen() {
+        return this.lastScreen;
     }
 
     private static List<Button> buttons(Screen screen) {
@@ -118,7 +141,7 @@ public final class LoadingSkin {
         return buttons;
     }
 
-    private void draw(UiGraphics graphics, LoadingView view, List<Button> buttons, boolean keyboard) {
+    void draw(UiGraphics graphics, LoadingView view, List<Button> buttons, boolean keyboard) {
         TextMetrics metrics = graphics.metrics();
         UiScale scale = graphics.scale();
         List<String> detail = view.detail() == null ? List.of() : metrics.wrap(view.detail().getString(), SMALL, DETAIL_WIDTH);
@@ -141,7 +164,10 @@ public final class LoadingSkin {
         graphics.text(kicker, centerX - metrics.width(kicker, KICKER) * 0.5F, y, KICKER, ArkColors.TEXT_MUTED);
         y += metrics.capHeight(KICKER) + TITLE_GAP;
         String title = metrics.ellipsize(view.title().getString(), TITLE, DETAIL_WIDTH);
+        graphics.push();
+        graphics.fade(Math.clamp(this.session.sinceTitleChange() / (float) TITLE_FADE_MS, 0.0F, 1.0F));
         graphics.text(title, centerX - metrics.width(title, TITLE) * 0.5F, y, TITLE, ArkColors.TEXT_PRIMARY);
+        graphics.pop();
         y += metrics.capHeight(TITLE);
         if (!detail.isEmpty()) {
             y += DETAIL_GAP;
@@ -175,10 +201,17 @@ public final class LoadingSkin {
     private void drawIcon(UiGraphics graphics, LoadingView.Mood mood, float centerX, float y) {
         Box tile = new Box(centerX - ICON_AREA * 0.5F, y, ICON_AREA, ICON_AREA);
         switch (mood) {
-            case BUSY -> {
+            case BUSY -> drawSpinner(graphics, tile, 1.0F);
+            case READY -> {
+                float pop = Math.clamp(this.session.sinceReady() / (float) Motion.CHECK_POP, 0.0F, 1.0F);
+                drawSpinner(graphics, tile, 1.0F - Easing.EASE_OUT.apply(pop));
                 graphics.push();
-                graphics.scaleAround(SPINNER_SCALE, tile.centerX(), tile.centerY());
-                PixelSpinner.render(graphics, tile.centerX() - PixelSpinner.SIZE * 0.5F, tile.centerY() - PixelSpinner.SIZE * 0.5F, Theme.accent().light());
+                graphics.fade(Easing.EASE_OUT.apply(pop));
+                graphics.scaleAround(CHECK_START_SCALE + (1.0F - CHECK_START_SCALE) * Easing.SPRING.apply(pop), tile.centerX(), tile.centerY());
+                graphics.shadow(tile, CHECK_GLOW, 0.0F, Theme.accent().glow());
+                graphics.fill(tile, Theme.accent().base());
+                graphics.icon(Icons.CHECK, tile.centerX() - CHECK_WIDTH * 0.5F, tile.centerY() - CHECK_HEIGHT * 0.5F, CHECK_WIDTH, CHECK_HEIGHT,
+                    ArkColors.TEXT_PRIMARY);
                 graphics.pop();
             }
             case ERROR -> {
@@ -189,32 +222,38 @@ public final class LoadingSkin {
         }
     }
 
+    private static void drawSpinner(UiGraphics graphics, Box tile, float opacity) {
+        if (opacity <= 0.0F) {
+            return;
+        }
+        graphics.push();
+        graphics.fade(opacity);
+        graphics.scaleAround(SPINNER_SCALE, tile.centerX(), tile.centerY());
+        PixelSpinner.render(graphics, tile.centerX() - PixelSpinner.SIZE * 0.5F, tile.centerY() - PixelSpinner.SIZE * 0.5F, Theme.accent().light());
+        graphics.pop();
+    }
+
     private float drawBlock(UiGraphics graphics, LoadingView view, float x, float y) {
         TextMetrics metrics = graphics.metrics();
         Component label = view.stepLabel();
         if (label != null) {
             graphics.text(metrics.ellipsize(label.getString(), SMALL, COLUMN_WIDTH * LABEL_SHARE), x, y, SMALL, ArkColors.TEXT_SOFT);
         }
+        float shown = Math.clamp(this.session.shownProgress(), 0.0F, 1.0F);
         if (view.hasProgressBar()) {
-            String percent = Math.round(Math.clamp(view.progress(), 0.0F, 1.0F) * PERCENT) + "%";
+            String percent = Math.round(shown * PERCENT) + "%";
             graphics.text(percent, x + COLUMN_WIDTH - metrics.width(percent, SMALL), y, SMALL, Theme.accent().light());
         }
         y += metrics.capHeight(SMALL);
         if (view.hasProgressBar()) {
             y += BLOCK_GAP;
-            graphics.fill(x, y, COLUMN_WIDTH, BAR_HEIGHT, TRACK);
-            float width = COLUMN_WIDTH * Math.clamp(view.progress(), 0.0F, 1.0F);
-            if (width > 0.0F) {
-                Box bar = new Box(x, y, width, BAR_HEIGHT);
-                graphics.shadow(bar, BAR_GLOW, 0.0F, Theme.accent().glow());
-                graphics.fill(bar, Theme.accent().base());
-            }
+            this.drawBar(graphics, x, y, shown, view.mood() == LoadingView.Mood.BUSY);
             y += BAR_HEIGHT;
         }
         if (!view.steps().isEmpty()) {
             y += BLOCK_GAP;
-            for (LoadingView.Step step : view.steps()) {
-                this.drawStep(graphics, step, x, y);
+            for (int index = 0; index < view.steps().size(); index++) {
+                this.drawStep(graphics, view.steps().get(index), x, y, this.session.sinceStepChange(index));
                 y += STEP_ICON + STEP_GAP;
             }
             y -= STEP_GAP;
@@ -222,17 +261,42 @@ public final class LoadingSkin {
         return y;
     }
 
-    private void drawStep(UiGraphics graphics, LoadingView.Step step, float x, float y) {
+    private void drawBar(UiGraphics graphics, float x, float y, float shown, boolean busy) {
+        graphics.fill(x, y, COLUMN_WIDTH, BAR_HEIGHT, TRACK);
+        float width = COLUMN_WIDTH * shown;
+        if (width <= 0.0F) {
+            return;
+        }
+        Box bar = new Box(x, y, width, BAR_HEIGHT);
+        graphics.shadow(bar, BAR_GLOW, 0.0F, Theme.accent().glow());
+        graphics.fill(bar, Theme.accent().base());
+        if (!busy) {
+            return;
+        }
+        float travel = (graphics.now() % SHEEN_MS) / (float) SHEEN_MS;
+        float sheenX = x - SHEEN_WIDTH + (width + SHEEN_WIDTH) * travel;
+        graphics.clip(bar);
+        graphics.gradientHorizontal(sheenX, y, SHEEN_WIDTH * 0.5F, BAR_HEIGHT, CLEAR, SHEEN);
+        graphics.gradientHorizontal(sheenX + SHEEN_WIDTH * 0.5F, y, SHEEN_WIDTH * 0.5F, BAR_HEIGHT, SHEEN, CLEAR);
+        graphics.endClip();
+    }
+
+    private void drawStep(UiGraphics graphics, LoadingView.Step step, float x, float y, long sinceChange) {
         Box icon = new Box(x, y, STEP_ICON, STEP_ICON);
+        float appear = Easing.EASE_OUT.apply(Math.clamp(sinceChange / (float) STEP_FADE_MS, 0.0F, 1.0F));
         int color = switch (step.state()) {
             case DONE -> {
+                graphics.push();
+                graphics.fade(appear);
+                graphics.scaleAround(CHECK_START_SCALE + (1.0F - CHECK_START_SCALE) * appear, icon.centerX(), icon.centerY());
                 graphics.icon(Icons.TICK, icon.x(), icon.y(), STEP_ICON, STEP_ICON, Theme.accent().light());
+                graphics.pop();
                 yield ArkColors.TEXT_MUTED;
             }
             case ACTIVE -> {
                 float pulse = (float) (HALF + HALF * Math.cos(graphics.now() % PULSE_MS / (double) PULSE_MS * Math.TAU));
                 graphics.fill(icon.centerX() - PULSE_DOT * 0.5F, icon.centerY() - PULSE_DOT * 0.5F, PULSE_DOT, PULSE_DOT,
-                    ArkColors.multiplyAlpha(ArkColors.WARNING, MIN_PULSE + (1.0F - MIN_PULSE) * pulse));
+                    ArkColors.multiplyAlpha(ArkColors.WARNING, (MIN_PULSE + (1.0F - MIN_PULSE) * pulse) * appear));
                 yield ArkColors.TEXT_PRIMARY;
             }
             case WAITING -> {
@@ -272,7 +336,7 @@ public final class LoadingSkin {
         TextMetrics metrics = graphics.metrics();
         Tag tag = Tag.tone(Component.translatable("arkea.loading.tip"), Theme.accent().light());
         float textWidth = TIP_WIDTH - TIP_PADDING_X * 2.0F - tag.width(metrics) - TIP_GAP;
-        List<String> lines = metrics.wrap(Component.translatable("arkea.loading.tip." + this.tip).getString(), SMALL, textWidth);
+        List<String> lines = metrics.wrap(Component.translatable("arkea.loading.tip." + this.session.tip()).getString(), SMALL, textWidth);
         float height = TIP_PADDING_Y * 2.0F + Math.max(Tag.HEIGHT, lines.size() * TIP_LINE);
         Box card = new Box(centerX - TIP_WIDTH * 0.5F, graphics.scale().canvasHeight() - TIP_BOTTOM - height, TIP_WIDTH, height);
         graphics.fill(card, TIP_FILL);

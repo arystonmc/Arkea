@@ -6,7 +6,16 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 
 ## Unreleased
 
+### Added
+- Add an animated move from the loading screen into the game
+- Add a level up chime when a world or server finishes loading, with a Join Sound switch in the Arkea settings
+
+### Changed
+- Show opening a world as one continuous loading screen with a bar that only moves forward
+
 ### Fixed
+- Fix the loading screen freezing for over a second while data packs load
+- Fix the menu freezing until the world had started after choosing a world in the Arkea screens
 - Fix a crash when opening the Mods screen with mods that list several authors, such as Distant Horizons
 
 ## [0.1] - 2026-10-09
