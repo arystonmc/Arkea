@@ -1094,13 +1094,13 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### ArkOptionsScreen
 - Path: `src/main/java/com/aryston/arkea/screen/options/ArkOptionsScreen.java`
-- Role: The options overview of `MC-Menu.dc.html`: quick settings (field of view slider, online settings), a tile for every options page, more (telemetry, credits) and the "changes save automatically" footer. Saves the options when it closes like vanilla.
+- Role: The options overview of `MC-Menu.dc.html`: quick settings (field of view slider, online settings), a tile for every available non-external options page, more (telemetry, credits) and the "changes save automatically" footer. Hidden Backgrounds and HUD pages and external Arkea, Helion and Aervium settings screens do not appear as overview tiles. Saves the options when it closes like vanilla.
 - Depends on: `ArkWindowScreen`, `OptionsPage`, `SettingRow`, `ArkSlider`, `ArkTile`.
 - Notes: Minecraft 26.3 moved difficulty out of the options screen, so the quick settings show the online settings instead of the difficulty of the design.
 
 #### OptionsPage
 - Path: `src/main/java/com/aryston/arkea/screen/options/OptionsPage.java`
-- Role: Every options page with its sidebar group, icon, title (vanilla text without the trailing dots), label, description and the Arkea window page it opens. Helion appears only when it registers a config screen and opens its own screen. Arkea and its HUD page are in the Content group. Arkea and Helion show their logos (`ARKEA_LOGO`, `HELION_LOGO`) in the sidebar, as in the design.
+- Role: Every options page with its sidebar group, icon, title (vanilla text without the trailing dots), label, description and the Arkea window page it opens. The Content group lists Arkea, Helion and Aervium after Resource Packs; Helion and Aervium appear only when their mods register config-screen factories and open those screens. The hidden Backgrounds and HUD pages are excluded from overview tiles and are opened from the Arkea settings screen. Arkea, Helion and Aervium show their logos (`ARKEA_LOGO`, `HELION_LOGO`, `AERVIUM_LOGO`) in the sidebar.
 
 #### OptionsNavigation
 - Path: `src/main/java/com/aryston/arkea/screen/options/OptionsNavigation.java`
@@ -1179,7 +1179,7 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### ArkArkeaScreen
 - Path: `src/main/java/com/aryston/arkea/screen/options/arkea/ArkArkeaScreen.java`
-- Role: The Arkea settings page: Import (native file picker) and Open Folder buttons, a three column gallery of the panorama, every imported background (delete with confirmation), running imports and an import tile, then slow pan, accent color, a link to the HUD page, the screen switches and the join sound switch. Files dropped on the window are imported. Rebuilds when the library changes.
+- Role: The Menu Backgrounds page: Import (native file picker) and Open Folder buttons, a three column gallery of the panorama, every imported background (delete with confirmation), running imports and an import tile. Files dropped on the window are imported. Rebuilds when the library changes.
 - Depends on: `OptionsPageScreen`, `BackgroundLibrary`, `FileDialogs`, `ArkeaConfig`.
 
 #### MediaTile
@@ -1206,7 +1206,7 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### ArkHudScreen
 - Path: `src/main/java/com/aryston/arkea/screen/options/hud/ArkHudScreen.java`
-- Role: The HUD settings page: a large live preview of the chosen style, four style cards with their own previews, plate transparency and HUD size sliders, switches for effect chips, boss bars, the scoreboard card, the player list card and the Arkea chat (rescales the chat at once), and the Information, Warnings, Crosshair (shape dropdown and hit marker), Tooltips and Accessibility sections of the HUD features.
+- Role: The HUD Preview page: a large live preview of the chosen style and four style cards with their own previews.
 - Depends on: `OptionsPageScreen`, `ArkeaConfig`, `HudSettings`.
 
 #### HudStyleCard
@@ -1216,6 +1216,18 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 #### HudStyleRow, HudPreviewRow
 - Path: `src/main/java/com/aryston/arkea/screen/options/hud/HudStyleRow.java`, `src/main/java/com/aryston/arkea/screen/options/hud/HudPreviewRow.java`
 - Role: Panel rows: one style card with a height that follows its width, and the wide live preview (Minimal switches between a full and a hurt player every few seconds to show the fade).
+
+### `com.aryston.arkea.screen.settings`
+
+#### ArkeaSettingsScreen
+- Path: `src/main/java/com/aryston/arkea/screen/settings/ArkeaSettingsScreen.java`
+- Role: Builds Arkea's own immediate-apply settings screen with Appearance, Screens, HUD, Tooltips and Developers pages, links to Menu Backgrounds and HUD Preview, and the component gallery.
+- Depends on: `ArkeaSettingsOptions`, `ArkeaConfigScreen`, `ArkeaConfig`.
+
+#### ArkeaSettingsOptions
+- Path: `src/main/java/com/aryston/arkea/screen/settings/ArkeaSettingsOptions.java`
+- Role: Binds every Arkea setting to the immediate-apply config screen through `ArkeaConfig.set`; the chat binding also rescales the chat after a change.
+- Depends on: `ArkeaConfig`, `ArkeaConfigScreen`.
 
 ### `com.aryston.arkea.screen.options.control`
 
@@ -1455,11 +1467,16 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### UiCheck
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheck.java`
-- Role: Developer check (`-Define arkea.uiCheck=all` or a comma list of groups: title, options, worlds, create, servers, mods, loading, toasts, gallery, config, helion, vanilla, game, hud, features). `Step.await` waits for a condition such as a loaded world; `Step.quick` takes its screenshot after a given number of ticks. Opens screens, presses widgets by key, sends keys, saves a screenshot after every step as `screenshots/arkea_<step>.png` and closes the game. Does nothing in production.
+- Role: Developer check (`-Define arkea.uiCheck=all` or a comma list of groups: title, options, worlds, create, servers, mods, loading, toasts, gallery, config, arkea, helion, aervium, vanilla, game, hud, features). `Step.await` waits for a condition such as a loaded world; `Step.quick` takes its screenshot after a given number of ticks. Opens screens, presses widgets by key, sends keys, saves a screenshot after every step as `screenshots/arkea_<step>.png` and closes the game. Does nothing in production.
 
 #### UiCheckToasts, UiCheckLoading, UiCheckServers, UiCheckConfig, UiCheckGame
-- Path: `src/main/java/com/aryston/arkea/debug/UiCheckToasts.java`, `src/main/java/com/aryston/arkea/debug/UiCheckLoading.java`, `src/main/java/com/aryston/arkea/debug/UiCheckServers.java`, `src/main/java/com/aryston/arkea/debug/UiCheckConfig.java`, `src/main/java/com/aryston/arkea/debug/UiCheckGame.java`
-- Role: Check helpers: sample toasts, a progress screen and a connection to an unroutable address (cancelled again), temporary sample servers that are removed at the end, the config screen of Helion when it is installed, and the statistics, death and F3 screens in a fresh world, then three chat messages sent by the player, one more captured mid-entrance with a slowed clock, the chat screen and its command suggestions (`/t`, which works without cheats), then thirty history lines and one wheel step up, captured mid-scroll with a slowed clock and at rest.
+#### UiCheckToasts, UiCheckLoading, UiCheckServers, UiCheckGame
+- Path: `src/main/java/com/aryston/arkea/debug/UiCheckToasts.java`, `src/main/java/com/aryston/arkea/debug/UiCheckLoading.java`, `src/main/java/com/aryston/arkea/debug/UiCheckServers.java`, `src/main/java/com/aryston/arkea/debug/UiCheckGame.java`
+- Role: Check helpers: sample toasts, a progress screen and a connection to an unroutable address (cancelled again), temporary sample servers that are removed at the end, and the statistics, death and F3 screens in a fresh world, then three chat messages sent by the player, one more captured mid-entrance with a slowed clock, the chat screen and its command suggestions (`/t`, which works without cheats), then thirty history lines and one wheel step up, captured mid-scroll with a slowed clock and at rest.
+
+#### UiCheckConfig
+- Path: `src/main/java/com/aryston/arkea/debug/UiCheckConfig.java`
+- Role: Opens a named installed mod's `IConfigScreenFactory` screen for the interface check, returning to the parent when the mod or factory is absent. Used for Helion and Aervium instead of a Helion-only helper.
 
 #### UiCheckHud
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheckHud.java`
@@ -1509,7 +1526,7 @@ Plain JUnit 5 tests without a running game, run by `./gradlew build` and the CI.
 |---|---|
 | `src/main/resources/assets/arkea/font/` | `inter_medium.ttf` and `inter_semibold.ttf`: unmodified Inter 4.1 (SIL Open Font License, see `THIRD_PARTY_NOTICES.md`). `debug_medium_<n>.json` and `debug_semibold_<n>.json`: TrueType font definitions of the F3 cards, size 10 with oversampling 1, 1.5, 2, 2.5, 3 and 4 (`_` for the point), falling back to the default font for missing glyphs. |
 | `src/main/resources/assets/arkea/lang/` | `en_us.json` and `tr_tr.json`: config, title screen, window and options texts, short option descriptions (`arkea.option.*`). Menu labels reuse vanilla keys so every game language shows them. |
-| `src/main/resources/assets/arkea/textures/gui/` | `gallery_before.png` and `gallery_after.png`: sample images of the before and after preview in the gallery. `arkea_logo.png` and `helion_logo.png`: 48 x 48 logos (scaled from the 128 pixel design handoff logos) for the sidebar, the "UI by Arkea" footer and the Helion banner, with `.png.mcmeta` files that turn on linear filtering. `helion_preview.png`: preview of the Helion banner. `hud_scene.png`: sample scene behind the HUD previews (from the design handoff). `sprites/crosshair/`: 15 x 15 crosshair shapes (`cross`, `gap`, `dot`, `circle`) and the `hit` marker, white on transparent, in the GUI sprite atlas. |
+| `src/main/resources/assets/arkea/textures/gui/` | `gallery_before.png` and `gallery_after.png`: sample images of the before and after preview in the gallery. `arkea_logo.png`, `helion_logo.png` and `aervium_logo.png`: 48 x 48 sidebar logos, with `.png.mcmeta` files that turn on linear filtering. `helion_preview.png`: preview of the Helion banner. `hud_scene.png`: sample scene behind the HUD previews (from the design handoff). `sprites/crosshair/`: 15 x 15 crosshair shapes (`cross`, `gap`, `dot`, `circle`) and the `hit` marker, white on transparent, in the GUI sprite atlas. |
 
 ## Build Files
 

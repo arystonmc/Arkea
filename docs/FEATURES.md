@@ -32,7 +32,7 @@ A calm, modern main menu that keeps everything the vanilla menu can do.
 ### Options Window
 All settings in one calm window instead of a wall of buttons.
 
-- A sidebar groups every settings page into Game, Player and Content; Helion settings appear there when Helion is installed
+- A sidebar groups every settings page into Game, Player and Content; after Resource Packs, Content lists Arkea plus Helion and Aervium when those mods are installed
 - Field of View has a smooth slider right on the overview; drag it, click it or use the arrow keys (Shift for bigger steps)
 - Every settings page has its own tile with a short description, and Telemetry and Credits stay one click away
 - Video, Sound, Chat, Accessibility, Skin and Controls are redesigned too: every option has a short description, a switch, slider or selector, and the full explanation on hover
@@ -59,9 +59,10 @@ Replace the rotating panorama with your own video, GIF or picture.
 - Since: 0.1
 
 ### Arkea Settings
-Arkea has its own page in the options window, no need to go through the mod list.
+Arkea has its own full settings screen from Options or Mods, Arkea, Config.
 
-- Menu background gallery and import
+- Five pages keep Appearance, Screens, HUD, Tooltips and Developers settings easy to find; changes apply immediately
+- Menu Backgrounds opens the gallery and import tools, while HUD Preview shows the live preview and style cards
 - Accent color for every Arkea screen: green, emerald, gold or stone
 - Switches for the Arkea title screen, options window, menu screens, join sound, in-game screens and mod settings
 - Since: 0.1
@@ -157,7 +158,7 @@ The screens you see while playing match the rest of Arkea.
 ### Arkea HUD
 Players pick how health, hunger and the hotbar look while playing.
 
-- Four styles on a new HUD page of the options, each with its own live preview card, and a large live preview of the chosen style
+- Four styles on HUD Preview, each with its own live preview card, and a large live preview of the chosen style
 - Vanilla: the original HUD, untouched (default)
 - Compact: health in the bottom left and hunger in the bottom right as slim, semi-transparent bars with numbers; armor and air as thin lines above them; the center keeps only a slim hotbar, the experience line and the item name
 - Classic+: the vanilla hearts, food, armor and air icons on transparent plates in the same corners
@@ -170,7 +171,7 @@ Players pick how health, hunger and the hotbar look while playing.
 - Since: 0.1
 
 ### HUD Features
-Useful information on screen, in every HUD style (Vanilla included), each with its own switch on the HUD page.
+Useful information on screen, in every HUD style (Vanilla included), each with its own switch on the HUD page of Arkea Settings.
 
 - Target card in the spirit of Jade, at the top center and right under any boss bars: what you look at with its icon, name and mod; the right tool with a green check when the item in your hand is that tool (or can harvest the block) and a red cross when it is not; crop growth; redstone power; breaking progress; hearts or a health bar, armor, baby, villager profession and level, horse speed and jump height
 - Pickup feed: "+5 Iron Ingot" rows with icons on the right, merging repeats, plus experience

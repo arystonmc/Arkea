@@ -5,7 +5,7 @@ import com.aryston.arkea.hud.chat.ChatSenders;
 import com.aryston.arkea.integration.ClientEvents;
 import com.aryston.arkea.integration.HudEvents;
 import com.aryston.arkea.tooltip.ArkTooltips;
-import com.aryston.arkea.screen.options.arkea.ArkArkeaScreen;
+import com.aryston.arkea.screen.settings.ArkeaSettingsScreen;
 import com.aryston.arkea.ui.theme.Theme;
 import com.mojang.logging.LogUtils;
 import net.neoforged.api.distmarker.Dist;
@@ -23,7 +23,7 @@ public final class Arkea {
 
     public Arkea(IEventBus modBus, ModContainer container) {
         container.registerConfig(ModConfig.Type.CLIENT, ArkeaConfig.SPEC);
-        container.registerExtensionPoint(IConfigScreenFactory.class, (mod, parent) -> new ArkArkeaScreen(parent));
+        container.registerExtensionPoint(IConfigScreenFactory.class, (mod, parent) -> ArkeaSettingsScreen.create(parent));
         Theme.setAccentSource(ArkeaConfig::accent);
         ClientEvents.register(modBus);
         HudEvents.register(modBus);

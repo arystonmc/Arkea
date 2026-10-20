@@ -4,6 +4,7 @@ import com.aryston.arkea.screen.options.arkea.ArkArkeaScreen;
 import com.aryston.arkea.screen.options.hud.ArkHudScreen;
 import com.aryston.arkea.screen.options.keys.ArkKeyBindsScreen;
 import com.aryston.arkea.screen.options.packs.ArkPacksScreen;
+import com.aryston.arkea.screen.settings.ArkeaSettingsScreen;
 import com.aryston.arkea.ui.render.Icon;
 import com.aryston.arkea.ui.render.Icons;
 import com.aryston.arkea.ui.widget.NavEntry;
@@ -30,13 +31,17 @@ public enum OptionsPage {
     LANGUAGE(Group.PLAYER, Icons.GLOBE, "options.language", (parent, minecraft) -> new ArkLanguageScreen(parent)),
     ACCESSIBILITY(Group.PLAYER, Icons.ACCESS, "options.accessibility", (parent, minecraft) -> new ArkAccessibilityScreen(parent)),
     RESOURCE_PACKS(Group.CONTENT, Icons.PACK, "options.resourcepack", (parent, minecraft) -> new ArkPacksScreen(parent)),
-    ARKEA(Group.CONTENT, Icons.ARKEA, "arkea.options.arkea", (parent, minecraft) -> new ArkArkeaScreen(parent)),
-    HUD(Group.CONTENT, Icons.MONITOR, "arkea.options.hud", (parent, minecraft) -> new ArkHudScreen(parent)),
-    HELION(Group.CONTENT, Icons.SPARKLE, "arkea.options.helion", OptionsPage::helionScreen);
+    ARKEA(Group.CONTENT, Icons.ARKEA, "arkea.options.arkea", (parent, minecraft) -> ArkeaSettingsScreen.create(parent)),
+    HELION(Group.CONTENT, Icons.SPARKLE, "arkea.options.helion", (parent, minecraft) -> modScreen(OptionsPage.HELION_ID, parent)),
+    AERVIUM(Group.CONTENT, Icons.GAUGE, "arkea.options.aervium", (parent, minecraft) -> modScreen(OptionsPage.AERVIUM_ID, parent)),
+    BACKGROUNDS(Group.CONTENT, Icons.PANO, "arkea.options.backgrounds", (parent, minecraft) -> new ArkArkeaScreen(parent)),
+    HUD(Group.CONTENT, Icons.MONITOR, "arkea.options.hud", (parent, minecraft) -> new ArkHudScreen(parent));
 
     public static final Identifier ARKEA_LOGO = Identifier.fromNamespaceAndPath("arkea", "textures/gui/arkea_logo.png");
     public static final Identifier HELION_LOGO = Identifier.fromNamespaceAndPath("arkea", "textures/gui/helion_logo.png");
+    public static final Identifier AERVIUM_LOGO = Identifier.fromNamespaceAndPath("arkea", "textures/gui/aervium_logo.png");
     private static final String HELION_ID = "helion";
+    private static final String AERVIUM_ID = "aervium";
     private static final String TRAILING_DOTS = "...";
     private static final String TRAILING_ELLIPSIS = "…";
 
@@ -65,17 +70,22 @@ public enum OptionsPage {
     }
 
     public boolean isAvailable() {
-        return this != HELION || helionConfig().isPresent();
+        return switch (this) {
+            case HELION -> modConfig(HELION_ID).isPresent();
+            case AERVIUM -> modConfig(AERVIUM_ID).isPresent();
+            case BACKGROUNDS, HUD -> false;
+            default -> true;
+        };
     }
 
     public boolean isExternal() {
-        return this == HELION;
+        return this == ARKEA || this == HELION || this == AERVIUM;
     }
 
     public boolean isWindow() {
         return switch (this) {
-            case OVERVIEW, VIDEO, CONTROLS, KEY_BINDS, SOUND, SKIN, CHAT, LANGUAGE, ACCESSIBILITY, RESOURCE_PACKS, ARKEA, HUD -> true;
-            case HELION -> false;
+            case OVERVIEW, VIDEO, CONTROLS, KEY_BINDS, SOUND, SKIN, CHAT, LANGUAGE, ACCESSIBILITY, RESOURCE_PACKS, BACKGROUNDS, HUD -> true;
+            case ARKEA, HELION, AERVIUM -> false;
         };
     }
 
@@ -99,6 +109,7 @@ public enum OptionsPage {
         return switch (this) {
             case ARKEA -> ARKEA_LOGO;
             case HELION -> HELION_LOGO;
+            case AERVIUM -> AERVIUM_LOGO;
             default -> null;
         };
     }
@@ -123,15 +134,15 @@ public enum OptionsPage {
     }
 
 
-    private static Screen helionScreen(Screen parent, Minecraft minecraft) {
-        return helionConfig()
+    private static Screen modScreen(String modId, Screen parent) {
+        return modConfig(modId)
             .map(config -> config.factory().createScreen(config.container(), parent))
             .orElse(parent);
     }
 
-    private static Optional<HelionConfig> helionConfig() {
-        return ModList.get().getModContainerById(HELION_ID)
-            .flatMap(container -> container.getCustomExtension(IConfigScreenFactory.class).map(factory -> new HelionConfig(container, factory)));
+    private static Optional<ModConfig> modConfig(String modId) {
+        return ModList.get().getModContainerById(modId)
+            .flatMap(container -> container.getCustomExtension(IConfigScreenFactory.class).map(factory -> new ModConfig(container, factory)));
     }
 
     public enum Group {
@@ -144,6 +155,6 @@ public enum OptionsPage {
         }
     }
 
-    private record HelionConfig(ModContainer container, IConfigScreenFactory factory) {
+    private record ModConfig(ModContainer container, IConfigScreenFactory factory) {
     }
 }

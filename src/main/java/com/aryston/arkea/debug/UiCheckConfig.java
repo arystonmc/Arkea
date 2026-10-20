@@ -7,13 +7,12 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
 final class UiCheckConfig {
     static final String SAMPLE_LINK = "https://github.com/arystonmc/Arkea";
-    private static final String HELION = "helion";
 
     private UiCheckConfig() {
     }
 
-    static Screen helion(Screen parent) {
-        ModContainer container = ModList.get().getModContainerById(HELION).orElse(null);
+    static Screen forMod(String modId, Screen parent) {
+        ModContainer container = ModList.get().getModContainerById(modId).orElse(null);
         if (container == null) {
             return parent;
         }

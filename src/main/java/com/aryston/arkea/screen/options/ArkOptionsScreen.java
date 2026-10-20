@@ -89,7 +89,7 @@ public final class ArkOptionsScreen extends ArkWindowScreen {
         this.addOnlineRow(new Box(area.x() + columnWidth + COLUMN_GAP, y, columnWidth, SettingRow.HEIGHT));
         y = this.addSectionLabel("arkea.options.section.all", area.x(), y + SettingRow.HEIGHT + SECTION_GAP);
         List<OptionsPage> pages = Arrays.stream(OptionsPage.values())
-            .filter(page -> page != OptionsPage.OVERVIEW && !page.isExternal())
+            .filter(page -> page != OptionsPage.OVERVIEW && !page.isExternal() && page.isAvailable())
             .toList();
         float tileWidth = (area.width() - TILE_GAP * (TILE_COLUMNS - 1)) / TILE_COLUMNS;
         for (int index = 0; index < pages.size(); index++) {

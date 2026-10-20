@@ -4,6 +4,7 @@ import com.aryston.arkea.Arkea;
 import com.aryston.arkea.api.config.ModConfigScreens;
 import com.aryston.arkea.hud.HudStyle;
 import com.aryston.arkea.screen.gallery.ArkGalleryScreen;
+import com.aryston.arkea.screen.settings.ArkeaSettingsScreen;
 import com.aryston.arkea.screen.options.hud.ArkHudScreen;
 import com.aryston.arkea.screen.palette.CommandPaletteScreen;
 import com.aryston.arkea.ui.screen.ArkScreen;
@@ -243,7 +244,7 @@ public final class UiCheck {
             Step.screen("vanilla", "vanilla_credits", CreditsAndAttributionScreen::new),
             Step.screen("vanilla", "vanilla_safety", SafetyScreen::new),
             Step.screen("vanilla", "vanilla_link", parent -> new ConfirmLinkScreen(accepted -> { }, URI.create(UiCheckConfig.SAMPLE_LINK), true)),
-            Step.screen("helion", "helion_general", parent -> UiCheckConfig.helion(parent)),
+            Step.screen("helion", "helion_general", parent -> UiCheckConfig.forMod("helion", parent)),
             Step.press("helion", "helion_rendering", "nav:rendering"),
             Step.press("helion", "helion_lighting", "nav:lighting"),
             Step.press("helion", "helion_effects", "nav:effects"),
@@ -253,7 +254,17 @@ public final class UiCheck {
             Step.press("helion", "helion_preset_quality", "preset:2"),
             Step.press("helion", "helion_applied", "apply"),
             Step.press("helion", "helion_preset_balanced", "preset:1"),
-            Step.press("helion", "helion_restored", "apply")
+            Step.press("helion", "helion_restored", "apply"),
+            Step.screen("arkea", "arkea_appearance", ArkeaSettingsScreen::create),
+            Step.press("arkea", "arkea_screens", "nav:screens"),
+            Step.press("arkea", "arkea_hud", "nav:hud"),
+            Step.press("arkea", "arkea_tooltips", "nav:tooltips"),
+            Step.press("arkea", "arkea_developers", "nav:developers"),
+            Step.screen("aervium", "aervium_overview", parent -> UiCheckConfig.forMod("aervium", parent)),
+            Step.press("aervium", "aervium_distant_terrain", "nav:distantTerrain"),
+            Step.press("aervium", "aervium_rendering", "nav:rendering"),
+            Step.press("aervium", "aervium_world", "nav:world"),
+            Step.press("aervium", "aervium_modules", "nav:modules")
         );
 
         private UiCheckSteps() {

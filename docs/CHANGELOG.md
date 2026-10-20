@@ -9,9 +9,13 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 ### Added
 - Add an animated move from the loading screen into the game
 - Add a level up chime when a world or server finishes loading, with a Join Sound switch in the Arkea settings
+- Add Arkea and installed Helion or Aervium settings to the Content sidebar
+- Add the five-page Arkea settings screen with immediate changes
 
 ### Changed
+- Update the Aervium icon in the options sidebar
 - Show opening a world as one continuous loading screen with a bar that only moves forward
+- Move HUD controls into Arkea Settings and keep Menu Backgrounds and HUD Preview as focused pages
 
 ### Fixed
 - Fix the loading screen freezing for over a second while data packs load
