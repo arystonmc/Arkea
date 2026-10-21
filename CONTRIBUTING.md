@@ -30,7 +30,7 @@ The Maven repository is created at `build/repo/`.
 
 ## Guidelines
 - Read [docs/API.md](docs/API.md) to understand public APIs versus internal engine packages.
-- Read [docs/CODEMAP.md](docs/CODEMAP.md) for class responsibilities. Keep this document updated whenever classes are added, moved, or deleted.
+- Read [docs/CODEMAP.md](docs/CODEMAP.md), the code map index, for class responsibilities, then open only the package file in `docs/codemap/`. Keep that package file updated whenever classes are added, moved, or deleted.
 - Code style: clean, intention-revealing, no dead code, and no comments in code files.
 
 ## Pull Requests and License Agreement

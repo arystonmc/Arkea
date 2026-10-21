@@ -2,115 +2,7 @@
 
 How the Arkea interface engine works, what it relies on in Minecraft 26.3 and the rules every new screen follows. The class list is in `docs/CODEMAP.md`.
 
-## Layers
-
-| Layer | Package | Knows about |
-|---|---|---|
-| Theme | `ui.theme` | Design tokens only |
-| Motion | `ui.anim` | Nothing but time in milliseconds |
-| Layout | `ui.layout` | Window size and GUI scale |
-| Render | `ui.render` | `GuiGraphicsExtractor`, GUI render states |
-| Widgets and overlays | `ui.widget`, `ui.overlay` | Render, motion, vanilla input and narration interfaces |
-| Screen base | `ui.screen` | Everything above, vanilla `Screen` |
-| Library API | `api.config` | The design system; builds config windows for other mods |
-| Screens | `screen.*` | The design system and vanilla data and screens |
-| Menu backgrounds | `background` | Files, JCodec, STB, textures; no widgets |
-| Wiring | `integration`, `config`, `mixin` | NeoForge events and config |
-
-`ui` never imports from `screen` or `config`; the accent reaches it through `Theme.setAccentSource`. A new screen only needs `ArkScreen`, widgets and `UiGraphics`. `api` is the stable surface for other mods; `ui` is public too (see `docs/API.md`).
-
-## Coordinates
-
-- Screens are laid out in design pixels of the 1366 x 768 reference. `UiScale` picks a scale in quarter steps so the whole design fits the window, and the canvas grows beyond 1366 x 768 on wider or taller windows. Layouts anchor to the canvas edges like the CSS of the design.
-- `ArkScreen` scales the pose by `scale / guiScale`, so one unit is one design pixel. Mouse positions arrive in GUI units and are divided by the same factor.
-- Rectangles are snapped to whole physical pixels while the pose has no rotation. Line thickness never drops below one physical pixel.
-- Text uses the vanilla font at the design size. When a font pixel comes within 0.15 of a whole number of physical pixels the scale snaps to it, so most text stays crisp; other sizes keep their exact design size so labels fit and the hierarchy of the design survives on every resolution.
-
-## Frame Flow
-
-1. `Screen.extractRenderStateWithTooltipAndSubtitles` calls `extractBackground` (the title screen draws the vanilla panorama there), opens a new stratum and calls `ArkScreen.extractRenderState`.
-2. `ArkScreen` starts a pending navigation when the exit animation has ended, otherwise builds a `UiGraphics` for the frame, pushes the design scale and calls `renderUi` of the screen with the mouse in canvas coordinates (outside the canvas while a dialog is open or the screen is leaving).
-3. Widgets render themselves, store where their bounds landed on the canvas (`UiGraphics.canvasBox`) and update hover from that box, so hover and clicks follow enter animations.
-4. The tooltip of the hovered widget renders on top.
-5. An open dialog renders on the next stratum. The menu background blur is requested for that stratum while the dialog is shown. Window screens blur their background instead (`blursBackground`), and the dialog then uses that blur.
-
-## Rendering
-
-- Everything is drawn through `UiGraphics`. It records `UiMeshRenderState`s (custom `GuiElementRenderState`s) with vertices already transformed into GUI coordinates.
-- The GUI pipelines cull back faces. `MeshBuilder` stores every quad in the winding vanilla uses (negative signed area in GUI coordinates), whatever transform produced it.
-- Vanilla puts every element that overlaps an earlier one on a higher layer, and each layer is a separate draw. Icons and shadows are therefore one render state each, holding all their quads.
-- Soft shadows and glows are nine slices of one generated soft edge texture (Gaussian profile, CSS blur radius = two sigma). The vignette is a generated radial texture stretched over the canvas. Both are linear filtered.
-- Icons are the SVG paths of the design, parsed once into polylines and drawn as 1.5 pixel quads with square caps or as filled convex polygons, so they stay sharp at every scale without textures.
-- Alpha is a stack in `UiGraphics`: every color is multiplied by it. This is how fades work, because 26.x has no global shader color.
-
-## Window Screens
-
-- `ArkWindowScreen` draws the shell of every settings screen: 1238 x 704 window centered on the canvas, sidebar with brand and grouped navigation, header with back, breadcrumb, title and close, content area, footer with a note and buttons.
-- Its background is the vanilla panorama on the title screen or the world in game, blurred once, with a dim layer that fades with the window.
-- The window enters with opacity, a 16 pixel rise and a 0.98 scale (450 ms) and exits in reverse (220 ms); content rows stagger in with `renderRow`.
-- A subclass builds its content in `buildContent` inside the content box, returns where it ends and draws it in `renderContent`. Content taller than the area scrolls: it is clipped with a scissor, translated by the eased offset of `ScrollArea`, and widgets take their hit box from the clipped box. Keyboard focus scrolls the focused row into view.
-- `switchTo` moves between window screens without closing the window: the old content fades and rises 8 pixels in 160 ms, the next screen starts with the window already open and only its rows and title animate in.
-- Settings pages lay out with `SettingsPanel` (the two column grid of the design) and get their controls from `OptionControls`, which reads the value set of each vanilla `OptionInstance`. Vanilla values, listeners and side effects stay in charge; the controls only read and set options. Every vanilla options page has an Arkea version. Content lists Arkea, Helion and Aervium after Resource Packs: Arkea opens its own settings screen, while loaded Helion and Aervium installations open their `IConfigScreenFactory` screens. Menu Backgrounds and HUD Preview are hidden navigation pages opened from Arkea settings.
-- Long pages only draw the rows inside the visible area. Pages with a search field (key binds, language, packs) rebuild their content on every change and keep the focus on the widget with the same key.
-- Popups (dropdown menus) render after the content and take input first; a click outside closes them.
-
-## Menu Screens
-
-- Window screens without a sidebar (singleplayer, create world, multiplayer, mods) return `null` from `brand()`; the header then spans the whole window. List screens keep their selection, sort and tab in screen fields and rebuild on every change, like the settings pages.
-- Replaceable screens are swapped in `ScreenEvent.Opening` (exact class only) and keep the vanilla previous screen through an accessor. Screens whose vanilla instance holds the logic are wrapped instead: `ArkCreateWorldScreen` edits the `WorldCreationUiState` of the vanilla `CreateWorldScreen` and calls its private creation methods through an invoker. Vanilla sub screens (game rules, data packs, experiments, superflat, optimize) still return to the vanilla instance, which `ClientEvents` wraps again.
-- Loading screens are never replaced, because game code depends on their classes (`instanceof LevelLoadingScreen` in the HUD, portals, music and packet handling) and `ConnectScreen` runs the connection. `ScreenEvent.Render.Pre` is cancelled for them and `LoadingSkin` draws the design from the screen state (accessors). The vanilla buttons stay the input targets: every frame they are moved to the boxes the design draws and painted with `ButtonPainter`.
-- A loading sequence is one `LoadingSession` across the vanilla screens it passes through (a single player join shows "Reading world data", "Loading resources", a progress screen and the level loading screen): the enter animation and the tip appear once, the layout of a world join stays the same from the first message to the last step, and the bar only moves forward. The session clock advances at most 34 ms per frame, so a slow frame pauses the spinner and the bar instead of making them jump.
-- Vanilla blocks the render thread while data packs load (`WorldOpenFlows.loadWorldDataBlocking`, 1.2 to 1.5 s on Can's PC). `WorldOpenFlowsMixin` hands that wait to `LoadingFrames`, which keeps pumping window events, drawing frames and running the main thread tasks the loading needs.
-- When a loading screen closes into a world, `LoadingOutro` (a GUI layer above all others) finishes the sequence: the bar fills and every step ticks while the spinner turns into the green check tile (280 ms), the content fades and the picture dips to black (240 ms), and the black fades out over the world (640 ms). Until the black covers the screen it draws the closed screen's own background and hides the other HUD layers, so nothing of the world or the HUD shows through the loading look. A world or server join (a view with steps) starts the outro with the level up chime as a UI sound.
-- Slow world operations (backup, delete, rename, measuring sizes) run on the IO pool and report with menu toasts; dialogs carry custom content through `DialogForm`, and the delete dialog shows the world image as a hero.
-- Menu toasts (`ArkToasts`) live outside any screen, so a toast started on one screen finishes on the next; every `ArkScreen` draws them above its content and below dialogs, and a click on a toast is handled before the content.
-
-## In-Game Screens and Vanilla Skins
-
-- `PauseScreen` and `DeathScreen` are never replaced: the game checks `instanceof PauseScreen` (toasts, pausing, F3 + Esc) and `instanceof DeathScreen` (HUD, respawn packets). Like the loading screens, `ClientEvents` cancels `ScreenEvent.Render.Pre` for them and a `VanillaSkin` draws the design. Vanilla widgets stay the input targets; every frame the skin moves them to the boxes it draws, so keyboard focus, narration, delays (respawn after one second), draft report checks and buttons added by other mods keep working.
-- `StatsScreen` is replaced by `ArkStatsScreen`; the only game code that knows it is the stats packet handler, which `ClientPacketListenerMixin` extends.
-- `DialogSkin` draws confirm, link, alert, popup, warning and backup screens as Arkea dialogs when all their children are buttons and text widgets.
-- Every other screen keeps its vanilla layout. `VanillaTheme` and the theme mixins replace only the sprites and textures of its widgets, lists, tabs, separators and background, so mod screens built from vanilla widgets look like Arkea too. Container screens are left alone.
-- The Arkea HUD replaces vanilla HUD layers one by one in `RenderGuiLayerEvent.Pre` (`HudEvents`) instead of one big overlay, so the layers of other mods keep their place and order. Each replaced layer is cancelled and its Arkea version is drawn in the same event with a `UiScale` built from the window, not the GUI scale (`HudSettings.scale`: 1.5 physical pixels per design pixel at 1920 x 1080), so the HUD fits the screen whatever GUI scale the player uses. Health and food layers are cancelled together and drawn once at the health layer; `leftHeight` and `rightHeight` are left at their base value, so mod parts that stack above the vanilla bars sit just above the hotbar. Everything the painters need is read into a `HudSnapshot` first, so the same painters draw the settings previews from a sample snapshot.
-- HUD features that vanilla does not have are their own GUI layers registered on the mod bus next to the vanilla layer they belong to, so they keep working with the Vanilla HUD style and with other HUD mods. Their state comes from three places only: the camera player read every frame, `HudTracker` on the client tick, and two hooks (the take item packet, the sound listener). Nothing needs a server mod, so features that need server-only data (exhaustion, container contents of placed blocks) are left out.
-- Tooltips keep the vanilla layout and text; only the background is redrawn (`TooltipRenderUtilMixin`) and extra lines are tooltip components added in `RenderTooltipEvent.GatherComponents`, so other mods' tooltip components work inside the Arkea card.
-- The HUD stays vanilla except the Arkea HUD and parts drawn through narrow mixins: `DebugScreenOverlayMixin` hands the F3 lines to `DebugCards` (inside the pose the overlay scaled for its own scale option; the cards read that scale from the width and replace it with a window based `UiScale.reference`), `ChatScreenMixin` places the chat input under the Arkea chat and repaints the fill behind it, and the command suggestion mixins repaint the help lines and the suggestion list and anchor them to that input. The F3 cards are written in Inter, a TrueType font that Minecraft samples nearest, so `DebugFont` sizes the text to one of the oversampling steps the font definitions in `assets/arkea/font` provide.
-- The Arkea chat keeps vanilla in charge of messages, wrapping, scrolling, hover and clicks. `ChatSenders` learns the sender of each message from `ClientChatReceivedEvent` (and restyles plain chat messages there, so the chat log and other mods see the same text), `ChatEntries` ties it to the `GuiMessage` when vanilla wraps it, and `ChatStyle` draws plates, heads and the entrance through the `ChatGraphicsAccess` that both the drawing pass and the click pass use. The mixin tells it which line is being visited, because `handleMessage` only receives the text.
-
-## Config Windows
-
-- `ArkeaConfigScreen.Builder` collects groups, pages, sections and options into a `Definition`. `ArkConfigScreen.open` creates a `ConfigSession` and the screen of the first page that has options. Every page is its own `ArkConfigScreen` sharing the session, so switching pages plays the content animation of `switchTo` and keeps unapplied values, expanded sections and text field states. Arkea uses this API for its own Appearance, Screens, HUD, Tooltips and Developers pages with immediate apply; its HUD and menu-background previews remain focused pages reached by links.
-- Controls never write to a config directly: they read `session.value(option)` (unapplied value first, then the binding) and call `session.stage`. `apply` writes all staged values, saves each binding once (a `ModConfigSpec` save fires the NeoForge reloading event) and runs the apply listeners. `ApplyMode.IMMEDIATE` writes and saves at once.
-- Requirements are evaluated every frame (`setActive` on the control), so turning a switch off disables the rows that need it without a rebuild. Presets, reset, paste and collapsing rebuild the page.
-- `ClientEvents` replaces the exact NeoForge `ConfigurationScreen` class with `ModConfigScreens.forMod` (reads the mod through `ConfigurationScreenAccessor`). `ModConfigScreens` walks `ModConfigSpec.getValues()` and `getSpec()`: top level values form a General page, every top level section a page, nested sections become sections. Unloaded configs and synced configs on a remote or LAN server show a notice instead of controls, like NeoForge.
-- The context menu and popups (dropdowns, the color picker) live in `ArkScreen`: right-click asks `contextMenu(x, y)`, and an open popup receives clicks, drags, releases, wheel, keys and typed characters first. Dialogs and side sheets share the `Overlay` interface.
-
-## Menu Backgrounds
-
-- The player picks a background on the Arkea settings page. `PanoramaMixin` cancels `Panorama.extractRenderState` and `MenuBackground` draws the selected background instead, so it shows wherever vanilla would show the panorama: the title screen, the options window over it and other menus.
-- Imports run once, on a worker thread: `BackgroundImporter` turns a video, GIF or picture into a folder with JPEG frames (or one JPEG), a thumbnail and `background.json`. Nothing is converted while the menu is open, and the original file is never needed again.
-- Videos convert in parallel: `VideoConverter` splits them at their key frames, because every key frame to key frame part decodes on its own. Each `VideoSegment` decodes with its own JCodec decoder, skips non-reference frames that no output frame shows (half the frames of a 60 fps video with B frames), and `PictureScaler` shrinks the YUV planes before converting colors, so only 720p pixels are converted. `FrameWriter` encodes the JPEGs on separate threads. The number of decoders follows the cores and the free memory (a 4K decoder needs about 200 MB).
-- Speed limits: decoding stays the cost. A 1080p clip of 20 seconds takes about 10 seconds, a 4K 60 fps clip of 49 seconds about a minute on 16 threads. Only a hardware or native decoder would bring 4K imports down to a few seconds.
-- The Arkea page scans the library when it opens and polls the folder once a second; a dropped file is imported once `DropFolder` sees the same size and date twice and no program writes to it.
-- Why JPEG frames: decoding H.264 in Java (JCodec) runs at about 30 to 50 frames per second for 720p, too close to the frame budget of the menu, and JCodec cannot re-encode fast enough. STB decodes a 720p JPEG in about 3.5 ms, the frames load lazily from disk and a GIF would only lose colors (256 per frame) and be larger. A 12 second 720p video takes about 6 MB.
-- Playback: `BackgroundPlayer` decodes upcoming frames on a daemon thread into a queue of three `NativeImage`s; the render thread copies one into a `DynamicTexture` when it is due. A background not drawn for three seconds is released.
-- The texture is drawn with a linear, clamp to edge sampler from `RenderSystem.getSamplerCache()` through `GuiGraphicsExtractor.blit`, cover fitted to the window.
-- JCodec is embedded with Jar-in-Jar; only the importer touches it.
-
-## Motion
-
-- Time comes from `Util.getMillis()`, never ticks. The HUD reads it through `HudEvents.clock`, which the interface check can slow down.
-- HUD animations react to changes between frames: `HudMotion` compares each snapshot with the last one (selected slot, item and count per slot, health, food, level) instead of listening to game events, so they work for every source of change (picking up, placing, dropping, commands, other mods).
-- `Presence` and `Timeline` implement "every enter has a shorter ease-in exit". Durations live in `Motion`, curves in `Easing`.
-- Screen switches go through `ArkScreen.navigate` or `leave`: the screen plays its exit, then the switch runs as a main thread task before the next frame. Input is ignored while leaving. The switch must never run inside rendering: opening a world there ran the whole data pack load and server start inside one frame, where `Minecraft.renderFrame` skips every frame it is asked to draw, so the menu froze until the server was ready.
-- `added()` restarts the enter animation each time a screen is shown again; a resize only lays out again.
-
-## Input, Focus and Narration
-
-- `ArkWidget` implements vanilla `GuiEventListener` and `NarratableEntry` and is registered with `Screen.addWidget`. Vanilla handles Tab, Shift+Tab, arrows and narration; widgets activate on Enter and Space when focused.
-- A click activates on release over the widget, like a browser. The container forwards the release to the focused widget.
-- The focus ring shows only when the last input came from the keyboard.
-- While a dialog is open, `children()` returns only the dialog buttons, Escape cancels the dialog and narration reads the dialog title, body and focused button.
+The sections live in `docs/architecture/`, one file per topic. Read the invariants below, then open only the section your task needs.
 
 ## Invariants
 
@@ -123,58 +15,21 @@ How the Arkea interface engine works, what it relies on in Minecraft 26.3 and th
 - Widgets live in a screen's `buildUi`, which runs on every init; state that must survive a resize (the splash text) is kept in the screen.
 - The design system never draws Mojang textures except vanilla's own panorama.
 
-## Vanilla Coupling
+## Sections
 
-| Vanilla or NeoForge | Use |
-|---|---|
-| `ScreenEvent.Opening` | Replace `TitleScreen` with `ArkTitleScreen` |
-| `GuiGraphicsExtractor.submitGuiElementRenderState`, `peekScissorStack`, `pose`, `text`, `nextStratum`, `blurBeforeThisStratum`, `requestCursor` | All drawing |
-| `Panorama.extractRenderState` + `PanoramaMixin` | Title background, replaced by a custom background when one is selected |
-| `DynamicTexture`, `NativeImage`, STB `stbi_load_from_memory`, `RenderSystem.getSamplerCache`, `GuiGraphicsExtractor.blit(GpuTextureView, GpuSampler, ...)`, `ClientTickEvent.Post` | Custom background playback and release |
-| SDL `SDL_ShowOpenFileDialog`, `Window.handle`, `Screen.onFilesDrop`, `Blaze3D.openPath` | Importing backgrounds, opening the backgrounds folder |
-| `SplashManager.getSplash` + `SplashRendererAccessor` | Splash text |
-| `LevelStorageSource.findLevelCandidates`, `loadLevelSummaries`, `FaviconTexture.forWorld`, `WorldOpenFlows.openWorld` | Jump back in card |
-| `Minecraft.allowsMultiplayer`, `isNameBanned`, `multiplayerBan` | Disabled multiplayer and Realms buttons |
-| `ModList.get().size()`, `ModListScreen.create` | Mods button |
-| `OptionsScreen.getLastScreen`, `Options.fov`, `Options.save`, the vanilla options sub-screens, `IConfigScreenFactory` | Options screen |
-| `OptionInstance` (`values`, `toString`, `caption`, value set types) + `OptionInstanceAccessor`, `TooltipAccessor` | Option controls, labels, tooltips, defaults |
-| `OptionsSubScreen` + `OptionsSubScreenAccessor`, `ScreenEvent.Opening` | Replacing the vanilla options pages |
-| `Minecraft.onTextInputFocusChange`, `textInputManager().setTextInputArea` | Typed characters and IME position for `ArkTextField` |
-| `KeyMapping` (`same`, `setKeyModifierAndCode`, `resetMapping`), NeoForge `KeyModifier`, `IKeyMappingExtension` | Key binds page |
-| `Options.load` + `OptionsMixin` | Restoring modifier key bindings that NeoForge 26.3 beta drops |
-| `LanguageManager`, `Minecraft.reloadResourcePacks` | Language page |
-| `PackSelectionModel`, `PackDetector`, `Util.copyBetweenDirs`, `Options.updateResourcePacks` | Resource packs page |
-| `GpuWarnlistManager`, `UnsupportedGraphicsWarningScreen`, `Window.changeFullscreenVideoMode`, `Minecraft.updateMaxMipLevel`, `delayTextureReload` | Video page side effects copied from `VideoSettingsScreen` |
-| `SelectWorldScreen` + accessor, `LevelSummary`, `LevelStorageAccess` (`makeWorldBackup`, `deleteLevel`, `renameLevel`), `WorldOpenFlows` (`openWorld`, `recreateWorldData`), `OptimizeWorldScreen.create`, `CreateWorldScreen.openFresh`, `createFromExisting` | Singleplayer screen |
-| `CreateWorldScreen` + `CreateWorldScreenInvoker`, `WorldCreationUiState`, `WorldCreationGameRulesScreen`, `PresetEditor` | Create world screen |
-| `JoinMultiplayerScreen` + accessor, `ServerList`, `ServerData`, `ServerStatusPinger`, `LanServerDetection`, `ConnectScreen.startConnecting`, `ServerAddress` | Multiplayer screen |
-| `ScreenEvent.Render.Pre`, `ConnectScreen`, `LevelLoadingScreen`, `LevelLoadTracker`, `ProgressScreen`, `GenericMessageScreen`, `DisconnectedScreen` + accessors | Loading skin |
-| `WorldOpenFlows.loadWorldDataBlocking` + `WorldOpenFlowsMixin`, `Minecraft.renderFrame`, `managedBlock`, `RenderSystem.pumpEvents` + `MinecraftAccessor` | Drawing while data packs load |
-| `RegisterGuiLayersEvent.registerAboveAll`, `RenderGuiEvent.Pre`, `RenderGuiLayerEvent.Pre`, `Screen.extractBackground` of the closed loading screen, `Minecraft.schedule` | Loading outro, screen switches outside rendering |
-| `RenderGuiLayerEvent.Pre`, `VanillaGuiLayers`, `CustomizeGuiOverlayEvent.BossEventProgress`, `Hud` (`isHidden`, `HeartType`, `getMobEffectSprite`) + `HudAccessor`, `ExperienceBar`, `ClientHooks.firePlayerHeartTypeEvent`, `IClientMobEffectExtensions`, `MobEffectUtil.formatDuration`, scoreboard objectives and `StyledFormat.SIDEBAR_DEFAULT`, `PlayerTabOverlay` (`setVisible`, `getNameForDisplay`) + `PlayerTabOverlayAccessor`, `PlayerFaceExtractor`, `AvatarRenderer.isPlayerUpsideDown`, `RegisterGuiLayersEvent`, `ClientboundTakeItemEntityPacket`, `SoundEventListener`, `AttackEntityEvent`, `Player.getHurtDir`, `getLastDeathLocation`, `getProjectile`, `MultiPlayerGameMode` breaking fields, mineable block tags, `SystemToast` | Arkea HUD and HUD features |
-| `ChatComponent.extractRenderState` (the bottom offset 40, `ChatGraphicsAccess`), `forEachLine`, `addMessageToDisplayQueue` and `GuiMessage.splitLines`, `getScale`, private `getWidth`, `rescaleChat` + `ChatComponentMixin`, `ClientChatReceivedEvent`, `ChatType.Bound`, `chat.type.text`, `PlayerInfo`, `PlayerFaceExtractor`, `DefaultPlayerSkin` | Arkea chat, sender heads and names |
-| `CommandSuggestions.extractUsage`, `CommandSuggestions$SuggestionsList` (`rect`, `offset`, `current`) + `CommandSuggestionsMixin`, `SuggestionsListMixin` | Command help and suggestions |
-| `ChatScreen.init` (`updateCommandInfo`), `input`, `mouseScrolled` and `keyPressed` (`ChatComponent.scrollChat`), `ChatComponent.forEachLine` (`getLinesPerPage`, `chatScrollbarPos`), `resetChatScroll`, `Screen.height` in `CommandSuggestions.showSuggestions` and `extractUsage` + `ChatScreenMixin`, `ChatComponentAccessor` | Chat input under the chat, smooth chat scrolling |
-| TrueType font providers (`ttf`, `oversample`), `FontDescription.Resource`, `StringDecomposer.iterateFormatted` | Inter in the F3 cards |
-| `CustomizeGuiOverlayEvent.BossEventProgress` (`getY`), `RegisterGuiLayersEvent.registerBelow` | Target card below the boss bars |
-| GUI atlas sprite contents (`SpriteContents.isTransparent`) | Saturation outline in food tooltips |
-| `TooltipRenderUtil.extractTooltipBackground` + `TooltipRenderUtilMixin`, `RenderTooltipEvent.GatherComponents`, `ItemTooltipEvent`, `RegisterClientTooltipComponentFactoriesEvent`, `DataComponents.FOOD` and `CONTAINER` | Arkea tooltips |
-| NeoForge `ModListScreen` + accessor, `ModDisplayInfo`, `DefaultModDisplayInfo`, `ImageResource`, `IConfigScreenFactory`, `VersionChecker`, `ConfirmLinkScreen` | Mods screen |
-
-## Porting Checklist for a New Minecraft Version
-
-1. Check `GuiGraphicsExtractor`, `GuiElementRenderState`, `GuiRenderState` (layering and blur), `RenderPipelines.GUI` and `GUI_TEXTURED` (vertex format, culling) and `Screen.extractRenderStateWithTooltipAndSubtitles`.
-2. Check the input records (`MouseButtonEvent`, `KeyEvent`, `InputWithModifiers`) and `ContainerEventHandler` mouse release forwarding.
-3. Check that `Panorama.extractRenderState` still exists with that name (otherwise `PanoramaMixin` fails to apply and the custom background never shows) and that the `blit` overload with a texture view and a sampler is still there. Check whether NeoForge still drops modifier key bindings on load (the "Invalid keyMapping" warning); remove `KeyModifierRepair` and `OptionsMixin` once it does not. Check the fields of `SplashRenderer`, `OptionInstance`, `Tooltip` and `OptionsSubScreen` for the accessors, the option lists of the vanilla options sub-screens (new options must be added to the pages) and the side effects of `VideoSettingsScreen`.
-4. Check the private fields and methods behind the accessors and the invoker (`lastScreen` of the singleplayer, multiplayer and mods screens, `onCreate` and the pack screens of `CreateWorldScreen`, the state fields of the loading screens) and whether game code still checks the loading screen classes.
-5. Check the HUD layer names in `VanillaGuiLayers`, the fields behind `HudAccessor` (`toolHighlightTimer`, `lastToolHighlight`, `contextualInfoBar`, `tabList`) and `PlayerTabOverlayAccessor` (`header`, `footer`), the player list order and visibility rule in `PlayerTabOverlay` and `Hud.extractTabList`, the HUD sprite names and how vanilla draws hearts, food, air and effects in `Hud`. Check the first `blitSprite` in `Hud.extractCrosshair` (crosshair sprite), the `ensureRunningOnSameThread` call in `ClientPacketListener.handleTakeItemEntity`, `TooltipRenderUtil.extractTooltipBackground` and the fields behind `MultiPlayerGameModeAccessor`. Check that `ChatComponent.extractRenderState` still both draws the chat and finds the message under the mouse, still uses the constant 40 as the bottom offset and that `getWidth` and `getScale` keep their names (otherwise `ChatComponentMixin` fails or clicks miss the drawn chat). Check that `forEachLine` still stores one `GuiMessage.Line` local and reads `getLinesPerPage` and `chatScrollbarPos` (smooth scrolling), that `ChatScreen` still creates its input in `init` before `updateCommandInfo` and scrolls through `scrollChat` in `mouseScrolled` and `keyPressed`, that the anchored command suggestions still read `screen.height`, that `addMessageToDisplayQueue` still calls `GuiMessage.splitLines`, that player chat still uses the `chat.type.text` translation with the name and the message as arguments, and the fields and fill and text calls of `CommandSuggestions$SuggestionsList`.
-6. Run `-Define arkea.uiCheck=all` and compare the screenshots with the design handoff. Run the client, open the title screen, hover, Tab through it, open and close the quit dialog, and compare with `screenshots/` of the design handoff.
-
-## Testing Tools
-
-- `docs/API.md` is the developer guide; the Component Gallery (`ArkGalleryScreen`) shows every component and is part of the interface check (`gallery`).
-
-- Unit tests cover motion, scaling, the path parser, shadow profiles, dates, language files and background import (image, GIF and video conversion).
-- `-Define arkea.uiCheck=all` (or groups such as `worlds,servers,loading`) opens every Arkea screen and popup, saves `screenshots/arkea_<step>.png` and closes the game; run it in a 1366 x 768 window to compare with the design at one to one.
-- A file dropped into `run/arkea/backgrounds` is imported within about two seconds while the Arkea page is open, which tests imports without a file picker (the SDL picker needs a desktop portal on Linux, so it reports "unavailable" headless).
-- In a cloud session the client runs headless: `Xvfb :99`, Mesa `mesa-vulkan-drivers` (llvmpipe Vulkan), `DISPLAY=:99 ./gradlew runClient`. `xdotool` moves the mouse, clicks and types, `import -window root` takes screenshots, so hover, focus, dialogs and screen switches can be checked frame by frame.
+| Section | File | Covers |
+|---|---|---|
+| Layers | [layers.md](architecture/layers.md) | `ui` never imports from `screen` or `config`; the accent reaches it through `Theme.setAccentSource`. |
+| Coordinates | [coordinates.md](architecture/coordinates.md) | Screens are laid out in design pixels of the 1366 x 768 reference. |
+| Frame Flow | [frame-flow.md](architecture/frame-flow.md) | `Screen.extractRenderStateWithTooltipAndSubtitles` calls `extractBackground` (the title screen draws the vanilla panorama there), opens a ... |
+| Rendering | [rendering.md](architecture/rendering.md) | Everything is drawn through `UiGraphics`. |
+| Window Screens | [window-screens.md](architecture/window-screens.md) | `ArkWindowScreen` draws the shell of every settings screen: 1238 x 704 window centered on the canvas, sidebar with brand and grouped ... |
+| Menu Screens | [menu-screens.md](architecture/menu-screens.md) | Window screens without a sidebar (singleplayer, create world, multiplayer, mods) return `null` from `brand()`; the header then spans the ... |
+| In-Game Screens and Vanilla Skins | [in-game-screens-and-vanilla-skins.md](architecture/in-game-screens-and-vanilla-skins.md) | `PauseScreen` and `DeathScreen` are never replaced: the game checks `instanceof PauseScreen` (toasts, pausing, F3 + Esc) and `instanceof ... |
+| Config Windows | [config-windows.md](architecture/config-windows.md) | `ArkeaConfigScreen.Builder` collects groups, pages, sections and options into a `Definition`. |
+| Menu Backgrounds | [menu-backgrounds.md](architecture/menu-backgrounds.md) | The player picks a background on the Arkea settings page. |
+| Motion | [motion.md](architecture/motion.md) | Time comes from `Util.getMillis()`, never ticks. |
+| Input, Focus and Narration | [input-focus-and-narration.md](architecture/input-focus-and-narration.md) | `ArkWidget` implements vanilla `GuiEventListener` and `NarratableEntry` and is registered with `Screen.addWidget`. |
+| Vanilla Coupling | [vanilla-coupling.md](architecture/vanilla-coupling.md) | Every vanilla or NeoForge class Arkea relies on and what it is used for. |
+| Porting Checklist for a New Minecraft Version | [porting-checklist.md](architecture/porting-checklist.md) | Check `GuiGraphicsExtractor`, `GuiElementRenderState`, `GuiRenderState` (layering and blur), `RenderPipelines.GUI` and `GUI_TEXTURED` ... |
+| Testing Tools | [testing-tools.md](architecture/testing-tools.md) | `docs/API.md` is the developer guide; the Component Gallery (`ArkGalleryScreen`) shows every component and is part of the interface check ... |
