@@ -85,7 +85,7 @@ repositories {
 }
 
 dependencies {
-    implementation "com.aryston.arkea:arkea-neoforge-26.3:0.1"
+    implementation "com.aryston.arkea:arkea-neoforge-26.3:1.0"
 }
 ```
 

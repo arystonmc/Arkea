@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-    implementation "com.aryston.arkea:arkea-neoforge-26.3:0.1"
+    implementation "com.aryston.arkea:arkea-neoforge-26.3:1.0"
 }
 ```
 
@@ -28,7 +28,7 @@ Then declare Arkea in `neoforge.mods.toml`, so the game refuses to start without
 [[dependencies.yourmod]]
     modId="arkea"
     type="required"
-    versionRange="[0.1,)"
+    versionRange="[1.0,)"
     ordering="AFTER"
     side="CLIENT"
 ```

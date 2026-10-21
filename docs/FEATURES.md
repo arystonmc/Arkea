@@ -10,11 +10,11 @@ Arkea is a client-side interface library for Minecraft mods. It gives settings s
 
 | | |
 |---|---|
-| Version | 0.1 |
+| Version | 1.0 |
 | Minecraft | 26.3 |
 | Loader | NeoForge |
 | Side | Client only, safe to join any server |
-| Status | In development |
+| Status | Released |
 
 ## Features
 
@@ -27,7 +27,7 @@ A calm, modern main menu that keeps everything the vanilla menu can do.
 - Quit asks once before closing the game, and Language, Accessibility and Friends sit one click away
 - Works with mouse, keyboard (Tab, arrows, Enter, Escape) and the narrator
 - Turn it off on the Arkea page of the options (or in Mods, Arkea, Config) to get the vanilla main menu back
-- Since: 0.1
+- Since: 1.0
 
 ### Options Window
 All settings in one calm window instead of a wall of buttons.
@@ -47,7 +47,7 @@ All settings in one calm window instead of a wall of buttons.
 - The window glides in over the blurred menu background or your world and glides out when you leave
 - Works with mouse, keyboard and the narrator; changes save automatically
 - Turn it off on the Arkea page of the options (or in Mods, Arkea, Config) to get the vanilla options menu back
-- Since: 0.1
+- Since: 1.0
 
 ### Custom Menu Backgrounds
 Replace the rotating panorama with your own video, GIF or picture.
@@ -56,7 +56,7 @@ Replace the rotating panorama with your own video, GIF or picture.
 - Every background plays on the title screen and in every menu that normally shows the panorama
 - Videos are converted once into a light frame sequence (up to 60 seconds, 720p, 30 fps) on every processor core, about ten seconds for a typical 1080p clip, so playback barely costs any performance; pictures can drift slowly so the menu never looks frozen
 - A gallery shows every background with a preview, its length and size; pick one with a click, delete it, or go back to the vanilla panorama any time
-- Since: 0.1
+- Since: 1.0
 
 ### Arkea Settings
 Arkea has its own full settings screen from Options or Mods, Arkea, Config.
@@ -65,7 +65,7 @@ Arkea has its own full settings screen from Options or Mods, Arkea, Config.
 - Menu Backgrounds opens the gallery and import tools, while HUD Preview shows the live preview and style cards
 - Accent color for every Arkea screen: green, emerald, gold or stone
 - Switches for the Arkea title screen, options window, menu screens, join sound, in-game screens and mod settings
-- Since: 0.1
+- Since: 1.0
 
 ### Singleplayer
 Your worlds at a glance, with everything you need to look after them.
@@ -76,7 +76,7 @@ Your worlds at a glance, with everything you need to look after them.
 - Double-click or press Enter to play, Delete to remove a world, F5 to reload
 - Delete asks first and can make a backup before deleting
 - Edit renames the world, makes a backup, opens its folder or the backups folder, optimizes it or resets its icon; long tasks show their progress in a notification
-- Since: 0.1
+- Since: 1.0
 
 ### Create New World
 All world settings on three clear tabs.
@@ -84,7 +84,7 @@ All world settings on three clear tabs.
 - Game: name, game mode, difficulty and commands
 - World: world type, seed, structures, bonus chest and the superflat editor
 - More: game rules, data packs and experiments
-- Since: 0.1
+- Since: 1.0
 
 ### Multiplayer
 Servers and LAN games in one window.
@@ -95,7 +95,7 @@ Servers and LAN games in one window.
 - The LAN tab scans your network and lists open worlds
 - Search servers by name or address, refresh with F5
 - Hover a server to see who is online, and reconnect with one click after losing the connection
-- Since: 0.1
+- Since: 1.0
 
 ### Loading Screens
 Connecting and loading show what is happening, smoothly from the first frame to the game.
@@ -107,7 +107,7 @@ Connecting and loading show what is happening, smoothly from the first frame to 
 - Joining a world or server ends with a level up chime; turn it off with Join Sound in the Arkea settings
 - World loading, saving, portal travel and other waits share the same look, with a tip at the bottom
 - A lost connection shows the reason clearly with one button back
-- Since: 0.1
+- Since: 1.0
 
 ### Mods
 A clean list of every installed mod.
@@ -115,7 +115,7 @@ A clean list of every installed mod.
 - Icons, versions and tags for mods with settings or an available update
 - Details with authors, mod id, license, credits and description
 - Open a mod's settings, its homepage or its issue tracker, or the mods folder
-- Since: 0.1
+- Since: 1.0
 
 ### Notifications
 Short messages at the bottom of every Arkea screen.
@@ -124,7 +124,7 @@ Short messages at the bottom of every Arkea screen.
 - Long tasks such as backups show a moving bar and finish with the result
 - Some notifications offer an action, such as showing the new backup
 - Advancement, recipe, tutorial and system notifications in the top right corner use the same look (turn it off on the Arkea page)
-- Since: 0.1
+- Since: 1.0
 
 ### Settings for Every Mod
 Every mod with settings opens them in the same Arkea window.
@@ -134,7 +134,7 @@ Every mod with settings opens them in the same Arkea window.
 - Right-click a setting to reset it, copy its value or paste one
 - Mods can design their own window with presets, previews, badges and a cost meter, like Helion
 - Turn it off on the Arkea page of the options to get the classic NeoForge screens back
-- Since: 0.1
+- Since: 1.0
 
 ### Interface Library for Mod Developers
 Arkea is a library: other mods build their screens with the same components.
@@ -143,7 +143,7 @@ Arkea is a library: other mods build their screens with the same components.
 - Dialogs, side sheets, context menus, before and after previews, tooltips, notifications, banners, meters and item slots
 - A Component Gallery on the Arkea page shows every component live
 - Developer guide: `docs/API.md`
-- Since: 0.1
+- Since: 1.0
 
 ### Pause, Death and Statistics
 The screens you see while playing match the rest of Arkea.
@@ -153,7 +153,7 @@ The screens you see while playing match the rest of Arkea.
 - Death screen with a red vignette, the cause and score fading in, and Respawn and Title Screen buttons
 - Statistics window with General, Items and Mobs tabs, sortable item columns with item icons and kill bars for every mob
 - Turn it off on the Arkea page of the options (In-Game Screens)
-- Since: 0.1
+- Since: 1.0
 
 ### Arkea HUD
 Players pick how health, hunger and the hotbar look while playing.
@@ -168,7 +168,7 @@ Players pick how health, hunger and the hotbar look while playing.
 - Effect chips with time and level, slim boss bars, a transparent scoreboard card and a Tab player list card with heads, scores and ping bars, each with its own switch
 - Plate transparency (0 to 80 percent) and HUD size (75 to 125 percent) sliders; the HUD is sized for the window, so it fits a 1920 x 1080 screen at any GUI scale and grows with larger screens
 - HUD parts added by other mods stay where they are; spectator mode, the locator bar and the jump bar stay vanilla
-- Since: 0.1
+- Since: 1.0
 
 ### HUD Features
 Useful information on screen, in every HUD style (Vanilla included), each with its own switch on the HUD page of Arkea Settings.
@@ -185,7 +185,7 @@ Useful information on screen, in every HUD style (Vanilla included), each with i
 - Sleep reminder once per night (off by default)
 - Crosshair shapes (thin cross, open cross, dot, circle) that stay readable on every background, and a hit marker (off by default)
 - Sound radar: subtitles placed around the crosshair in the direction of the sound (off by default)
-- Since: 0.1
+- Since: 1.0
 
 ### Arkea Tooltips
 Item tooltips show more and look like Arkea.
@@ -194,7 +194,7 @@ Item tooltips show more and look like Arkea.
 - Food shows its hunger shanks and, in the spirit of AppleSkin, its saturation as food icons with a golden outline
 - Damaged tools and armor show a durability bar with remaining and maximum uses
 - Shulker boxes and other containers show their items as a grid instead of a text list
-- Since: 0.1
+- Since: 1.0
 
 ### Arkea Chat
 A chat in the spirit of Chat Heads, where you see at a glance who wrote what.
@@ -207,7 +207,7 @@ A chat in the spirit of Chat Heads, where you see at a glance who wrote what.
 - Scrolling the chat glides line by line instead of jumping
 - Links, hover and clicks work as in vanilla; the chat input, command help and command suggestions are Arkea panels with Arkea Style Everywhere on
 - Turn it off on the HUD page of the options (Arkea Chat)
-- Since: 0.1
+- Since: 1.0
 
 ### Debug Screen
 F3 matches Arkea.
@@ -217,7 +217,7 @@ F3 matches Arkea.
 - The location chip and the target card step aside while F3 is open
 - Charts, the profiler and the chunk map stay vanilla
 - Turn the debug cards off on the Arkea page of the options (Arkea Debug Screen)
-- Since: 0.1
+- Since: 1.0
 
 ### Arkea Style Everywhere
 Screens that Arkea does not redesign still look like Arkea.
@@ -226,11 +226,11 @@ Screens that Arkea does not redesign still look like Arkea.
 - Confirmations, link warnings, alerts, the online play warning and backup prompts open as Arkea dialogs
 - Inventories and containers keep the vanilla look
 - Turn it off on the Arkea page of the options
-- Since: 0.1
+- Since: 1.0
 
 ### Command Palette
 Jump anywhere with the keyboard.
 
 - Press Ctrl+K in any menu and type: every setting, options page, recent world, server, folder and accent color is one Enter away
 - Choosing a setting opens its page and scrolls to it
-- Since: 0.1
+- Since: 1.0

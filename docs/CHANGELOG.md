@@ -6,25 +6,13 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 
 ## Unreleased
 
+## [1.0] - 2026-10-21
+
 ### Added
 - Add an animated move from the loading screen into the game
 - Add a level up chime when a world or server finishes loading, with a Join Sound switch in the Arkea settings
 - Add Arkea and installed Helion or Aervium settings to the Content sidebar
 - Add the five-page Arkea settings screen with immediate changes
-
-### Changed
-- Update the Aervium icon in the options sidebar
-- Show opening a world as one continuous loading screen with a bar that only moves forward
-- Move HUD controls into Arkea Settings and keep Menu Backgrounds and HUD Preview as focused pages
-
-### Fixed
-- Fix the loading screen freezing for over a second while data packs load
-- Fix the menu freezing until the world had started after choosing a world in the Arkea screens
-- Fix a crash when opening the Mods screen with mods that list several authors, such as Distant Horizons
-
-## [0.1] - 2026-10-09
-
-### Added
 - Initial mod setup for Minecraft 26.3 on NeoForge
 - Add an animated title screen with a jump back in card for the last played world
 - Add an animated options window with a sidebar, quick settings and a tile for every page
@@ -68,6 +56,9 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 - Draw command help and command suggestions as Arkea panels
 
 ### Changed
+- Update the Aervium icon in the options sidebar
+- Show opening a world as one continuous loading screen with a bar that only moves forward
+- Move HUD controls into Arkea Settings and keep Menu Backgrounds and HUD Preview as focused pages
 - Adopt the Aryston Source-Available License
 - Write the F3 cards in the Inter font so they are easier to read
 - Make the Arkea hotbar a quarter smaller
@@ -81,6 +72,9 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 - Give command suggestions more room next to the accent line
 
 ### Fixed
+- Fix the loading screen freezing for over a second while data packs load
+- Fix the menu freezing until the world had started after choosing a world in the Arkea screens
+- Fix a crash when opening the Mods screen with mods that list several authors, such as Distant Horizons
 - Keep the target card in the top left so boss bars no longer push it down
 - Keep key bindings with Ctrl, Shift or Alt after a restart
 - Import videos dropped into the backgrounds folder while the game is running, once they finish copying
