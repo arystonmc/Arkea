@@ -6,6 +6,9 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 
 ## Unreleased
 
+### Changed
+- Needs NeoForge 26.3.0.95 or newer; the update check in the Mods screen moved with NeoForge
+
 ## [1.0] - 2026-10-21
 
 ### Added

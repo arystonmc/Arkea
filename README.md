@@ -69,7 +69,7 @@ For the complete list of player features, see the [Arkea Feature Guide](docs/FEA
 | Requirement | Supported Version |
 |---|---|
 | **Minecraft** | 26.3 |
-| **Loader** | NeoForge 26.3.0.51-beta or newer |
+| **Loader** | NeoForge 26.3.0.95 or newer |
 | **Java** | 25 |
 | **Side** | Client only (safe to join any multiplayer server) |
 

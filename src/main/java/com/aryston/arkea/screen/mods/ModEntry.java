@@ -9,11 +9,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
-import net.neoforged.fml.VersionChecker;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.client.gui.modlist.DefaultModDisplayInfo;
 import net.neoforged.neoforge.client.gui.modlist.ImageResource;
 import net.neoforged.neoforge.client.gui.modlist.ModDisplayInfo;
+import net.neoforged.neoforge.common.VersionChecker;
 import org.jspecify.annotations.Nullable;
 
 record ModEntry(ModContainer container, ModDisplayInfo info) {
