@@ -32,7 +32,7 @@ A calm, modern main menu that keeps everything the vanilla menu can do.
 ### Options Window
 All settings in one calm window instead of a wall of buttons.
 
-- A sidebar groups every settings page into Game, Player and Content; after Resource Packs, Content lists Arkea plus Helion and Aervium when those mods are installed
+- A sidebar groups every settings page into Game, Player and Content; after Resource Packs, Content lists Arkea plus Helion and Kinetic when those mods are installed
 - Field of View has a smooth slider right on the overview; drag it, click it or use the arrow keys (Shift for bigger steps)
 - Every settings page has its own tile with a short description, and Telemetry and Credits stay one click away
 - Video, Sound, Chat, Accessibility, Skin and Controls are redesigned too: every option has a short description, a switch, slider or selector, and the full explanation on hover

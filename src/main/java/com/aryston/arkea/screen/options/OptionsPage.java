@@ -33,15 +33,15 @@ public enum OptionsPage {
     RESOURCE_PACKS(Group.CONTENT, Icons.PACK, "options.resourcepack", (parent, minecraft) -> new ArkPacksScreen(parent)),
     ARKEA(Group.CONTENT, Icons.ARKEA, "arkea.options.arkea", (parent, minecraft) -> ArkeaSettingsScreen.create(parent)),
     HELION(Group.CONTENT, Icons.SPARKLE, "arkea.options.helion", (parent, minecraft) -> modScreen(OptionsPage.HELION_ID, parent)),
-    AERVIUM(Group.CONTENT, Icons.GAUGE, "arkea.options.aervium", (parent, minecraft) -> modScreen(OptionsPage.AERVIUM_ID, parent)),
+    KINETIC(Group.CONTENT, Icons.GAUGE, "arkea.options.kinetic", (parent, minecraft) -> modScreen(OptionsPage.KINETIC_ID, parent)),
     BACKGROUNDS(Group.CONTENT, Icons.PANO, "arkea.options.backgrounds", (parent, minecraft) -> new ArkArkeaScreen(parent)),
     HUD(Group.CONTENT, Icons.MONITOR, "arkea.options.hud", (parent, minecraft) -> new ArkHudScreen(parent));
 
     public static final Identifier ARKEA_LOGO = Identifier.fromNamespaceAndPath("arkea", "textures/gui/arkea_logo.png");
     public static final Identifier HELION_LOGO = Identifier.fromNamespaceAndPath("arkea", "textures/gui/helion_logo.png");
-    public static final Identifier AERVIUM_LOGO = Identifier.fromNamespaceAndPath("arkea", "textures/gui/aervium_logo.png");
+    public static final Identifier KINETIC_LOGO = Identifier.fromNamespaceAndPath("arkea", "textures/gui/kinetic_logo.png");
     private static final String HELION_ID = "helion";
-    private static final String AERVIUM_ID = "aervium";
+    private static final String KINETIC_ID = "kinetic";
     private static final String TRAILING_DOTS = "...";
     private static final String TRAILING_ELLIPSIS = "…";
 
@@ -72,20 +72,20 @@ public enum OptionsPage {
     public boolean isAvailable() {
         return switch (this) {
             case HELION -> modConfig(HELION_ID).isPresent();
-            case AERVIUM -> modConfig(AERVIUM_ID).isPresent();
+            case KINETIC -> modConfig(KINETIC_ID).isPresent();
             case BACKGROUNDS, HUD -> false;
             default -> true;
         };
     }
 
     public boolean isExternal() {
-        return this == ARKEA || this == HELION || this == AERVIUM;
+        return this == ARKEA || this == HELION || this == KINETIC;
     }
 
     public boolean isWindow() {
         return switch (this) {
             case OVERVIEW, VIDEO, CONTROLS, KEY_BINDS, SOUND, SKIN, CHAT, LANGUAGE, ACCESSIBILITY, RESOURCE_PACKS, BACKGROUNDS, HUD -> true;
-            case ARKEA, HELION, AERVIUM -> false;
+            case ARKEA, HELION, KINETIC -> false;
         };
     }
 
@@ -109,7 +109,7 @@ public enum OptionsPage {
         return switch (this) {
             case ARKEA -> ARKEA_LOGO;
             case HELION -> HELION_LOGO;
-            case AERVIUM -> AERVIUM_LOGO;
+            case KINETIC -> KINETIC_LOGO;
             default -> null;
         };
     }

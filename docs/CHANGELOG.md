@@ -14,7 +14,7 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 ### Added
 - Add an animated move from the loading screen into the game
 - Add a level up chime when a world or server finishes loading, with a Join Sound switch in the Arkea settings
-- Add Arkea and installed Helion or Aervium settings to the Content sidebar
+- Add Arkea and installed Helion or Kinetic settings to the Content sidebar
 - Add the five-page Arkea settings screen with immediate changes
 - Initial mod setup for Minecraft 26.3 on NeoForge
 - Add an animated title screen with a jump back in card for the last played world
@@ -59,7 +59,7 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 - Draw command help and command suggestions as Arkea panels
 
 ### Changed
-- Update the Aervium icon in the options sidebar
+- Update the Kinetic icon in the options sidebar
 - Show opening a world as one continuous loading screen with a bar that only moves forward
 - Move HUD controls into Arkea Settings and keep Menu Backgrounds and HUD Preview as focused pages
 - Adopt the Aryston Source-Available License

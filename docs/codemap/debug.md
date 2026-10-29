@@ -10,7 +10,7 @@ Part of the [Arkea code map](../CODEMAP.md). Every class of this package has its
 
 #### UiCheck
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheck.java`
-- Role: Developer check (`-Define arkea.uiCheck=all` or a comma list of groups: title, options, worlds, create, servers, mods, loading, toasts, gallery, config, arkea, helion, aervium, vanilla, game, hud, features). `Step.await` waits for a condition such as a loaded world; `Step.quick` takes its screenshot after a given number of ticks. Opens screens, presses widgets by key, sends keys, saves a screenshot after every step as `screenshots/arkea_<step>.png` and closes the game. Does nothing in production.
+- Role: Developer check (`-Define arkea.uiCheck=all` or a comma list of groups: title, options, worlds, create, servers, mods, loading, toasts, gallery, config, arkea, helion, kinetic, vanilla, game, hud, features). `Step.await` waits for a condition such as a loaded world; `Step.quick` takes its screenshot after a given number of ticks. Opens screens, presses widgets by key, sends keys, saves a screenshot after every step as `screenshots/arkea_<step>.png` and closes the game. Does nothing in production.
 
 #### UiCheckToasts, UiCheckLoading, UiCheckServers, UiCheckConfig, UiCheckGame
 
@@ -20,7 +20,7 @@ Part of the [Arkea code map](../CODEMAP.md). Every class of this package has its
 
 #### UiCheckConfig
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheckConfig.java`
-- Role: Opens a named installed mod's `IConfigScreenFactory` screen for the interface check, returning to the parent when the mod or factory is absent. Used for Helion and Aervium instead of a Helion-only helper.
+- Role: Opens a named installed mod's `IConfigScreenFactory` screen for the interface check, returning to the parent when the mod or factory is absent. Used for Helion and Kinetic instead of a Helion-only helper.
 
 #### UiCheckHud
 - Path: `src/main/java/com/aryston/arkea/debug/UiCheckHud.java`

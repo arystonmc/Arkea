@@ -260,11 +260,11 @@ public final class UiCheck {
             Step.press("arkea", "arkea_hud", "nav:hud"),
             Step.press("arkea", "arkea_tooltips", "nav:tooltips"),
             Step.press("arkea", "arkea_developers", "nav:developers"),
-            Step.screen("aervium", "aervium_overview", parent -> UiCheckConfig.forMod("aervium", parent)),
-            Step.press("aervium", "aervium_distant_terrain", "nav:distantTerrain"),
-            Step.press("aervium", "aervium_rendering", "nav:rendering"),
-            Step.press("aervium", "aervium_world", "nav:world"),
-            Step.press("aervium", "aervium_modules", "nav:modules")
+            Step.screen("kinetic", "kinetic_overview", parent -> UiCheckConfig.forMod("kinetic", parent)),
+            Step.press("kinetic", "kinetic_distant_terrain", "nav:distantTerrain"),
+            Step.press("kinetic", "kinetic_rendering", "nav:rendering"),
+            Step.press("kinetic", "kinetic_world", "nav:world"),
+            Step.press("kinetic", "kinetic_modules", "nav:modules")
         );
 
         private UiCheckSteps() {
