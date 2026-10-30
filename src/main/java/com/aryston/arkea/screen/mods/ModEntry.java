@@ -79,12 +79,16 @@ record ModEntry(ModContainer container, ModDisplayInfo info) {
     }
 
     boolean hasUpdate() {
-        VersionChecker.Status status = VersionChecker.getResult(this.container.getModInfo()).status();
-        return status == VersionChecker.Status.OUTDATED || status == VersionChecker.Status.BETA_OUTDATED;
+        VersionChecker.CheckResult result = this.updateCheck();
+        return result != null && (result.status() == VersionChecker.Status.OUTDATED || result.status() == VersionChecker.Status.BETA_OUTDATED);
     }
 
     @Nullable String latestVersion() {
-        VersionChecker.CheckResult result = VersionChecker.getResult(this.container.getModInfo());
-        return result.target() != null ? result.target().toString() : null;
+        VersionChecker.CheckResult result = this.updateCheck();
+        return result != null && result.target() != null ? result.target().toString() : null;
+    }
+
+    private VersionChecker.@Nullable CheckResult updateCheck() {
+        return VersionChecker.getResult(this.container.getModInfo());
     }
 }

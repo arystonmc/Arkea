@@ -7,7 +7,6 @@ import com.aryston.arkea.api.config.ConfigOption;
 import com.aryston.arkea.api.config.ConfigPage;
 import com.aryston.arkea.api.config.ConfigPreset;
 import com.aryston.arkea.api.config.ConfigSection;
-import com.aryston.arkea.api.config.OptionKind;
 import com.aryston.arkea.ui.layout.Box;
 import com.aryston.arkea.ui.overlay.ArkDialog;
 import com.aryston.arkea.ui.overlay.ArkToasts;
@@ -29,22 +28,15 @@ import com.aryston.arkea.ui.screen.SidebarBrand;
 import com.aryston.arkea.ui.theme.ArkColors;
 import com.aryston.arkea.ui.theme.Theme;
 import com.aryston.arkea.ui.widget.ArkButton;
-import com.aryston.arkea.ui.widget.ArkChip;
 import com.aryston.arkea.ui.widget.ArkCompareView;
 import com.aryston.arkea.ui.widget.ArkDisclosure;
-import com.aryston.arkea.ui.widget.ArkIconButton;
 import com.aryston.arkea.ui.widget.ArkPresetTile;
 import com.aryston.arkea.ui.widget.ArkSegmented;
 import com.aryston.arkea.ui.widget.ArkWidget;
 import com.aryston.arkea.ui.widget.ButtonVariant;
-import com.aryston.arkea.ui.widget.ChipsRow;
-import com.aryston.arkea.ui.widget.IconButtonStyle;
 import com.aryston.arkea.ui.widget.ItemContent;
 import com.aryston.arkea.ui.widget.NavEntry;
 import com.aryston.arkea.ui.widget.NoticeRow;
-import com.aryston.arkea.ui.widget.PanelRow;
-import com.aryston.arkea.ui.widget.SettingRow;
-import com.aryston.arkea.ui.widget.Tag;
 import com.aryston.arkea.ui.widget.WidgetRow;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +65,7 @@ public final class ArkConfigScreen extends ArkWindowScreen {
     private static final TextStyle METER_NOTE = TextStyle.of(10.0F);
 
     private final ConfigSession session;
-    private final List<Bound> bound = new ArrayList<>();
+    private final ConfigRows rows;
     private SettingsPanel panel = new SettingsPanel();
     private @Nullable ArkButton applyButton;
     private @Nullable ArkButton discardButton;
@@ -81,6 +73,7 @@ public final class ArkConfigScreen extends ArkWindowScreen {
     private ArkConfigScreen(ConfigSession session, Screen parent) {
         super(session.currentPage().title(), parent);
         this.session = session;
+        this.rows = new ConfigRows(this, session, this::add, this::reset, this::openPreview);
     }
 
     public static Screen open(ArkeaConfigScreen.Definition definition, Screen parent) {
@@ -129,7 +122,7 @@ public final class ArkConfigScreen extends ArkWindowScreen {
     @Override
     protected float buildContent(Box area) {
         this.panel = new SettingsPanel();
-        this.bound.clear();
+        this.rows.clear();
         this.addNotices();
         String query = this.searchQuery().trim().toLowerCase(Locale.ROOT);
         if (query.isEmpty()) {
@@ -221,75 +214,7 @@ public final class ArkConfigScreen extends ArkWindowScreen {
     }
 
     private void addOption(SettingsSection section, ConfigOption<?> option) {
-        if (option.kind() instanceof OptionKind.Multi<?> multi) {
-            this.addChips(section, option, multi);
-            return;
-        }
-        ConfigControls.Control control = ConfigControls.create(this, this.session, option);
-        SettingRow row = new SettingRow(new ItemContent(option.icon(), option.name(), option.description()))
-            .litWhen(() -> this.isLit(option))
-            .tooltip(() -> this.tooltip(option))
-            .tags(this.tags(option))
-            .cost(option.cost());
-        if (!option.isAction()) {
-            row.resettable(this, () -> this.session.isModified(option), () -> this.reset(option));
-        }
-        if (option.previewBefore() != null) {
-            Component label = Component.translatable("arkea.config.preview");
-            ArkIconButton eye = new ArkIconButton(this, Icons.EYE, label, IconButtonStyle.QUIET, () -> this.openPreview(option));
-            eye.setTooltip(label);
-            row.accessory(eye, () -> true);
-        }
-        section.add(row, this.add(control.widget()), control.width(), control.height());
-        for (ArkWidget widget : row.widgets()) {
-            if (widget != control.widget()) {
-                this.add(widget);
-            }
-        }
-        this.bound.add(new Bound(option, control.widget(), row));
-    }
-
-    @SuppressWarnings("unchecked")
-    private <E> void addChips(SettingsSection section, ConfigOption<?> raw, OptionKind.Multi<?> rawKind) {
-        ConfigOption<List<E>> option = (ConfigOption<List<E>>) raw;
-        OptionKind.Multi<E> kind = (OptionKind.Multi<E>) rawKind;
-        List<ArkChip> chips = new ArrayList<>();
-        for (E value : kind.values()) {
-            chips.add(this.add(ArkChip.toggle(this, kind.label().apply(value), () -> this.session.value(option).contains(value),
-                () -> this.toggleElement(option, kind, value))));
-        }
-        ChipsRow row = new ChipsRow(option.name(), option.description(), chips).tooltip(option.tooltip());
-        section.add(row);
-        this.bound.add(new Bound(option, null, row));
-    }
-
-    private <E> void toggleElement(ConfigOption<List<E>> option, OptionKind.Multi<E> kind, E value) {
-        List<E> current = this.session.value(option);
-        List<E> next = kind.values().stream().filter(element -> element.equals(value) != current.contains(element)).toList();
-        this.session.stage(option, next);
-    }
-
-    private List<Tag> tags(ConfigOption<?> option) {
-        List<Tag> tags = new ArrayList<>(option.tags());
-        if (option.restart()) {
-            tags.add(Tag.tone(Component.translatable("arkea.config.tag.restart"), ArkColors.WARNING));
-        }
-        return tags;
-    }
-
-    private boolean isLit(ConfigOption<?> option) {
-        if (option.kind() instanceof OptionKind.Toggle) {
-            return Boolean.TRUE.equals(this.session.value(option)) && this.session.isEnabled(option);
-        }
-        return this.session.isEnabled(option);
-    }
-
-    private @Nullable Component tooltip(ConfigOption<?> option) {
-        ConfigOption<Boolean> requirement = this.session.missingRequirement(option);
-        if (requirement != null) {
-            return Component.translatable("arkea.config.requires", requirement.name());
-        }
-        return option.tooltip();
+        this.rows.add(section, option);
     }
 
     private void reset(ConfigOption<?> option) {
@@ -314,11 +239,7 @@ public final class ArkConfigScreen extends ArkWindowScreen {
 
     @Override
     protected void renderContent(UiGraphics graphics, float mouseX, float mouseY) {
-        for (Bound entry : this.bound) {
-            if (entry.widget() != null) {
-                entry.widget().setActive(this.session.isEnabled(entry.option()));
-            }
-        }
+        this.rows.refreshActive();
         boolean dirty = this.session.isDirty();
         if (this.applyButton != null) {
             this.applyButton.setActive(dirty);
@@ -368,7 +289,7 @@ public final class ArkConfigScreen extends ArkWindowScreen {
 
     @Override
     protected List<ContextMenuItem> contextMenu(float x, float y) {
-        for (Bound entry : this.bound) {
+        for (ConfigRows.Bound entry : this.rows.bound()) {
             if (entry.row().isHovered() && !entry.option().isAction()) {
                 return this.menuFor(entry.option());
             }
@@ -474,8 +395,5 @@ public final class ArkConfigScreen extends ArkWindowScreen {
             proceed.run();
         }));
         this.openDialog(dialog);
-    }
-
-    private record Bound(ConfigOption<?> option, @Nullable ArkWidget widget, PanelRow row) {
     }
 }

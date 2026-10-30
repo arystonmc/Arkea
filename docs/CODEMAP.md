@@ -51,7 +51,7 @@ A class of package `P` is documented only in `codemap/P.md`, or in `codemap/P--<
 | Dialog content (forms, hero image, thumbnail) | `ArkDialog`, `DialogForm`, `DialogBody` |
 | Checkbox, tabs, tags, letter tiles, empty states | `ArkCheckbox`, `ArkTab`, `Tag`, `LetterTile`, `EmptyState`, `PixelSpinner` |
 | Automated screenshots of screens | `UiCheck` |
-| Config screen library for other mods | `ArkeaConfigScreen`, `ConfigOption`, `ModConfigScreens`, `ArkConfigScreen` |
+| Config screen library for other mods, in-game overlay panel | `ArkeaConfigScreen`, `ConfigOption`, `ModConfigScreens`, `ArkConfigScreen`, `ArkOverlayScreen` |
 | Radio, stepper, chips, range, color picker, context menu, side sheet, preview | `ArkRadio`, `ArkStepper`, `ArkChip`, `ArkRangeSlider`, `ColorPickerPopup`, `ArkContextMenu`, `ArkSideSheet`, `ArkCompareView` |
 | Component gallery | `ArkGalleryScreen` |
 | Arkea look of every other screen and of other mods | `VanillaTheme`, theme mixins, `DialogSkin` |
@@ -89,7 +89,7 @@ A class of package `P` is documented only in `codemap/P.md`, or in `codemap/P--<
 | `com.aryston.arkea.hud.target` | [hud.target.md](codemap/hud.target.md) | 3 | Target card for the entity or block under the crosshair. |
 | `com.aryston.arkea.integration` | [integration.md](codemap/integration.md) | 4 | Event wiring, key modifier repair, file dialogs and HUD events. |
 | `com.aryston.arkea.mixin` | [mixin.md](codemap/mixin.md) | 47 | Mixins, accessors and invokers on vanilla screens, toasts, options and loading flows. |
-| `com.aryston.arkea.screen.config` | [screen.config.md](codemap/screen.config.md) | 4 | Config window screen, session, controls and clipboard. |
+| `com.aryston.arkea.screen.config` | [screen.config.md](codemap/screen.config.md) | 6 | Config window and in-game overlay panel, session, rows, controls and clipboard. |
 | `com.aryston.arkea.screen.debug` | [screen.debug.md](codemap/screen.debug.md) | 2 | F3 debug cards and their font. |
 | `com.aryston.arkea.screen.gallery` | [screen.gallery.md](codemap/screen.gallery.md) | 2 | Widget gallery screen. |
 | `com.aryston.arkea.screen.game` | [screen.game.md](codemap/screen.game.md) | 6 | Pause, death and statistics screens. |

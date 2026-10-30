@@ -12,7 +12,7 @@ Part of the [Arkea code map](../CODEMAP.md). Every class of this package has its
 #### ModEntry
 - Path: `src/main/java/com/aryston/arkea/screen/mods/ModEntry.java`
 - Role: A mod container with its NeoForge `ModDisplayInfo` (custom or default), icon resource (the vanilla pack icon for Minecraft), config screen factory and update check result.
-- Notes: For mods without a custom `ModDisplayInfo`, `authors` and `credits` are read from the mod metadata directly and accept a string or a list, because `DefaultModDisplayInfo` casts both to a string and throws a `ClassCastException` for lists (Distant Horizons).
+- Notes: For mods without a custom `ModDisplayInfo`, `authors` and `credits` are read from the mod metadata directly and accept a string or a list, because `DefaultModDisplayInfo` casts both to a string and throws a `ClassCastException` for lists (Distant Horizons). `VersionChecker.getResult` can return null, so `hasUpdate` and `latestVersion` treat a missing result as no update.
 
 #### ModRow
 - Path: `src/main/java/com/aryston/arkea/screen/mods/ModRow.java`

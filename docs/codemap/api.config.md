@@ -8,8 +8,8 @@ Public library API. Other mods build Arkea screens with these classes; see `docs
 
 #### ArkeaConfigScreen
 - Path: `src/main/java/com/aryston/arkea/api/config/ArkeaConfigScreen.java`
-- Role: Entry point of the config screen API: a builder with brand, sidebar groups, pages, apply mode, apply listeners and a sidebar meter; `build` returns the screen, `factory` an `IConfigScreenFactory`.
-- Members: `builder`, `page`, `Builder.brand`, `group`, `page`, `applyMode`, `onApply`, `meter`, `build`, `factory`, `Definition`, `Group`.
+- Role: Entry point of the config screen API: a builder with brand, sidebar groups, pages, apply mode, apply listeners, a sidebar meter, live status lines and a toggle key; `build` returns the window, `buildOverlay` the in-game panel that does not pause the game, `factory` an `IConfigScreenFactory`.
+- Members: `builder`, `page`, `Builder.brand`, `group`, `page`, `applyMode`, `onApply`, `meter`, `status`, `toggleKey`, `build`, `buildOverlay`, `factory`, `Definition`, `Group`.
 
 #### ConfigPage
 - Path: `src/main/java/com/aryston/arkea/api/config/ConfigPage.java`

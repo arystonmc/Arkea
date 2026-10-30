@@ -106,6 +106,19 @@ Every option can have `name`, `description`, `icon`, `tooltip`, `tag` (badges su
 - `meter(new ConfigMeter(...))` shows a meter at the bottom of the sidebar, computed from the values on screen (`ConfigValues.value(option)` includes unapplied changes).
 - `ModConfigScreens.pages(modId, type, spec)` returns generated pages that can be mixed with your own.
 
+### In-Game Overlay Panel
+
+`buildOverlay()` shows the same definition as a compact panel at the left edge of the game instead of the full window. It draws no background and does not pause the game, so the world keeps running and stays visible behind it, like a quick tool menu. Use it with `ApplyMode.IMMEDIATE`. `status(...)` adds live lines at the top that are read every frame, and `toggleKey(...)` lets the key that opened the panel close it. Presets and previews are not shown in the panel. Open it with `minecraft.gui.setScreen(...)` while in a world.
+
+```java
+Screen panel = ArkeaConfigScreen.builder(Component.literal("Time"))
+    .applyMode(ApplyMode.IMMEDIATE)
+    .status(() -> List.of(Component.literal("12:30")))
+    .toggleKey(MY_KEY)
+    .page("time", Component.literal("Time"), Icons.CLOCK, page -> page.section(null, section -> section.add(hour)))
+    .buildOverlay();
+```
+
 ## Option 3: Build Your Own Screens
 
 The design system in `com.aryston.arkea.ui` is public. A screen extends `ArkScreen` (full canvas) or `ArkWindowScreen` (the settings window with sidebar, header, scrolling content and footer), lays out in design pixels of the 1366 x 768 reference and draws through `UiGraphics`.

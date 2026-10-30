@@ -1,12 +1,15 @@
 package com.aryston.arkea.api.config;
 
 import com.aryston.arkea.screen.config.ArkConfigScreen;
+import com.aryston.arkea.screen.config.ArkOverlayScreen;
 import com.aryston.arkea.ui.render.Icon;
 import com.aryston.arkea.ui.render.Icons;
 import com.aryston.arkea.ui.screen.SidebarBrand;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -28,6 +31,8 @@ public final class ArkeaConfigScreen {
         private ApplyMode applyMode = ApplyMode.ON_APPLY;
         private final List<Runnable> applyListeners = new ArrayList<>();
         private @Nullable ConfigMeter meter;
+        private Supplier<List<Component>> status = List::of;
+        private @Nullable KeyMapping toggleKey;
 
         private Builder(Component title) {
             this.title = title;
@@ -82,8 +87,22 @@ public final class ArkeaConfigScreen {
             return this;
         }
 
+        public Builder status(Supplier<List<Component>> lines) {
+            this.status = lines;
+            return this;
+        }
+
+        public Builder toggleKey(KeyMapping key) {
+            this.toggleKey = key;
+            return this;
+        }
+
         public Screen build(Screen parent) {
             return ArkConfigScreen.open(this.definition(), parent);
+        }
+
+        public Screen buildOverlay() {
+            return ArkOverlayScreen.open(this.definition());
         }
 
         public IConfigScreenFactory factory() {
@@ -97,7 +116,8 @@ public final class ArkeaConfigScreen {
             if (copy.isEmpty()) {
                 throw new IllegalStateException("A config screen needs at least one page");
             }
-            return new Definition(this.title, this.brand, copy, this.applyMode, List.copyOf(this.applyListeners), this.meter);
+            return new Definition(this.title, this.brand, copy, this.applyMode, List.copyOf(this.applyListeners), this.meter, this.status,
+                this.toggleKey);
         }
     }
 
@@ -109,7 +129,7 @@ public final class ArkeaConfigScreen {
     }
 
     public record Definition(Component title, SidebarBrand brand, List<Group> groups, ApplyMode applyMode, List<Runnable> applyListeners,
-        @Nullable ConfigMeter meter) {
+        @Nullable ConfigMeter meter, Supplier<List<Component>> status, @Nullable KeyMapping toggleKey) {
 
         public List<ConfigPage> pages() {
             return this.groups.stream().flatMap(group -> group.pages().stream()).toList();

@@ -6,8 +6,14 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 
 ## Unreleased
 
+### Added
+- Mods can show their settings as a small in-game panel that keeps the game running
+
 ### Changed
 - Needs NeoForge 26.3.0.95 or newer; the update check in the Mods screen moved with NeoForge
+
+### Fixed
+- The Mods screen list stays filled when NeoForge has no update check result for a mod
 
 ## [1.0] - 2026-10-21
 
