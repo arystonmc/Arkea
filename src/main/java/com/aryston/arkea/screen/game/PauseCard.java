@@ -1,6 +1,7 @@
 package com.aryston.arkea.screen.game;
 
 import com.aryston.arkea.Arkea;
+import com.aryston.arkea.api.clock.WorldClockText;
 import com.aryston.arkea.ui.layout.Box;
 import com.aryston.arkea.ui.render.Icons;
 import com.aryston.arkea.ui.render.LetterTile;
@@ -41,11 +42,6 @@ final class PauseCard implements AutoCloseable {
     private static final float ICON_GAP = 8.0F;
     private static final float SQUARE = 1.0F;
     private static final float VALUE_SHARE = 0.6F;
-    private static final long TICKS_PER_DAY = 24000L;
-    private static final long TICKS_PER_HOUR = 1000L;
-    private static final long DAWN_HOUR = 6L;
-    private static final long HOURS_PER_DAY = 24L;
-    private static final long MINUTES_PER_HOUR = 60L;
     private static final int CARD_FILL = ArkColors.rgba(16, 16, 18, 0.85F);
     private static final int ROW_LINE = ArkColors.rgba(255, 255, 255, 0.05F);
     private static final int CHIP_FILL = ArkColors.rgba(255, 224, 102, 0.10F);
@@ -87,7 +83,7 @@ final class PauseCard implements AutoCloseable {
         float right = box.right() - PADDING;
         float y = imageBox.bottom() + PADDING;
         long clock = level.getOverworldClockTime();
-        String day = Component.translatable("arkea.pause.day", clock / TICKS_PER_DAY + 1).getString();
+        String day = Component.translatable("arkea.pause.day", WorldClockText.day(clock)).getString();
         graphics.text(day, x, y + (CHIP_HEIGHT - metrics.capHeight(DAY)) * 0.5F, DAY, ArkColors.TEXT_PRIMARY);
         this.drawChip(graphics, level, clock, right, y);
         y += CHIP_HEIGHT + GAP;
@@ -106,12 +102,9 @@ final class PauseCard implements AutoCloseable {
 
     private void drawChip(UiGraphics graphics, ClientLevel level, long clock, float right, float y) {
         TextMetrics metrics = graphics.metrics();
-        long tick = clock % TICKS_PER_DAY;
-        long hour = (tick / TICKS_PER_HOUR + DAWN_HOUR) % HOURS_PER_DAY;
-        long minute = tick % TICKS_PER_HOUR * MINUTES_PER_HOUR / TICKS_PER_HOUR;
         String weather = Component.translatable(level.isThundering() ? "arkea.pause.weather.thunder"
             : level.isRaining() ? "arkea.pause.weather.rain" : "arkea.pause.weather.clear").getString();
-        String text = String.format(Locale.ROOT, "%02d:%02d · %s", hour, minute, weather);
+        String text = WorldClockText.time(clock) + " · " + weather;
         float width = CHIP_PADDING * 2.0F + CHIP_ICON + CHIP_PADDING + metrics.width(text, CHIP);
         Box chip = new Box(right - width, y, width, CHIP_HEIGHT);
         graphics.fill(chip, CHIP_FILL);

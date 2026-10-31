@@ -79,6 +79,7 @@ A class of package `P` is documented only in `codemap/P.md`, or in `codemap/P--<
 | Package | Code map file | Classes | Purpose |
 |---|---|---|---|
 | `com.aryston.arkea` | [root.md](codemap/root.md) | 1 | Entry class with the mod id and logger. |
+| `com.aryston.arkea.api.clock` | [api.clock.md](codemap/api.clock.md) | 1 | Public API that lets another mod supply the world clock text Arkea shows (see docs/API.md). |
 | `com.aryston.arkea.api.config` | [api.config.md](codemap/api.config.md) | 14 | Public library API for config screens of other mods (see docs/API.md). |
 | `com.aryston.arkea.background` | [background.md](codemap/background.md) | 19 | Menu background library, image, GIF and video import, playback. |
 | `com.aryston.arkea.config` | [config.md](codemap/config.md) | 1 | Arkea config spec. |

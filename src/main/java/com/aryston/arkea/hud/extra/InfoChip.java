@@ -1,5 +1,6 @@
 package com.aryston.arkea.hud.extra;
 
+import com.aryston.arkea.api.clock.WorldClockText;
 import com.aryston.arkea.hud.HudClock;
 import com.aryston.arkea.config.ArkeaConfig;
 import com.aryston.arkea.hud.HudPainter;
@@ -13,7 +14,6 @@ import com.aryston.arkea.ui.theme.ArkColors;
 import com.aryston.arkea.ui.theme.Theme;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -37,11 +37,6 @@ public final class InfoChip {
     private static final float FULL_TURN = 360.0F;
     private static final float FRONT = 90.0F;
     private static final String COMMA = ", ";
-    private static final long TICKS_PER_DAY = 24000L;
-    private static final long TICKS_PER_HOUR = 1000L;
-    private static final long DAWN_HOUR = 6L;
-    private static final long HOURS_PER_DAY = 24L;
-    private static final long MINUTES_PER_HOUR = 60L;
     private static final long DEATH_POINT_LIFE = 600000L;
     private static final double REACHED = 4.0;
     private static final TextStyle TEXT = TextStyle.of(10.0F);
@@ -68,7 +63,7 @@ public final class InfoChip {
             }
             parts.add(Component.translatable("arkea.info.direction." + direction(player.getYRot())).getString());
             level.getBiome(pos).unwrapKey().ifPresent(key -> parts.add(Component.translatable(key.identifier().toLanguageKey("biome")).getString()));
-            parts.add(clock(level.getOverworldClockTime()));
+            parts.add(WorldClockText.time(level.getOverworldClockTime()));
             String text = String.join(DOT, parts);
             y = chip(graphics, screen.x() + MARGIN, y, text, plate, false, 0.0F) + GAP;
         }
@@ -117,12 +112,5 @@ public final class InfoChip {
     private static String direction(float yaw) {
         float turned = Mth.positiveModulo(yaw + SECTOR * HALF, FULL_TURN);
         return DIRECTIONS[(int) (turned / SECTOR) % DIRECTIONS.length];
-    }
-
-    private static String clock(long ticks) {
-        long tick = ticks % TICKS_PER_DAY;
-        long hour = (tick / TICKS_PER_HOUR + DAWN_HOUR) % HOURS_PER_DAY;
-        long minute = tick % TICKS_PER_HOUR * MINUTES_PER_HOUR / TICKS_PER_HOUR;
-        return String.format(Locale.ROOT, "%02d:%02d", hour, minute);
     }
 }

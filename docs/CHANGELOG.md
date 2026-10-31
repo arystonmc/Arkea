@@ -8,6 +8,7 @@ Format: sections `Added`, `Changed`, `Fixed`, `Removed`. One short plain English
 
 ### Added
 - Mods can show their settings as a small in-game panel that keeps the game running
+- Mods can supply the world time text, so the info chip and pause card follow a calendar mod such as Equinox
 
 ### Changed
 - Needs NeoForge 26.3.0.95 or newer; the update check in the Mods screen moved with NeoForge

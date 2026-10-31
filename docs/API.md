@@ -142,6 +142,19 @@ Rules every screen follows:
 - Move between screens with `navigate` or `switchTo` so exit animations play.
 - Open dialogs and side sheets with `openDialog`, menus and pickers with `openPopup`; return items from `contextMenu(x, y)` for right-click menus.
 
+## World Clock Text
+
+Arkea shows the overworld time in the info chip and the day and time on the pause card. By default it reads the clock like vanilla (tick 0 is 06:00, one hour is 1000 ticks). A mod that gives the day its own meaning, such as a calendar with seasonal day length, registers a `WorldClockText.Source` from `com.aryston.arkea.api.clock` on the client so Arkea shows the same time:
+
+```java
+WorldClockText.register(new WorldClockText.Source() {
+    public String time(long clockTicks) { return myClockText(clockTicks); }
+    public long day(long clockTicks) { return myDayNumber(clockTicks); }
+});
+```
+
+`day` returns the day number shown on the pause card, starting at 1. `WorldClockText.VANILLA` is the default and a fallback, for example while connected to a server without your mod. The last registered source wins.
+
 ## Stability
 
 `com.aryston.arkea.api` is the stable API. `com.aryston.arkea.ui` is public and documented here but may still change between minor versions while Arkea is below 1.0. Everything else (`screen`, `integration`, `mixin`, `config`, `background`, `debug`) is internal.
